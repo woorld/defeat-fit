@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build && electron-builder",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "vue": "^3.4.21"
@@ -15,6 +16,7 @@
     "@vitejs/plugin-vue": "^5.0.4",
     "electron": "^30.0.1",
     "electron-builder": "^26.0.12",
+    "patch-package": "^8.0.0",
     "typescript": "^5.2.2",
     "vite": "^6.3.5",
     "vite-plugin-electron": "^0.28.6",
