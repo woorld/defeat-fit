@@ -8,6 +8,8 @@
     "build": "vue-tsc && vite build && electron-builder",
     "preview": "vite preview",
     "format": "prettier -w .",
+    "osc:send": "node tools/osc-sender.mjs",
+    "osc:listen": "node tools/osc-listener.mjs",
     "postinstall": "patch-package"
   },
   "dependencies": {
