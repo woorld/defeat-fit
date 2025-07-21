@@ -12,9 +12,11 @@
   },
   "dependencies": {
     "node-osc": "^9.1.7",
-    "vue": "^3.4.21"
+    "vue": "^3.4.21",
+    "vuetify": "^3.9.2"
   },
   "devDependencies": {
+    "@mdi/font": "^7.4.47",
     "@types/node-osc": "^9.1.0",
     "@vitejs/plugin-vue": "^5.0.4",
     "electron": "^30.0.1",
@@ -25,6 +27,7 @@
     "vite": "^6.3.5",
     "vite-plugin-electron": "^0.28.6",
     "vite-plugin-electron-renderer": "^0.14.5",
+    "vite-plugin-vuetify": "^2.1.1",
     "vue-tsc": "^2.0.26"
   },
   "main": "dist-electron/main.js"
