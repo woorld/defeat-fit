@@ -1,20 +1,19 @@
 <script setup lang="ts">
+import { ref } from 'vue';
+
+const count = ref(0);
+
+window.osc.onUpdateDeathCount((deathCount: number) => {
+  count.value = deathCount;
+});
 </script>
 
 <template>
+  <!-- TODO: マジックナンバー解消 -->
+  <p>死：{{ count }}</p>
+  <p>プランク：{{ count * 5 }}秒</p>
+  <p>ワイドスクワット：{{ count * 2 }}回</p>
 </template>
 
 <style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
 </style>

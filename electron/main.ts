@@ -1,6 +1,12 @@
 import { app, BrowserWindow } from 'electron';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { openServer, closeServer } from './osc';
+
+// TODO: ショートカット無効化
+// TODO: ウィンドウ設定
+
+let deathCount = 0;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -45,6 +51,13 @@ function createWindow() {
     // win.loadFile('dist/index.html')
     win.loadFile(path.join(RENDERER_DIST, 'index.html'));
   }
+
+  openServer(() => {
+    deathCount++;
+    console.log('DefeatFit: listened! count: ' + deathCount);
+
+    win?.webContents.send('update-death-count', deathCount);
+  });
 }
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -55,6 +68,8 @@ app.on('window-all-closed', () => {
     app.quit();
     win = null;
   }
+
+  closeServer();
 });
 
 app.on('activate', () => {
