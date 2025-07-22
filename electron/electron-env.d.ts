@@ -22,7 +22,7 @@ declare namespace NodeJS {
 }
 
 // Used in Renderer process, expose in `preload.ts`
+
 interface Window {
-  // TODO: preloadの設定に合わせてちゃんと設定
-  osc: any;
+  osc: import('./preload').oscApi;
 }

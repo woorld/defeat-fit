@@ -3,7 +3,7 @@ import { ref } from 'vue';
 
 const count = ref(0);
 
-window.osc.onUpdateDeathCount((deathCount: number) => {
+window.osc.onUpdateDeathCount((deathCount) => {
   count.value = deathCount;
 });
 </script>
