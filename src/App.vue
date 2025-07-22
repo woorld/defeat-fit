@@ -1,10 +1,21 @@
 <script setup lang="ts">
-import { RouterView } from 'vue-router';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 </script>
 
 <template>
-  <RouterView />
+  <VApp>
+    <VMain>
+      <RouterView />
+    </VMain>
+    <VBottomNavigation>
+      <VBtn @click="router.push('/')">
+        <VIcon>mdi-home</VIcon>
+      </VBtn>
+      <VBtn @click="router.push('/setting')">
+        <VIcon>mdi-cog</VIcon>
+      </VBtn>
+    </VBottomNavigation>
+  </VApp>
 </template>
-
-<style scoped>
-</style>
