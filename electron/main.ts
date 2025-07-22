@@ -3,9 +3,6 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { openServer, closeServer } from './osc';
 
-// TODO: ショートカット無効化
-// TODO: ウィンドウ設定
-
 let deathCount = 0;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -38,11 +35,32 @@ function createWindow() {
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
     },
+    autoHideMenuBar: true,
+    show: false, // ページがロードされるまではウィンドウを非表示にする
   });
 
   // Test active push message to Renderer-process.
   win.webContents.on('did-finish-load', () => {
     win?.webContents.send('main-process-message', new Date().toLocaleString());
+  });
+
+  win.on('ready-to-show', () => {
+    win?.show();
+  });
+
+  // 各種ショートカットの無効化
+  win.webContents.on('before-input-event', (event, input) => {
+    const disabledShortcuts = [
+      !VITE_DEV_SERVER_URL && input.control && input.code === 'KeyR',
+      !VITE_DEV_SERVER_URL && input.shift && input.control && input.code === 'KeyI',
+      input.code === 'F5',
+      input.code === 'F12',
+      input.alt,
+    ];
+
+    if (disabledShortcuts.some(Boolean)) {
+      event.preventDefault();
+    }
   });
 
   if (VITE_DEV_SERVER_URL) {
