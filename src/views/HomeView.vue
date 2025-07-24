@@ -25,14 +25,22 @@ const result = computed<resultData[]>(() => [
     multiplier: 2,
     unit: '回',
   },
-])
+  {
+    name: 'ダンベルフレンチプレス',
+    multiplier: 3,
+    unit: '回',
+  }
+]);
 </script>
 
 <template>
   <VContainer>
-    <div class="death-count">
-      <VIcon>mdi-coffin</VIcon>×<span class="death-count__count">{{ count }}</span>
+    <div class="d-flex justify-center align-center mt-8 mb-10">
+      <VIcon class="text-h2">mdi-coffin</VIcon>
+      <span class="text-h5">×</span>
+      <span class="ml-3 text-h3 mb-2">{{ count }}</span>
     </div>
+    <h2 class="text-center text-h5 mb-4">本日のメニュー</h2>
     <VTable>
       <tbody>
         <tr v-for="resultItem of result">
@@ -41,21 +49,6 @@ const result = computed<resultData[]>(() => [
         </tr>
       </tbody>
     </VTable>
+    <VBtn class="w-100 mt-8">やった</VBtn>
   </VContainer>
 </template>
-
-<style scoped lang="scss">
-.death-count {
-  text-align: center;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 32px;
-  gap: 4px;
-  margin-bottom: 16px;
-
-  &__count {
-    margin-left: 8px;
-  }
-}
-</style>

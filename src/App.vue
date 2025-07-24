@@ -1,21 +1,42 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
-
-const router = useRouter();
 </script>
 
 <template>
   <VApp>
     <VMain>
-      <RouterView />
+      <Transition>
+        <RouterView />
+      </Transition>
     </VMain>
     <VBottomNavigation>
-      <VBtn @click="router.push('/')">
+      <VBtn to="/">
         <VIcon>mdi-home</VIcon>
       </VBtn>
-      <VBtn @click="router.push('/setting')">
+      <VBtn to="/stats">
+        <VIcon>mdi-chart-bar</VIcon>
+      </VBtn>
+      <VBtn to="/setting">
         <VIcon>mdi-cog</VIcon>
       </VBtn>
     </VBottomNavigation>
   </VApp>
 </template>
+
+<style scoped>
+.v-enter-active,
+.v-leave-active {
+  transition: 300ms ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+}
+</style>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap');
+* {
+  font-family: "Noto Sans JP" !important;
+}
+</style>
