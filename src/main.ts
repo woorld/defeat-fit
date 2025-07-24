@@ -7,6 +7,7 @@ import * as directives from 'vuetify/directives';
 import '@mdi/font/css/materialdesignicons.css';
 import { createMemoryHistory, createRouter } from 'vue-router';
 import HomeView from './views/HomeView.vue';
+import StatsView from './views/StatsView.vue';
 import SettingView from './views/SettingView.vue';
 
 const vuetify = createVuetify({
@@ -17,8 +18,10 @@ const vuetify = createVuetify({
   },
 });
 
+// TODO: unpluginでファイルベースルーティングさせる
 const routes = [
   { path: '/', component: HomeView },
+  { path: '/stats', component: StatsView },
   { path: '/setting', component: SettingView },
 ];
 
