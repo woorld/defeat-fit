@@ -39,4 +39,8 @@
 * {
   font-family: "Noto Sans JP" !important;
 }
+
+html {
+  overflow-y: auto !important;
+}
 </style>
