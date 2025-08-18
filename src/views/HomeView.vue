@@ -62,7 +62,7 @@ const onDecrement = async () => {
         </tr>
       </tbody>
     </VTable>
-    <VBtn class="w-100 mt-8 bg-red-darken-4">今のなし
+    <VBtn class="w-100 mt-8 bg-red-darken-4" :disabled="count <= 0">今のなし
       <VDialog v-model="isShowDialog" activator="parent">
         <VSheet class="pa-8 text-center">
           <h3 class="text-h5">事故死？</h3>
