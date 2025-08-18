@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { openServer, closeServer } from './osc';
@@ -99,3 +99,11 @@ app.on('activate', () => {
 });
 
 app.whenReady().then(createWindow);
+
+ipcMain.handle('decrement-death-count', () => {
+  if (deathCount >= 1) {
+    deathCount--;
+  }
+
+  return deathCount;
+});
