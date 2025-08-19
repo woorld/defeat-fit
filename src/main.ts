@@ -9,6 +9,7 @@ import { createMemoryHistory, createRouter } from 'vue-router';
 import HomeView from './views/HomeView.vue';
 import StatsView from './views/StatsView.vue';
 import SettingView from './views/SettingView.vue';
+import { createPinia } from 'pinia';
 
 const vuetify = createVuetify({
   components,
@@ -30,7 +31,10 @@ const router = createRouter({
   routes,
 });
 
+const pinia = createPinia();
+
 createApp(App)
   .use(vuetify)
   .use(router)
+  .use(pinia)
   .mount('#app');

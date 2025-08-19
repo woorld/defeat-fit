@@ -1,11 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useDeathCountStore } from '../stores/death-count';
 
-const count = ref(0);
-
-window.osc.onUpdateDeathCount((deathCount) => {
-  count.value = deathCount;
-});
+const deathCount = useDeathCountStore();
 
 type resultData = {
   name: string,
@@ -29,14 +26,13 @@ const result = computed<resultData[]>(() => [
     name: 'ダンベルフレンチプレス',
     multiplier: 2,
     unit: '回',
-  }
+  },
 ]);
 
 const isShowDialog = ref(false);
 
 const onDecrement = async () => {
-  const newDeathCount = await window.osc.decrementDeathCount();
-  count.value = newDeathCount;
+  await deathCount.decrement();
   isShowDialog.value = false;
 };
 </script>
@@ -46,7 +42,7 @@ const onDecrement = async () => {
     <div class="d-flex justify-center align-center mt-8 mb-13">
       <VIcon class="text-h2">mdi-coffin</VIcon>
       <span class="text-h5">×</span>
-      <span class="ml-3 text-h3 mb-2">{{ count }}</span>
+      <span class="ml-3 text-h3 mb-2">{{ deathCount.count }}</span>
     </div>
     <h2 class="text-center text-h5 mb-4">- 本日のメニュー -</h2>
     <VTable>
@@ -56,13 +52,13 @@ const onDecrement = async () => {
           <td>× {{ resultItem.multiplier }} {{ resultItem.unit }}</td>
           <td class="text-right">
             <span
-              class="bg-red-accent-2 text-black pt-1 pb-1 pr-2 pl-2 rounded font-weight-bold"
-            >{{ count * resultItem.multiplier }} {{ resultItem.unit }}</span>
+              class="bg-red-accent-3 pt-1 pb-1 pr-2 pl-2 rounded"
+            >{{ deathCount.count * resultItem.multiplier }} {{ resultItem.unit }}</span>
           </td>
         </tr>
       </tbody>
     </VTable>
-    <VBtn class="w-100 mt-8 bg-red-darken-4" :disabled="count <= 0">今のなし
+    <VBtn class="w-100 mt-8 bg-red-darken-4" :disabled="deathCount.count <= 0">今のなし
       <VDialog v-model="isShowDialog" activator="parent">
         <VSheet class="pa-8 text-center">
           <h3 class="text-h5">事故死？</h3>
