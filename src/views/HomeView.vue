@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { useDeathCountStore } from '../stores/death-count';
 import DecrementBtn from '../components/DecrementBtn.vue';
+import OscControlBtn from '../components/OscControlBtn.vue';
 
 const deathCount = useDeathCountStore();
 
@@ -53,5 +54,6 @@ const result = computed<resultData[]>(() => [
       </tbody>
     </VTable>
     <DecrementBtn />
+    <OscControlBtn />
   </VContainer>
 </template>

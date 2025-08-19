@@ -1,9 +1,16 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { openServer, closeServer } from './osc';
+import { openServer, closeServer, isListening } from './osc';
 
 let deathCount = 0;
+
+const onListenOsc = () => {
+  deathCount++;
+  console.log('DefeatFit: listened! count: ' + deathCount);
+
+  win?.webContents.send('update-death-count', deathCount);
+};
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -70,12 +77,7 @@ function createWindow() {
     win.loadFile(path.join(RENDERER_DIST, 'index.html'));
   }
 
-  openServer(() => {
-    deathCount++;
-    console.log('DefeatFit: listened! count: ' + deathCount);
-
-    win?.webContents.send('update-death-count', deathCount);
-  });
+  openServer(onListenOsc);
 }
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -106,4 +108,17 @@ ipcMain.handle('decrement-death-count', () => {
   }
 
   return deathCount;
+});
+
+ipcMain.handle('get-listening-status', () => isListening());
+
+ipcMain.handle('toggle-listening', async () => {
+  if (isListening()) {
+    await closeServer();
+  }
+  else {
+    await openServer(onListenOsc);
+  }
+
+  return isListening();
 });
