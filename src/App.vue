@@ -15,7 +15,7 @@
       <VBtn to="/stats">
         <VIcon>mdi-chart-bar</VIcon>
       </VBtn>
-      <VBtn to="/timer">
+      <VBtn to="/timer/0">
         <VIcon>mdi-timer</VIcon>
       </VBtn>
       <VBtn to="/setting">

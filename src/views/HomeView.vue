@@ -3,13 +3,14 @@ import { computed } from 'vue';
 import { useDeathCountStore } from '../stores/death-count';
 import DecrementBtn from '../components/DecrementBtn.vue';
 import OscControlBtn from '../components/OscControlBtn.vue';
+import ToTimerBtn from '../components/ToTimerBtn.vue';
 
 const deathCount = useDeathCountStore();
 
 type resultData = {
   name: string,
   multiplier: number,
-  unit?: string
+  unit?: '回' | '秒',
 };
 
 // TODO: 外部化
@@ -47,8 +48,14 @@ const result = computed<resultData[]>(() => [
           <td>× {{ resultItem.multiplier }} {{ resultItem.unit }}</td>
           <td class="text-right">
             <span
-              class="bg-red-accent-3 pt-1 pb-1 pr-2 pl-2 rounded"
+              class="pt-1 pb-1 pr-2 pl-2 rounded"
             >{{ deathCount.count * resultItem.multiplier }} {{ resultItem.unit }}</span>
+          </td>
+          <td class="text-right">
+            <ToTimerBtn
+              v-if="resultItem.unit === '秒'"
+              :countResult="deathCount.count * resultItem.multiplier"
+            />
           </td>
         </tr>
       </tbody>

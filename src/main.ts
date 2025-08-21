@@ -22,10 +22,26 @@ const vuetify = createVuetify({
 
 // TODO: unpluginでファイルベースルーティングさせる
 const routes = [
-  { path: '/', component: HomeView },
-  { path: '/stats', component: StatsView },
-  { path: '/timer', component: TimerView },
-  { path: '/setting', component: SettingView },
+  {
+    path: '/',
+    name: 'home',
+    component: HomeView
+  },
+  {
+    path: '/stats',
+    name: 'stats',
+    component: StatsView
+  },
+  {
+    path: '/timer/:seconds',
+    name: 'timer',
+    component: TimerView
+  },
+  {
+    path: '/setting',
+    name: 'setting',
+    component: SettingView
+  },
 ];
 
 const router = createRouter({
