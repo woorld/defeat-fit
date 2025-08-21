@@ -8,6 +8,7 @@ import '@mdi/font/css/materialdesignicons.css';
 import { createMemoryHistory, createRouter } from 'vue-router';
 import HomeView from './views/HomeView.vue';
 import StatsView from './views/StatsView.vue';
+import TimerView from './views/TimerView.vue';
 import SettingView from './views/SettingView.vue';
 import { createPinia } from 'pinia';
 
@@ -23,6 +24,7 @@ const vuetify = createVuetify({
 const routes = [
   { path: '/', component: HomeView },
   { path: '/stats', component: StatsView },
+  { path: '/timer', component: TimerView },
   { path: '/setting', component: SettingView },
 ];
 
