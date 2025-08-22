@@ -28,7 +28,13 @@ const startTimer = () => {
     if (timerSeconds.value <= 0) {
       soundTimerEnd.currentTime = 0;
       soundTimerEnd.play();
+
       stopTimer();
+
+      // NOTE: ノータイムでやると0秒が表示されず違和感があるため、少しおいてから初期値に戻す
+      window.setTimeout(() => {
+        timerSeconds.value = recentTimerSeconds;
+      }, 1000);
     }
   }, 1000);
 
@@ -44,11 +50,6 @@ const stopTimer = () => {
   timerId = null;
 
   isProgressingTimer.value = false;
-
-  // NOTE: ノータイムでやると0秒が表示されず違和感があるため、少しおいてから初期値に戻す
-  window.setTimeout(() => {
-    timerSeconds.value = recentTimerSeconds;
-  }, 1000);
 };
 
 const onClickToggleBtn = () => {
@@ -65,19 +66,27 @@ const onClickToggleBtn = () => {
     <div class="d-flex justify-center align-center ga-4">
       <VBtn
         icon="mdi-chevron-double-left"
-        :disabled="timerSeconds < 10"
+        :disabled="timerSeconds < 10 || isProgressingTimer"
         @click="timerSeconds -= 10"
       />
       <VBtn
         icon="mdi-chevron-left"
-        :disabled="timerSeconds < 1"
+        :disabled="timerSeconds < 1 || isProgressingTimer"
         @click="timerSeconds -= 1"
       />
       <span class="timer-seconds text-h2">
         {{ minutes }} : {{ seconds }}
       </span>
-      <VBtn icon="mdi-chevron-right" @click="timerSeconds += 1" />
-      <VBtn icon="mdi-chevron-double-right" @click="timerSeconds += 10" />
+      <VBtn
+        icon="mdi-chevron-right"
+        :disabled="isProgressingTimer"
+        @click="timerSeconds += 1"
+      />
+      <VBtn
+        icon="mdi-chevron-double-right"
+        :disabled="isProgressingTimer"
+        @click="timerSeconds += 10"
+      />
     </div>
     <VBtn
       :disabled="timerSeconds <= 0"
