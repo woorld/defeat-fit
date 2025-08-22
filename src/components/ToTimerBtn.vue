@@ -9,35 +9,44 @@ const isShow = ref(false);
 const setCount = ref(4);
 
 const secondsPerSet = computed(() => Math.ceil(props.countResult / setCount.value));
+const maxSet = computed(() => secondsPerSet.value === 1
+  ? setCount.value // 1回あたり1秒になる場合、それ以上セット数を増やしても意味がないため+を押させない
+  : Infinity
+);
 </script>
 
 <template>
   <VBtn
+    :disabled="countResult <= 0"
     append-icon="mdi-chevron-right"
     color="green"
   >
     やる
     <VDialog v-model="isShow" activator="parent">
       <VSheet class="pa-8 text-center d-flex justify-center align-center ga-6 flex-column">
-        <h3 class="text-h5">セット回数設定</h3>
+        <h3 class="text-h5">何セットに分ける？</h3>
         <div class="d-flex justify-center align-center ga-4">
           <VNumberInput
             v-model="setCount"
             inset
             hide-details
             max-width="120"
+            :min="1"
+            :max="maxSet"
           />
           <VIcon>mdi-arrow-right</VIcon>
-          <span>
+          <span class="d-flex justify-center align-baseline ga-2">
+            <span class="text-h6">1セット</span>
             <span class="text-h4">{{ secondsPerSet }}</span>
-            <span class="text-h6 ml-2">秒</span>
+            <span class="text-h6">秒</span>
           </span>
         </div>
+        <small class="text-grey">※小数は繰り上げ</small>
         <VBtn
           append-icon="mdi-chevron-right"
           color="green"
           :to="`/timer/${secondsPerSet}`"
-        >開始</VBtn>
+        >タイマー画面へ</VBtn>
       </VSheet>
       <VBtn
         class="position-absolute top-0 right-0 mt-6 mr-6 elevation-0"
