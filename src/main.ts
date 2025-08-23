@@ -28,14 +28,14 @@ const routes = [
     component: HomeView
   },
   {
-    path: '/stats',
-    name: 'stats',
-    component: StatsView
-  },
-  {
     path: '/timer/:seconds',
     name: 'timer',
     component: TimerView
+  },
+  {
+    path: '/stats',
+    name: 'stats',
+    component: StatsView
   },
   {
     path: '/setting',

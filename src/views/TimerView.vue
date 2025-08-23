@@ -1,55 +1,75 @@
 <script setup lang="ts">
+// TODO: 無理がある実装なのでリファクタリングする
 import { ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import timerEndSound from '../assets/timer-end.mp3';
+import timerStartCountdownSound from '../assets/timer-start-countdown.mp3';
+import timerStartSound from '../assets/timer-start.mp3';
 
 const route = useRoute();
 
-// timerIdはrefで管理する必要がない
-let timerId: number | null = null;
 let recentTimerSeconds = 0;
 const soundTimerEnd = new Audio(timerEndSound);
+const soundTimerStartCountdown = new Audio(timerStartCountdownSound);
+const soundTimerStart = new Audio(timerStartSound);
 
+const timerId = ref<number | null>(null);
 const timerSeconds = ref(Number(route.params.seconds) || 0);
 const isProgressingTimer = ref(false);
 
 const minutes = computed(() => String(Math.floor(timerSeconds.value / 60)).padStart(2, '0'));
 const seconds = computed(() => String(timerSeconds.value % 60).padStart(2, '0'));
 
-const startTimer = () => {
-  if (isProgressingTimer.value || timerId != null) {
+const startTimer = async () => {
+  if (isProgressingTimer.value || timerId.value != null) {
     return;
   }
 
   recentTimerSeconds = timerSeconds.value;
-
-  timerId = window.setInterval(() => {
-    timerSeconds.value -= 1;
-    if (timerSeconds.value <= 0) {
-      soundTimerEnd.currentTime = 0;
-      soundTimerEnd.play();
-
-      stopTimer();
-
-      // NOTE: ノータイムでやると0秒が表示されず違和感があるため、少しおいてから初期値に戻す
-      window.setTimeout(() => {
-        timerSeconds.value = recentTimerSeconds;
-      }, 1000);
-    }
-  }, 1000);
-
   isProgressingTimer.value = true;
+
+  for (let i = 1; i <= 6; i++) {
+    if (!isProgressingTimer.value) {
+      return;
+    }
+
+    if (i == 6) {
+      soundTimerStart.currentTime = 0;
+      soundTimerStart.play();
+      break;
+    }
+
+    soundTimerStartCountdown.currentTime = 0;
+    soundTimerStartCountdown.play();
+    await new Promise(res => setTimeout(res, 1000));
+  }
+
+  timerId.value = window.setInterval(progressTimer, 1000);
 };
 
 const stopTimer = () => {
-  if (!isProgressingTimer.value || timerId == null) {
+  if (!isProgressingTimer.value || timerId.value == null) {
     return;
   }
 
-  window.clearInterval(timerId);
-  timerId = null;
+  window.clearInterval(timerId.value);
+  timerId.value = null;
 
   isProgressingTimer.value = false;
+};
+
+const progressTimer = () => {
+  timerSeconds.value -= 1;
+  if (timerSeconds.value <= 0) {
+    soundTimerEnd.currentTime = 0;
+    soundTimerEnd.play();
+
+    // NOTE: ノータイムでやると0秒が表示されず違和感があるため、少しおいてから初期値に戻す
+    window.setTimeout(() => {
+      stopTimer();
+      timerSeconds.value = recentTimerSeconds;
+    }, 800); // 1秒にするとタイマーが無駄に進んでしまう
+  }
 };
 
 const onClickToggleBtn = () => {
@@ -58,7 +78,7 @@ const onClickToggleBtn = () => {
     return;
   }
   startTimer();
-}
+};
 </script>
 
 <template>
@@ -89,7 +109,7 @@ const onClickToggleBtn = () => {
       />
     </div>
     <VBtn
-      :disabled="timerSeconds <= 0"
+      :disabled="timerSeconds <= 0 || timerId == null && isProgressingTimer"
       @click="onClickToggleBtn"
     >{{ isProgressingTimer ? 'Stop' : 'Start' }}</VBtn>
   </VContainer>
