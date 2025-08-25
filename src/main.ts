@@ -28,7 +28,7 @@ const routes = [
     component: HomeView
   },
   {
-    path: '/timer/:seconds',
+    path: '/timer/:seconds/:setCount',
     name: 'timer',
     component: TimerView
   },

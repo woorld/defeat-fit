@@ -45,7 +45,7 @@ const maxSet = computed(() => secondsPerSet.value === 1
         <VBtn
           append-icon="mdi-chevron-right"
           color="green"
-          :to="`/timer/${secondsPerSet}`"
+          :to="`/timer/${secondsPerSet}/${setCount}`"
         >タイマー画面へ</VBtn>
       </VSheet>
       <VBtn

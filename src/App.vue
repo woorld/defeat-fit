@@ -12,7 +12,7 @@
       <VBtn to="/">
         <VIcon>mdi-home</VIcon>
       </VBtn>
-      <VBtn to="/timer/0">
+      <VBtn to="/timer/0/1">
         <VIcon>mdi-timer</VIcon>
       </VBtn>
       <VBtn to="/stats">

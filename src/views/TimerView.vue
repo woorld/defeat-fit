@@ -15,6 +15,7 @@ const soundTimerStart = new Audio(timerStartSound);
 
 const timerId = ref<number | null>(null);
 const timerSeconds = ref(Number(route.params.seconds) || 0);
+const setCount = ref(Number(route.params.setCount) || 1);
 const isProgressingTimer = ref(false);
 
 const minutes = computed(() => String(Math.floor(timerSeconds.value / 60)).padStart(2, '0'));
@@ -59,12 +60,14 @@ const stopTimer = () => {
 const progressTimer = () => {
   timerSeconds.value -= 1;
   if (timerSeconds.value <= 0) {
+    setCount.value -= 1;
     playAudio(soundTimerEnd);
 
     // NOTE: ノータイムでやると0秒が表示されず違和感があるため、少しおいてから初期値に戻す
     window.setTimeout(() => {
       stopTimer();
       timerSeconds.value = recentTimerSeconds;
+      setCount.value = 1;
     }, 800); // 1秒にするとタイマーが無駄に進んでしまう
   }
 };
@@ -87,6 +90,14 @@ const onClickToggleBtn = () => {
 
 <template>
   <VContainer class="d-flex justify-center align-center flex-column ga-8 h-100">
+    <VNumberInput
+      class="flex-grow-0"
+      v-model="setCount"
+      hide-details
+      inset
+      :min="1"
+      :disabled="isProgressingTimer"
+    />
     <div class="d-flex justify-center align-center ga-4">
       <VBtn
         icon="mdi-chevron-double-left"
