@@ -34,14 +34,12 @@ const startTimer = async () => {
     }
 
     if (i == 6) {
-      soundTimerStart.currentTime = 0;
-      soundTimerStart.play();
+      playAudio(soundTimerStart);
       break;
     }
 
-    soundTimerStartCountdown.currentTime = 0;
-    soundTimerStartCountdown.play();
-    await new Promise(res => setTimeout(res, 1000));
+    playAudio(soundTimerStartCountdown);
+    await freeze1Sec(); // TODO: playAudio()にループ機能を内包？
   }
 
   timerId.value = window.setInterval(progressTimer, 1000);
@@ -61,8 +59,7 @@ const stopTimer = () => {
 const progressTimer = () => {
   timerSeconds.value -= 1;
   if (timerSeconds.value <= 0) {
-    soundTimerEnd.currentTime = 0;
-    soundTimerEnd.play();
+    playAudio(soundTimerEnd);
 
     // NOTE: ノータイムでやると0秒が表示されず違和感があるため、少しおいてから初期値に戻す
     window.setTimeout(() => {
@@ -70,6 +67,13 @@ const progressTimer = () => {
       timerSeconds.value = recentTimerSeconds;
     }, 800); // 1秒にするとタイマーが無駄に進んでしまう
   }
+};
+
+const freeze1Sec = () => new Promise(res => setTimeout(res, 1000));
+
+const playAudio = (audio: HTMLAudioElement) => {
+  audio.currentTime = 0;
+  audio.play();
 };
 
 const onClickToggleBtn = () => {
