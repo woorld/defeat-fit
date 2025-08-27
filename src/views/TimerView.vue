@@ -55,12 +55,19 @@ const timerLoop = () => {
       if (timerSeconds.value <= 0) {
         setCount.value--;
         playAudio(soundTimerEnd); // NOTE: 最初の1回は即時実行したいためここで呼び出す
+        audioPlayCount++;
         timerStatus.value = 'END';
       }
 
       return;
     case 'END':
-      // TODO: セットが0になった時の専用処理
+      if (setCount.value <= 0 && audioPlayCount < 3) {
+        // セットが0になった場合、効果音を追加で2回（合計3回）鳴らす
+        playAudio(soundTimerEnd);
+        audioPlayCount++;
+        return;
+      }
+      audioPlayCount = 0;
       stopTimer();
       return;
     default:
