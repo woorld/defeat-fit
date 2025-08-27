@@ -6,6 +6,8 @@ const oscApi = {
     ipcRenderer.on('update-death-count', (_, deathCount: number) => callback(deathCount)),
   decrementDeathCount: () =>
     ipcRenderer.invoke('decrement-death-count'),
+  getDeathCount: () =>
+    ipcRenderer.invoke('get-death-count'),
   getListeningStatus: () =>
     ipcRenderer.invoke('get-listening-status'),
   toggleListening: () =>

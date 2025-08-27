@@ -110,6 +110,8 @@ ipcMain.handle('decrement-death-count', () => {
   return deathCount;
 });
 
+ipcMain.handle('get-death-count', () => deathCount);
+
 ipcMain.handle('get-listening-status', () => isListening());
 
 ipcMain.handle('toggle-listening', async () => {
