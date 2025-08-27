@@ -87,10 +87,13 @@ const stopTimer = () => {
     setCount.value = 1;
   }
 
+  if (timerSeconds.value <= 0) {
+    timerSeconds.value = recentTimerSeconds;
+    recentTimerSeconds = 0;
+  }
+
   window.clearInterval(timerId.value);
   timerId.value = null;
-  timerSeconds.value = recentTimerSeconds;
-  recentTimerSeconds = 0;
   timerStatus.value = 'STANDBY';
 };
 
