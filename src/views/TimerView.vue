@@ -1,26 +1,29 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
-import timerEndSound from '../assets/timer-end.mp3';
 import timerStartCountdownSound from '../assets/timer-start-countdown.mp3';
 import timerStartSound from '../assets/timer-start.mp3';
+import timerEndSound from '../assets/timer-end.mp3';
 
 const route = useRoute();
 
 let recentTimerSeconds = 0;
 let audioPlayCount = 0;
 
-const soundTimerEnd = new Audio(timerEndSound);
 const soundTimerStartCountdown = new Audio(timerStartCountdownSound);
 const soundTimerStart = new Audio(timerStartSound);
+const soundTimerEnd = new Audio(timerEndSound);
 
 const timerId = ref<number | null>(null);
 const timerSeconds = ref(Number(route.params.seconds) || 0);
 const setCount = ref(Number(route.params.setCount) || 1);
 const timerStatus = ref<'STANDBY' | 'COUNTDOWN' | 'PROGRESS' | 'END'>('STANDBY');
 
-const minutes = computed(() => String(Math.floor(timerSeconds.value / 60)).padStart(2, '0'));
-const seconds = computed(() => String(timerSeconds.value % 60).padStart(2, '0'));
+const timerDisplay = computed(() => {
+  const minutes = String(Math.floor(timerSeconds.value / 60)).padStart(2, '0');
+  const seconds = String(timerSeconds.value % 60).padStart(2, '0');
+  return `${minutes} : ${seconds}`;
+});
 const isLockControl = computed(() => timerStatus.value !== 'STANDBY');
 const isLockStartStop = computed(() => timerStatus.value === 'END' || timerSeconds.value <= 0);
 const canStart = computed(() => timerStatus.value === 'STANDBY');
@@ -96,7 +99,15 @@ const playAudio = (audio: HTMLAudioElement) => {
   audio.play();
 };
 
-// TODO: ページ移動時のタイマークリア
+onUnmounted(() => {
+  if (timerId.value) {
+    clearInterval(timerId.value);
+  }
+
+  soundTimerStartCountdown.pause();
+  soundTimerStart.pause();
+  soundTimerEnd.pause();
+});
 </script>
 
 <template>
@@ -121,7 +132,7 @@ const playAudio = (audio: HTMLAudioElement) => {
         @click="timerSeconds -= 1"
       />
       <span class="timer-seconds text-h2">
-        {{ minutes }} : {{ seconds }}
+        {{ timerDisplay }}
       </span>
       <VBtn
         icon="mdi-chevron-right"
