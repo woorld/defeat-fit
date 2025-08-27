@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// TODO: 無理がある実装なのでリファクタリングする
 import { ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import timerEndSound from '../assets/timer-end.mp3';
@@ -9,6 +8,8 @@ import timerStartSound from '../assets/timer-start.mp3';
 const route = useRoute();
 
 let recentTimerSeconds = 0;
+let audioPlayCount = 0;
+
 const soundTimerEnd = new Audio(timerEndSound);
 const soundTimerStartCountdown = new Audio(timerStartCountdownSound);
 const soundTimerStart = new Audio(timerStartSound);
@@ -16,76 +17,79 @@ const soundTimerStart = new Audio(timerStartSound);
 const timerId = ref<number | null>(null);
 const timerSeconds = ref(Number(route.params.seconds) || 0);
 const setCount = ref(Number(route.params.setCount) || 1);
-const isProgressingTimer = ref(false);
+const timerStatus = ref<'STANDBY' | 'COUNTDOWN' | 'PROGRESS' | 'END'>('STANDBY');
 
 const minutes = computed(() => String(Math.floor(timerSeconds.value / 60)).padStart(2, '0'));
 const seconds = computed(() => String(timerSeconds.value % 60).padStart(2, '0'));
+const isLockControl = computed(() => timerStatus.value !== 'STANDBY');
+const isLockStartStop = computed(() => timerStatus.value === 'END' || timerSeconds.value <= 0);
+const canStart = computed(() => timerStatus.value === 'STANDBY');
 
-const startTimer = async () => {
-  if (isProgressingTimer.value || timerId.value != null) {
-    return;
-  }
-
+const startTimer = () => {
+  timerStatus.value = 'COUNTDOWN';
   recentTimerSeconds = timerSeconds.value;
-  isProgressingTimer.value = true;
+  audioPlayCount = 0;
 
-  for (let i = 1; i <= 6; i++) {
-    if (!isProgressingTimer.value) {
+  timerLoop(); // NOTE: 最初の1回は即時実行したいためここで呼び出す
+  timerId.value = window.setInterval(timerLoop, 1000);
+};
+
+const timerLoop = () => {
+  switch(timerStatus.value) {
+    case 'STANDBY':
       return;
-    }
+    case 'COUNTDOWN':
+      if (audioPlayCount >= 5) {
+        playAudio(soundTimerStart);
+        audioPlayCount = 0;
+        timerStatus.value = 'PROGRESS';
+      }
+      else {
+        playAudio(soundTimerStartCountdown);
+        audioPlayCount++;
+      }
+      return;
+    case 'PROGRESS':
+      timerSeconds.value--;
 
-    if (i == 6) {
-      playAudio(soundTimerStart);
-      break;
-    }
+      if (timerSeconds.value <= 0) {
+        setCount.value--;
+        playAudio(soundTimerEnd); // NOTE: 最初の1回は即時実行したいためここで呼び出す
+        timerStatus.value = 'END';
+      }
 
-    playAudio(soundTimerStartCountdown);
-    await freeze1Sec(); // TODO: playAudio()にループ機能を内包？
+      return;
+    case 'END':
+      // TODO: セットが0になった時の専用処理
+      stopTimer();
+      return;
+    default:
+      return;
   }
-
-  timerId.value = window.setInterval(progressTimer, 1000);
 };
 
 const stopTimer = () => {
-  if (!isProgressingTimer.value || timerId.value == null) {
+  if (timerId.value == null) {
     return;
+  }
+
+  if (setCount.value <= 0) {
+    setCount.value = 1;
   }
 
   window.clearInterval(timerId.value);
   timerId.value = null;
-
-  isProgressingTimer.value = false;
+  timerSeconds.value = recentTimerSeconds;
+  recentTimerSeconds = 0;
+  timerStatus.value = 'STANDBY';
 };
-
-const progressTimer = () => {
-  timerSeconds.value -= 1;
-  if (timerSeconds.value <= 0) {
-    setCount.value -= 1;
-    playAudio(soundTimerEnd);
-
-    // NOTE: ノータイムでやると0秒が表示されず違和感があるため、少しおいてから初期値に戻す
-    window.setTimeout(() => {
-      stopTimer();
-      timerSeconds.value = recentTimerSeconds;
-      setCount.value = 1;
-    }, 800); // 1秒にするとタイマーが無駄に進んでしまう
-  }
-};
-
-const freeze1Sec = () => new Promise(res => setTimeout(res, 1000));
 
 const playAudio = (audio: HTMLAudioElement) => {
   audio.currentTime = 0;
   audio.play();
 };
 
-const onClickToggleBtn = () => {
-  if (isProgressingTimer.value) {
-    stopTimer();
-    return;
-  }
-  startTimer();
-};
+// TODO: ページ移動時のタイマークリア
 </script>
 
 <template>
@@ -96,17 +100,17 @@ const onClickToggleBtn = () => {
       hide-details
       inset
       :min="1"
-      :disabled="isProgressingTimer"
+      :disabled="isLockControl"
     />
     <div class="d-flex justify-center align-center ga-4">
       <VBtn
         icon="mdi-chevron-double-left"
-        :disabled="timerSeconds < 10 || isProgressingTimer"
+        :disabled="timerSeconds < 10 || isLockControl"
         @click="timerSeconds -= 10"
       />
       <VBtn
         icon="mdi-chevron-left"
-        :disabled="timerSeconds < 1 || isProgressingTimer"
+        :disabled="timerSeconds < 1 || isLockControl"
         @click="timerSeconds -= 1"
       />
       <span class="timer-seconds text-h2">
@@ -114,18 +118,18 @@ const onClickToggleBtn = () => {
       </span>
       <VBtn
         icon="mdi-chevron-right"
-        :disabled="isProgressingTimer"
+        :disabled="isLockControl"
         @click="timerSeconds += 1"
       />
       <VBtn
         icon="mdi-chevron-double-right"
-        :disabled="isProgressingTimer"
+        :disabled="isLockControl"
         @click="timerSeconds += 10"
       />
     </div>
     <VBtn
-      :disabled="timerSeconds <= 0 || timerId == null && isProgressingTimer"
-      @click="onClickToggleBtn"
-    >{{ isProgressingTimer ? 'Stop' : 'Start' }}</VBtn>
+      :disabled="isLockStartStop"
+      @click="canStart ? startTimer() : stopTimer()"
+    >{{ canStart ? 'START' : 'STOP' }}</VBtn>
   </VContainer>
 </template>
