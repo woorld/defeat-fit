@@ -17,7 +17,8 @@ const soundTimerEnd = new Audio(timerEndSound);
 const timerId = ref<number | null>(null);
 const timerSeconds = ref(Number(route.params.seconds) || 0);
 const setCount = ref(Number(route.params.setCount) || 1);
-const timerStatus = ref<'STANDBY' | 'COUNTDOWN' | 'PROGRESS' | 'END'>('STANDBY');
+const breakTimeSeconds = ref(60);
+const timerStatus = ref<'STANDBY' | 'COUNTDOWN' | 'PROGRESS' | 'BREAK_TIME' |'END'>('STANDBY');
 
 const timerDisplay = computed(() => {
   const minutes = String(Math.floor(timerSeconds.value / 60)).padStart(2, '0');
@@ -55,13 +56,37 @@ const timerLoop = () => {
     case 'PROGRESS':
       timerSeconds.value--;
 
-      if (timerSeconds.value <= 0) {
-        setCount.value--;
-        playAudio(soundTimerEnd); // NOTE: 最初の1回は即時実行したいためここで呼び出す
-        audioPlayCount++;
-        timerStatus.value = 'END';
+      if (timerSeconds.value >= 1) {
+        return;
       }
 
+      setCount.value--;
+      playAudio(soundTimerEnd); // NOTE: 最初の1回は即時実行したいためここで呼び出す
+      audioPlayCount++;
+
+      if (setCount.value <= 0) {
+        timerStatus.value = 'END';
+        return;
+      }
+
+      audioPlayCount = 0;
+      timerStatus.value = 'BREAK_TIME';
+      timerSeconds.value = breakTimeSeconds.value;
+      return;
+    case 'BREAK_TIME':
+      timerSeconds.value--;
+
+      if (timerSeconds.value <= 0) {
+        playAudio(soundTimerStart);
+        timerSeconds.value = recentTimerSeconds;
+        timerStatus.value = 'PROGRESS';
+        return;
+      }
+
+      if (timerSeconds.value <= 5) {
+        playAudio(soundTimerStartCountdown);
+        return;
+      }
       return;
     case 'END':
       if (setCount.value <= 0 && audioPlayCount < 3) {
@@ -87,9 +112,8 @@ const stopTimer = () => {
     setCount.value = 1;
   }
 
-  if (timerSeconds.value <= 0) {
+  if (timerSeconds.value <= 0 || timerStatus.value === 'BREAK_TIME') {
     timerSeconds.value = recentTimerSeconds;
-    recentTimerSeconds = 0;
   }
 
   window.clearInterval(timerId.value);
@@ -115,9 +139,18 @@ onUnmounted(() => {
 
 <template>
   <VContainer class="d-flex justify-center align-center flex-column ga-8 h-100">
+    <!-- TODO: 入力欄のラベル -->
     <VNumberInput
       class="flex-grow-0"
       v-model="setCount"
+      hide-details
+      inset
+      :min="1"
+      :disabled="isLockControl"
+    />
+    <VNumberInput
+      class="flex-grow-0"
+      v-model="breakTimeSeconds"
       hide-details
       inset
       :min="1"
@@ -134,9 +167,11 @@ onUnmounted(() => {
         :disabled="timerSeconds < 1 || isLockControl"
         @click="timerSeconds -= 1"
       />
-      <span class="timer-seconds text-h2">
-        {{ timerDisplay }}
-      </span>
+      <!-- TODO: 休憩中のことをもっとわかりやすくする -->
+      <span
+        class="timer-seconds text-h2"
+        :class="{ 'text-green': timerStatus === 'BREAK_TIME' }"
+      >{{ timerDisplay }}</span>
       <VBtn
         icon="mdi-chevron-right"
         :disabled="isLockControl"
