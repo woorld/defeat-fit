@@ -8,6 +8,7 @@ import timerEndSound from '../assets/timer-end.mp3';
 const route = useRoute();
 
 let recentTimerSeconds = 0;
+let recentSetCount = 1
 let audioPlayCount = 0;
 
 const soundTimerStartCountdown = new Audio(timerStartCountdownSound);
@@ -32,6 +33,7 @@ const canStart = computed(() => timerStatus.value === 'STANDBY');
 const startTimer = () => {
   timerStatus.value = 'COUNTDOWN';
   recentTimerSeconds = timerSeconds.value;
+  recentSetCount = setCount.value;
   audioPlayCount = 0;
 
   timerLoop(); // NOTE: 最初の1回は即時実行したいためここで呼び出す
@@ -109,7 +111,7 @@ const stopTimer = () => {
   }
 
   if (setCount.value <= 0) {
-    setCount.value = 1;
+    setCount.value = recentSetCount;
   }
 
   if (timerSeconds.value <= 0 || timerStatus.value === 'BREAK_TIME') {
