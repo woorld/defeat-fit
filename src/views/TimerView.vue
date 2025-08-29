@@ -141,23 +141,40 @@ onUnmounted(() => {
 
 <template>
   <VContainer class="d-flex justify-center align-center flex-column ga-8 h-100">
-    <!-- TODO: 入力欄のラベル -->
-    <VNumberInput
-      class="flex-grow-0"
-      v-model="setCount"
-      hide-details
-      inset
-      :min="1"
-      :disabled="isLockControl"
-    />
-    <VNumberInput
-      class="flex-grow-0"
-      v-model="breakTimeSeconds"
-      hide-details
-      inset
-      :min="1"
-      :disabled="isLockControl"
-    />
+    <VCard class="pa-4" v-show="timerStatus === 'STANDBY'">
+      <div class="d-flex justify-space-between align-center ga-4">
+        <span>セット数</span>
+        <VNumberInput
+          class="flex-grow-0"
+          v-model="setCount"
+          hide-details
+          inset
+          :min="1"
+          :disabled="isLockControl"
+        />
+      </div>
+      <div class="d-flex justify-space-between align-center ga-4 mt-4">
+        <span>セット間の休憩時間（秒）</span>
+        <VNumberInput
+          class="flex-grow-0"
+          v-model="breakTimeSeconds"
+          hide-details
+          inset
+          :min="1"
+          :disabled="isLockControl"
+        />
+      </div>
+    </VCard>
+    <!-- NOTE: VDividerが中央に来るようにいろいろしている -->
+    <div class="d-flex justify-center align-center ga-4 w-100" v-if="timerStatus !== 'STANDBY'">
+      <div class="w-50" :class="timerStatus === 'BREAK_TIME' ? 'text-right' : 'text-center'">
+        あと <span class="text-h4 ma-3">{{ setCount }}</span> セット
+      </div>
+      <template v-if="timerStatus === 'BREAK_TIME'">
+        <VDivider vertical />
+        <span class="text-h4 text-green w-50">休憩中</span>
+      </template>
+    </div>
     <div class="d-flex justify-center align-center ga-4">
       <VBtn
         icon="mdi-chevron-double-left"
@@ -169,7 +186,6 @@ onUnmounted(() => {
         :disabled="timerSeconds < 1 || isLockControl"
         @click="timerSeconds -= 1"
       />
-      <!-- TODO: 休憩中のことをもっとわかりやすくする -->
       <span
         class="timer-seconds text-h2"
         :class="{ 'text-green': timerStatus === 'BREAK_TIME' }"
