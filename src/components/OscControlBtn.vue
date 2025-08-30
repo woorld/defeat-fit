@@ -1,14 +1,7 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 
 const isListening = ref(false);
-const className = computed(() => {
-  const commonClass = 'position-fixed top-0 right-0 ma-4';
-  return commonClass + (isListening.value
-    ? ' bg-amber'
-    : ' bg-green')
-});
-const icon = computed(() => isListening.value ? 'mdi-pause' : 'mdi-play');
 
 const onClick = async () => {
   isListening.value = await window.osc.toggleListening();
@@ -21,8 +14,9 @@ const onClick = async () => {
 
 <template>
   <VBtn
-    :class="className"
-    :icon
+    class="position-fixed top-0 right-0 ma-4"
+    :class="isListening ? ' bg-amber' : ' bg-green'"
+    :icon="isListening ? 'mdi-pause' : 'mdi-play'"
     @click="onClick"
   />
 </template>
