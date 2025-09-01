@@ -15,6 +15,10 @@
       <VBtn to="/timer/0/1">
         <VIcon>mdi-timer</VIcon>
       </VBtn>
+      <VBtn to="/menu-edit">
+        <!-- TODO: 仮アイコン -->
+        <VIcon>mdi-menu</VIcon>
+      </VBtn>
       <VBtn to="/stats">
         <VIcon>mdi-chart-bar</VIcon>
       </VBtn>
