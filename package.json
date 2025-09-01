@@ -26,6 +26,7 @@
     "@vitejs/plugin-vue": "^5.0.4",
     "electron": "^30.0.1",
     "electron-builder": "^26.0.12",
+    "electron-store": "^10.1.0",
     "patch-package": "^8.0.0",
     "prettier": "^3.6.2",
     "sass": "^1.89.2",
