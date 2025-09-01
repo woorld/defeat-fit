@@ -1,36 +1,18 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref } from 'vue';
 import { useDeathCountStore } from '../stores/death-count';
 import DecrementBtn from '../components/DecrementBtn.vue';
 import OscControlBtn from '../components/OscControlBtn.vue';
 import ToTimerBtn from '../components/ToTimerBtn.vue';
+import type { Menu } from '../../electron/stores/menuList'; // HACK: フロントからバックのものをインポートするのってあまりよくない？
 
 const deathCount = useDeathCountStore();
 
-type resultData = {
-  name: string,
-  multiplier: number,
-  unit?: '回' | '秒',
-};
+const menuList = ref<Menu[]>([]);
 
-// TODO: 外部化
-const result = computed<resultData[]>(() => [
-  {
-    name: 'プランク',
-    multiplier: 5,
-    unit: '秒',
-  },
-  {
-    name: 'ワイドスクワット',
-    multiplier: 3,
-    unit: '回',
-  },
-  {
-    name: 'ダンベルフレンチプレス',
-    multiplier: 2,
-    unit: '回',
-  },
-]);
+(async () => {
+  menuList.value = await window.osc.getMenuList();
+})();
 </script>
 
 <template>
@@ -43,18 +25,18 @@ const result = computed<resultData[]>(() => [
     <h2 class="text-center text-h5 mb-4">- 本日のメニュー -</h2>
     <VTable>
       <tbody>
-        <tr v-for="resultItem of result">
-          <td>{{ resultItem.name }}</td>
-          <td>× {{ resultItem.multiplier }} {{ resultItem.unit }}</td>
+        <tr v-for="menu of menuList">
+          <td>{{ menu.name }}</td>
+          <td>× {{ menu.multiplier }} {{ menu.unit }}</td>
           <td class="text-right">
             <span
               class="pt-1 pb-1 pr-2 pl-2 rounded"
-            >{{ deathCount.count * resultItem.multiplier }} {{ resultItem.unit }}</span>
+            >{{ deathCount.count * menu.multiplier }} {{ menu.unit }}</span>
           </td>
           <td class="text-right">
             <ToTimerBtn
-              v-if="resultItem.unit === '秒'"
-              :countResult="deathCount.count * resultItem.multiplier"
+              v-if="menu.unit === '秒'"
+              :countResult="deathCount.count * menu.multiplier"
             />
           </td>
         </tr>

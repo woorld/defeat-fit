@@ -1,6 +1,8 @@
 import { ipcRenderer, contextBridge } from 'electron';
+import type { Menu } from './stores/menuList';
 
 // TODO: 型付け
+// TODO: 用途別に分ける
 const oscApi = {
   onUpdateDeathCount: (callback: (deathCount: number) => void) =>
     ipcRenderer.on('update-death-count', (_, deathCount: number) => callback(deathCount)),
@@ -12,6 +14,10 @@ const oscApi = {
     ipcRenderer.invoke('get-listening-status'),
   toggleListening: () =>
     ipcRenderer.invoke('toggle-listening'),
+  getMenuList: () =>
+    ipcRenderer.invoke('get-menu-list'),
+  setMenuList: (menuList: Menu[]) =>
+    ipcRenderer.invoke('set-menu-list', menuList),
 };
 
 contextBridge.exposeInMainWorld('osc', oscApi);

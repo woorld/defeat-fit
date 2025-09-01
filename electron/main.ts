@@ -2,6 +2,8 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { openServer, closeServer, isListening } from './osc';
+import { getMenuList, setMenuList } from './stores/menuList';
+import type { Menu } from './stores/menuList';
 
 let deathCount = 0;
 
@@ -124,3 +126,7 @@ ipcMain.handle('toggle-listening', async () => {
 
   return isListening();
 });
+
+ipcMain.handle('get-menu-list', () => getMenuList());
+
+ipcMain.handle('set-menu-list', (_, menuList: Menu[]) => setMenuList(menuList));
