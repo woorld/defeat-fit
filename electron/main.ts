@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { openServer, closeServer, isListening } from './osc';
-import { getMenuList, setMenuList } from './stores/menuList';
+import { getMenuList, addMenu, deleteMenu, replaceMenu } from './stores/menuList';
 import type { Menu } from './stores/menuList';
 
 let deathCount = 0;
@@ -127,6 +127,8 @@ ipcMain.handle('toggle-listening', async () => {
   return isListening();
 });
 
+// メニュー関連API
 ipcMain.handle('get-menu-list', () => getMenuList());
-
-ipcMain.handle('set-menu-list', (_, menuList: Menu[]) => setMenuList(menuList));
+ipcMain.on('add-menu', (_, menu: Menu) => addMenu(menu));
+ipcMain.on('delete-menu', (_, id: number) => deleteMenu(id));
+ipcMain.on('replace-menu', (_, id: number, newMenu: Menu) => replaceMenu(id, newMenu));

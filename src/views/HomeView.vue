@@ -11,7 +11,7 @@ const deathCount = useDeathCountStore();
 const menuList = ref<Menu[]>([]);
 
 (async () => {
-  menuList.value = await window.osc.getMenuList();
+  menuList.value = await window.menuList.getMenuList();
 })();
 </script>
 

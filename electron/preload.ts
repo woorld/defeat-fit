@@ -3,6 +3,7 @@ import type { Menu } from './stores/menuList';
 
 // TODO: 型付け
 // TODO: 用途別に分ける
+// TODO: invoke, sendの使い分け見直し
 const oscApi = {
   onUpdateDeathCount: (callback: (deathCount: number) => void) =>
     ipcRenderer.on('update-death-count', (_, deathCount: number) => callback(deathCount)),
@@ -14,12 +15,21 @@ const oscApi = {
     ipcRenderer.invoke('get-listening-status'),
   toggleListening: () =>
     ipcRenderer.invoke('toggle-listening'),
+};
+
+const menuListApi = {
   getMenuList: () =>
     ipcRenderer.invoke('get-menu-list'),
-  setMenuList: (menuList: Menu[]) =>
-    ipcRenderer.invoke('set-menu-list', menuList),
+  addMenu: (menu: Menu) =>
+    ipcRenderer.send('add-menu', menu),
+  deleteMenu: (id: number) =>
+    ipcRenderer.send('delete-menu', id),
+  replaceMenu: (id: number, newMenu: Menu) =>
+    ipcRenderer.send('replace-menu', id, newMenu),
 };
 
 contextBridge.exposeInMainWorld('osc', oscApi);
+contextBridge.exposeInMainWorld('menuList', menuListApi);
 
-export type oscApi = typeof oscApi;
+export type OscApi = typeof oscApi;
+export type MenuListApi = typeof menuListApi;
