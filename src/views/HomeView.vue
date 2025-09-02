@@ -4,7 +4,7 @@ import { useDeathCountStore } from '../stores/death-count';
 import DecrementBtn from '../components/DecrementBtn.vue';
 import OscControlBtn from '../components/OscControlBtn.vue';
 import ToTimerBtn from '../components/ToTimerBtn.vue';
-import type { Menu } from '../../electron/stores/menuList'; // HACK: フロントからバックのものをインポートするのってあまりよくない？
+import type { Menu } from '../../electron/api/menu-list'; // HACK: フロントからバックのものをインポートするのってあまりよくない？
 
 const deathCount = useDeathCountStore();
 
