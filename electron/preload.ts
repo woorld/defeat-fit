@@ -1,5 +1,5 @@
 import { ipcRenderer, contextBridge } from 'electron';
-import type { Menu } from './stores/menuList';
+import type { Menu } from './api/menu-list';
 
 // TODO: 型付け
 // TODO: 用途別に分ける

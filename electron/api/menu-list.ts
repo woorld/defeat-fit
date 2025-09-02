@@ -1,4 +1,3 @@
-// TODO: ケバブケースでファイル名変更
 import Store from 'electron-store';
 
 export type Menu = {

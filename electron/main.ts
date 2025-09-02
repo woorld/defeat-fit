@@ -1,9 +1,9 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { openServer, closeServer, isListening } from './osc';
-import { getMenuList, addMenu, deleteMenu, replaceMenu } from './stores/menuList';
-import type { Menu } from './stores/menuList';
+import { openServer, closeServer, isListening } from './api/osc';
+import { getMenuList, addMenu, deleteMenu, replaceMenu } from './api/menu-list';
+import type { Menu } from './api/menu-list';
 
 let deathCount = 0;
 
