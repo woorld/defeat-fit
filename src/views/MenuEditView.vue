@@ -1,50 +1,65 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-
-type Menu = {
-  name: string,
-  multiplier: number,
-  unit: '回' | '秒',
-}
+import MenuTableRow from '../components/MenuTableRow.vue';
+import type { Menu } from '../../electron/api/menu-list'; // HACK: フロントからバックのものをインポートするのってあまりよくない？
 
 const menuList = ref<Menu[]>([]);
+const editingMenuId = ref<null | number>(null);
+
+// HACK: フロント側で表示だけ追加し、確定されたときにファイルに書き込んだほうがよい
+const addMenu = async () => {
+  const id = Date.now();
+  await window.menuList.addMenu({
+    id,
+    name: '',
+    multiplier: 1,
+    unit: '回',
+  });
+  editingMenuId.value = id;
+  updateMenu();
+};
+
+const updateMenu = async () => {
+  menuList.value = await window.menuList.getMenuList();
+};
+
+const updateEditingMenu = (id: null | number) => {
+  editingMenuId.value = id;
+};
 
 (async () => {
-  menuList.value = await window.osc.getMenuList();
+  menuList.value = await window.menuList.getMenuList();
 })();
 </script>
 
 <template>
-  <VContainer class="h-100">
-    <VTable :items="menuList">
-      <tbody>
+  <VContainer class="d-flex justify-center flex-column">
+    <h2 class="text-h4 text-center mt-6 mb-10">メニュー編集</h2>
+    <VTable hover :items="menuList">
+      <thead>
         <tr class="font-weight-bold">
           <td>メニュー名</td>
           <td>回・秒 / 死</td>
           <td>単位</td>
-          <td></td>
+          <td />
         </tr>
-        <tr v-for="menu of menuList">
-          <td>{{ menu.name }}</td>
-          <td>{{ menu.multiplier }}</td>
-          <td>{{ menu.unit }}</td>
-          <td class="text-right">
-            <VBtn
-              size="small"
-              elevation="0"
-              icon="mdi-pencil"
-            />
-            <VBtn
-              class="text-red"
-              size="small"
-              elevation="0"
-              icon="mdi-close"
-            />
-          </td>
-        </tr>
+      </thead>
+      <tbody>
+        <MenuTableRow
+          v-for="menu of menuList"
+          :menu
+          :editingMenuId
+          @update-menu="updateMenu"
+          @update-editing-menu="updateEditingMenu"
+        />
       </tbody>
     </VTable>
-    <VBtn icon="mdi-plus" class="w-100" :rounded="false" color="transparent" elevation="0">
-    </VBtn>
+    <VBtn
+      class="mt-4 mx-auto"
+      :disabled="editingMenuId !== null"
+      rounded
+      prepend-icon="mdi-plus"
+      @click="addMenu"
+    >メニューを追加</VBtn>
   </VContainer>
 </template>

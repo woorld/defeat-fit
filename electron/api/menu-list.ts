@@ -1,11 +1,13 @@
 import Store from 'electron-store';
 
+export type MenuUnit = '回' | '秒';
+
 export type Menu = {
   id: number,
   name: string,
   multiplier: number,
-  unit: '回' | '秒',
-}
+  unit: MenuUnit,
+};
 
 const store = new Store<Menu[]>();
 
@@ -25,7 +27,7 @@ export const deleteMenu = async (id: number) => {
 
 export const replaceMenu = async (id: number, newMenu: Menu) => {
   const menuList = await getMenuList();
-  if (menuList.find(menu => menu.id === id)) {
+  if (menuList.find(menu => menu.id === id) == null) {
     return;
   }
 

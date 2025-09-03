@@ -23,7 +23,7 @@ const menuList = ref<Menu[]>([]);
       <span class="ml-3 text-h3 mb-2">{{ deathCount.count }}</span>
     </div>
     <h2 class="text-center text-h5 mb-4">- 本日のメニュー -</h2>
-    <VTable>
+    <VTable hover>
       <tbody>
         <tr v-for="menu of menuList">
           <td>{{ menu.name }}</td>
