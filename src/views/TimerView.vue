@@ -53,7 +53,7 @@ const {
       </div>
       <template v-if="timerStatus === 'BREAK_TIME'">
         <VDivider vertical />
-        <span class="text-h4 text-green w-50">休憩中</span>
+        <span class="text-h5 text-green w-50">休憩中</span>
       </template>
     </div>
     <div class="d-flex justify-center align-center ga-4">

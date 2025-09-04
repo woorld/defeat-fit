@@ -7,8 +7,9 @@ import * as directives from 'vuetify/directives';
 import '@mdi/font/css/materialdesignicons.css';
 import { createMemoryHistory, createRouter } from 'vue-router';
 import HomeView from './views/HomeView.vue';
-import StatsView from './views/StatsView.vue';
 import TimerView from './views/TimerView.vue';
+import MenuEditView from './views/MenuEditView.vue';
+import StatsView from './views/StatsView.vue';
 import SettingView from './views/SettingView.vue';
 import { createPinia } from 'pinia';
 
@@ -31,6 +32,11 @@ const routes = [
     path: '/timer/:seconds/:setCount',
     name: 'timer',
     component: TimerView
+  },
+  {
+    path: '/menu-edit',
+    name: 'menu-edit',
+    component: MenuEditView
   },
   {
     path: '/stats',

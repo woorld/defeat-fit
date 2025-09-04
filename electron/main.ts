@@ -1,7 +1,9 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { openServer, closeServer, isListening } from './osc';
+import { openServer, closeServer, isListening } from './api/osc';
+import { getMenuList, addMenu, deleteMenu, replaceMenu } from './api/menu-list';
+import type { Menu } from './api/menu-list';
 
 let deathCount = 0;
 
@@ -124,3 +126,9 @@ ipcMain.handle('toggle-listening', async () => {
 
   return isListening();
 });
+
+// メニュー関連API
+ipcMain.handle('get-menu-list', () => getMenuList());
+ipcMain.on('add-menu', (_, menu: Menu) => addMenu(menu));
+ipcMain.on('delete-menu', (_, id: number) => deleteMenu(id));
+ipcMain.on('replace-menu', (_, id: number, newMenu: Menu) => replaceMenu(id, newMenu));
