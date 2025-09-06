@@ -13,7 +13,7 @@ const store = new Store<Menu[]>();
 
 const setMenuList = (menuList: Menu[]) => store.set('menuList', menuList);
 
-export const getMenuList = async (): Promise<Menu[]> => await store.get('menuList') || [];
+export const getMenuList = async (): Promise<Menu[]> => await store.get('menuList', []);
 
 export const addMenu = async (menu: Menu) => {
   const menuList = await getMenuList();
