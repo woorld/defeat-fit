@@ -1,16 +1,6 @@
 import Store from 'electron-store';
-
-export type Setting = {
-  targetOscMessage: string,
-  soundVolume: number,
-  breakTimeSecBetweenSets: number
-};
-
-const SETTING_DEFAULT_VALUE: Setting = {
-  targetOscMessage: '',
-  soundVolume: 0.5,
-  breakTimeSecBetweenSets: 60,
-} as const;
+import type { Setting } from '../../common/types';
+import { SETTING_DEFAULT_VALUE } from '../../common/constants';
 
 const store = new Store<Setting>();
 
@@ -24,4 +14,4 @@ export const setSetting = async <K extends keyof Setting>(settingName: K, value:
   setAllSetting(setting);
 };
 
-export const resetSetting = () => setAllSetting(SETTING_DEFAULT_VALUE);
+export const resetSetting = async () => await setAllSetting(SETTING_DEFAULT_VALUE);
