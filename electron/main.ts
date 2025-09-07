@@ -3,9 +3,8 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { openServer, closeServer, isListening } from './api/osc';
 import { getMenuList, addMenu, deleteMenu, replaceMenu } from './api/menu-list';
-import type { Menu } from './api/menu-list';
 import { getAllSetting, setSetting, resetSetting } from './api/setting';
-import type { Setting } from '../common/types';
+import type { Menu, Setting } from '../common/types';
 
 let deathCount = 0;
 

@@ -1,13 +1,5 @@
 import Store from 'electron-store';
-
-export type MenuUnit = '回' | '秒';
-
-export type Menu = {
-  id: number,
-  name: string,
-  multiplier: number,
-  unit: MenuUnit,
-};
+import type { Menu } from '../../common/types';
 
 const store = new Store<Menu[]>();
 
