@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { openServer, closeServer, isListening } from './api/osc';
 import { getMenuList, addMenu, deleteMenu, replaceMenu } from './api/menu-list';
-import { getAllSetting, setSetting, resetSetting } from './api/setting';
+import { getAllSetting, setAllSetting, resetSetting } from './api/setting';
 import type { Menu, Setting } from '../common/types';
 
 let deathCount = 0;
@@ -136,9 +136,5 @@ ipcMain.on('replace-menu', (_, id: number, newMenu: Menu) => replaceMenu(id, new
 
 // 設定関連API
 ipcMain.handle('get-all-setting', () => getAllSetting());
-ipcMain.on('set-setting', <K extends keyof Setting>(
-  _: Electron.IpcMainEvent, // NOTE: ジェネリクスを使うと暗黙のanyになるため型を明示する
-  settingName: K,
-  value: Setting[K]
-) => setSetting(settingName, value));
+ipcMain.on('set-all-setting', (_, setting: Setting) => setAllSetting(setting));
 ipcMain.on('reset-setting', () => resetSetting());

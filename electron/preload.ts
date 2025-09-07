@@ -31,8 +31,8 @@ const menuListApi = {
 const settingApi = {
   getAllSetting: () =>
     ipcRenderer.invoke('get-all-setting'),
-  setSetting: <K extends keyof Setting>(settingName: K, value: Setting[K]) =>
-    ipcRenderer.send('set-setting', settingName, value),
+  setAllSetting: (setting: Setting) =>
+    ipcRenderer.send('set-all-setting', setting),
   resetSetting: () =>
     ipcRenderer.send('reset-setting'),
 };
