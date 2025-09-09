@@ -7,7 +7,6 @@ const route = useRoute();
 
 const timerSeconds = ref(Number(route.params.seconds) || 0);
 const setCount = ref(Number(route.params.setCount) || 1);
-const breakTimeSeconds = ref(60);
 
 const {
   timerStatus,
@@ -17,35 +16,22 @@ const {
   canStart,
   startTimer,
   stopTimer,
-} = useTimer(timerSeconds, setCount, breakTimeSeconds);
+} = useTimer(timerSeconds, setCount);
 </script>
 
 <template>
   <VContainer class="d-flex justify-center align-center flex-column ga-8 h-100">
-    <VCard class="pa-4" v-show="timerStatus === 'STANDBY'">
-      <div class="d-flex justify-space-between align-center ga-4">
-        <span>セット数</span>
-        <VNumberInput
-          class="flex-grow-0"
-          v-model="setCount"
-          hide-details
-          inset
-          :min="1"
-          :disabled="isLockControl"
-        />
-      </div>
-      <div class="d-flex justify-space-between align-center ga-4 mt-4">
-        <span>セット間の休憩時間（秒）</span>
-        <VNumberInput
-          class="flex-grow-0"
-          v-model="breakTimeSeconds"
-          hide-details
-          inset
-          :min="1"
-          :disabled="isLockControl"
-        />
-      </div>
-    </VCard>
+    <div class="d-flex justify-space-between align-center ga-4">
+      <VLabel>セット数</VLabel>
+      <VNumberInput
+        class="flex-grow-0"
+        v-model="setCount"
+        hide-details
+        inset
+        :min="1"
+        :disabled="isLockControl"
+      />
+    </div>
     <!-- NOTE: VDividerが中央に来るようにtext-align, widthを設定 -->
     <div class="d-flex justify-center align-center ga-4 w-100" v-if="timerStatus !== 'STANDBY'">
       <div class="w-50" :class="timerStatus === 'BREAK_TIME' ? 'text-right' : 'text-center'">
