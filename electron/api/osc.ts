@@ -1,7 +1,7 @@
 import { Server } from 'node-osc';
+import { getSetting } from './setting';
 
 let oscServer: Server | null = null;
-const targetMessage = '/avatar/parameters/BJK/IsDead';
 
 export const openServer = async (onListen: Function) => {
   try {
@@ -14,6 +14,7 @@ export const openServer = async (onListen: Function) => {
     return;
   }
 
+  const targetMessage = await getSetting('targetOscMessage');
   oscServer.on(targetMessage, async (value) => {
     if (!value[1]) {
       return;

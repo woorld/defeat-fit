@@ -22,12 +22,16 @@ const resetSetting = async () => {
 
 const updateSetting = async () => {
   await window.setting.setAllSetting(toRaw(setting.value));
+  if (await window.osc.getListeningStatus()) {
+    // OSCサーバを開きなおさないと変更が反映されない
+    // TODO: どっかでずれたらおかしくなるのでなんとかしたい
+    await window.osc.toggleListening();
+    await window.osc.toggleListening();
+  }
   getSetting();
 };
 
-(() => {
-  getSetting();
-})();
+getSetting();
 </script>
 
 <template>

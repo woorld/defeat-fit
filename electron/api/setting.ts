@@ -4,7 +4,7 @@ import { SETTING_DEFAULT_VALUE } from '../../common/constants';
 
 const store = new Store<Setting>();
 
-export const getSetting = async (settingName: keyof Setting) => {
+export const getSetting = async <K extends keyof Setting>(settingName: K): Promise<Setting[K]> => {
   const setting = await getAllSetting();
   return setting[settingName];
 };
