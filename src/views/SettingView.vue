@@ -1,7 +1,5 @@
 <script setup lang="ts">
 // TODO: 画面離脱時の設定変更チェック
-// TODO: 設定保存完了時のトースト
-// TODO: 設定値の各画面での利用
 import { ref, toRaw } from 'vue';
 import { SETTING_DEFAULT_VALUE } from '../../common/constants';
 import type { Setting } from '../../common/types';
@@ -9,6 +7,8 @@ import SettingSlider from '../components/SettingSlider.vue';
 
 const setting = ref<Setting>(SETTING_DEFAULT_VALUE);
 const isShowResetDialog = ref(false);
+const isShowSavedSnackbar = ref(false);
+const snackbarLifetime = ref(2500);
 
 const getSetting = async () => {
   setting.value = await window.setting.getAllSetting();
@@ -20,13 +20,15 @@ const resetSetting = async () => {
   isShowResetDialog.value = false;
 };
 
-const updateSetting = async () => {
+const saveSetting = async () => {
   await window.setting.setAllSetting(toRaw(setting.value));
   if (await window.osc.getListeningStatus()) {
     // OSCサーバを開きなおさないと変更が反映されない
     // TODO: どっかでずれたらおかしくなるのでなんとかしたい
     await window.osc.toggleListening();
     await window.osc.toggleListening();
+
+    isShowSavedSnackbar.value = true;
   }
   getSetting();
 };
@@ -81,9 +83,20 @@ getSetting();
         <VBtn
           class="flex-1-1-0"
           color="green"
-          @click="updateSetting"
+          @click="saveSetting"
         >設定を保存</VBtn>
       </div>
     </div>
   </VContainer>
+  <VSnackbar
+    v-model="isShowSavedSnackbar"
+    color="green"
+    location="bottom left"
+    :timeout="snackbarLifetime"
+  >
+    設定を保存しました
+    <template #actions>
+      <VBtn icon="mdi-close" @click="isShowSavedSnackbar = false" />
+    </template>
+  </VSnackbar>
 </template>
