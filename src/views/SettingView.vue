@@ -1,17 +1,25 @@
 <script setup lang="ts">
-// TODO: 画面離脱時の設定変更チェック
 import { ref, toRaw } from 'vue';
 import { SETTING_DEFAULT_VALUE } from '../../common/constants';
 import type { Setting } from '../../common/types';
 import SettingSlider from '../components/SettingSlider.vue';
+import { onBeforeRouteLeave } from 'vue-router';
+import { useRouter } from 'vue-router';
 
-const setting = ref<Setting>(SETTING_DEFAULT_VALUE);
+const router = useRouter();
+let prevSetting: Setting = { ...SETTING_DEFAULT_VALUE };
+let nextPagePathWhenNotSaved = ''; // TODO: なんとかしたい
+
+const setting = ref<Setting>({ ...SETTING_DEFAULT_VALUE });
 const isShowResetDialog = ref(false);
+const isShowNotSavedDialog = ref(false);
 const isShowSavedSnackbar = ref(false);
 const snackbarLifetime = ref(2500);
 
 const getSetting = async () => {
-  setting.value = await window.setting.getAllSetting();
+  const fetchedSetting = await window.setting.getAllSetting();
+  setting.value = { ...fetchedSetting };
+  prevSetting = { ...fetchedSetting };
 };
 
 const resetSetting = async () => {
@@ -24,16 +32,39 @@ const saveSetting = async () => {
   await window.setting.setAllSetting(toRaw(setting.value));
   if (await window.osc.getListeningStatus()) {
     // OSCサーバを開きなおさないと変更が反映されない
-    // TODO: どっかでずれたらおかしくなるのでなんとかしたい
+    // TODO: どっかで状態がずれたら破綻するのでなんとかしたい
     await window.osc.toggleListening();
     await window.osc.toggleListening();
 
     isShowSavedSnackbar.value = true;
   }
-  getSetting();
+  await getSetting();
+};
+
+const leavePageWithDialog = async (isSaveSetting: boolean) => {
+  if (isSaveSetting) {
+    await saveSetting();
+  }
+  else {
+    // NOTE: そのまま遷移しようとすると再度onBeforeRouteLeaveの処理に引っかかる
+    setting.value = { ...prevSetting };
+  }
+
+  isShowNotSavedDialog.value = false;
+  router.push(nextPagePathWhenNotSaved);
 };
 
 getSetting();
+
+onBeforeRouteLeave((to) => {
+  // 設定が変更されており、かつ保存していない場合
+  const isChanged = Object.keys(setting.value).some(name => setting.value[name as keyof Setting] !== prevSetting[name as keyof Setting]);
+  if (isChanged) {
+    isShowNotSavedDialog.value = true;
+    nextPagePathWhenNotSaved = to.path;
+    return false;
+  }
+});
 </script>
 
 <template>
@@ -87,16 +118,30 @@ getSetting();
         >設定を保存</VBtn>
       </div>
     </div>
+    <VSnackbar
+      v-model="isShowSavedSnackbar"
+      color="green"
+      location="bottom left"
+      :timeout="snackbarLifetime"
+    >
+      設定を保存しました
+      <template #actions>
+        <VBtn icon="mdi-close" @click="isShowSavedSnackbar = false" />
+      </template>
+    </VSnackbar>
+    <VDialog v-model="isShowNotSavedDialog">
+      <VSheet class="pa-8 text-center">
+        <p>変更された設定があるけどどうする？</p>
+        <div class="w-100 mt-8 d-flex justify-center align-center ga-4">
+          <VBtn color="red" @click="leavePageWithDialog(false)">破棄して移動</VBtn>
+          <VBtn color="green" @click="leavePageWithDialog(true)">保存して移動</VBtn>
+        </div>
+      </VSheet>
+      <VBtn
+        class="position-absolute top-0 right-0 mt-2 mr-2 elevation-0"
+        icon="mdi-close"
+        @click="isShowNotSavedDialog = false"
+      />
+    </VDialog>
   </VContainer>
-  <VSnackbar
-    v-model="isShowSavedSnackbar"
-    color="green"
-    location="bottom left"
-    :timeout="snackbarLifetime"
-  >
-    設定を保存しました
-    <template #actions>
-      <VBtn icon="mdi-close" @click="isShowSavedSnackbar = false" />
-    </template>
-  </VSnackbar>
 </template>
