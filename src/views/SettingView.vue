@@ -5,18 +5,17 @@ import type { Setting } from '../../common/types';
 import SettingSlider from '../components/SettingSlider.vue';
 import SettingNotSavedDialog from '../components/SettingNotSavedDialog.vue';
 
-let prevSetting: Setting = { ...SETTING_DEFAULT_VALUE };
 
 const setting = ref<Setting>({ ...SETTING_DEFAULT_VALUE });
+const prevSetting = ref<Setting>({ ...SETTING_DEFAULT_VALUE });
 const isShowResetDialog = ref(false);
 const isShowSavedSnackbar = ref(false);
 const snackbarLifetime = ref(2500);
 
-// TODO: 設定処理のコンポーザブル化
 const getSetting = async () => {
   const fetchedSetting = await window.setting.getAllSetting();
   setting.value = { ...fetchedSetting };
-  prevSetting = { ...fetchedSetting };
+  prevSetting.value = { ...fetchedSetting };
 };
 
 const resetSetting = async () => {
@@ -27,14 +26,6 @@ const resetSetting = async () => {
 
 const saveSetting = async () => {
   await window.setting.setAllSetting(toRaw(setting.value));
-  if (await window.osc.getListeningStatus()) {
-    // OSCサーバを開きなおさないと変更が反映されない
-    // TODO: どっかで状態がずれたら破綻するのでなんとかしたい
-    await window.osc.toggleListening();
-    await window.osc.toggleListening();
-
-    isShowSavedSnackbar.value = true;
-  }
   getSetting();
 };
 
@@ -106,7 +97,7 @@ getSetting();
     <SettingNotSavedDialog
       :setting="setting"
       :prevSetting="prevSetting"
-      @save-setting="saveSetting"
+      @update-setting="prevSetting = setting"
       @discard-changed-setting="setting = prevSetting"
     />
   </VContainer>

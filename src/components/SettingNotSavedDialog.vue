@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, toRaw } from 'vue';
 import { useRouter, onBeforeRouteLeave } from 'vue-router';
 import type { Setting } from '../../common/types';
 
@@ -13,7 +13,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   // TODO: イベント名これでいいのか
-  (e: 'save-setting'): Promise<void>,
+  (e: 'update-setting'): void,
   (e: 'discard-changed-setting'): void,
 }>();
 
@@ -25,12 +25,9 @@ const isSettingChanged = computed(() => {
 });
 
 const leavePage = async (isSaveSetting: boolean) => {
-    console.log('leavePage start');
   if (isSaveSetting) {
-    // FIXME: 親コンポーネントでの処理が終わる前にページ遷移を試みてしまう
-    //        そもそも親コンポーネントで設定処理を行うべきではなさそう コンポーザブルにまとめるべき？
-    await emit('save-setting');
-    console.log('leavePage afterEmit');
+    await window.setting.setAllSetting(toRaw(props.setting));
+    emit('update-setting'); // 親コンポーネントで持っている旧設定を新しいものに更新し、ダイアログ表示を防止
   }
   else {
     emit('discard-changed-setting');

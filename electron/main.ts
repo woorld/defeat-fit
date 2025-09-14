@@ -137,5 +137,12 @@ ipcMain.on('replace-menu', (_, id: number, newMenu: Menu) => replaceMenu(id, new
 // 設定関連API
 ipcMain.handle('get-setting', (_, settingName: keyof Setting) => getSetting(settingName));
 ipcMain.handle('get-all-setting', () => getAllSetting());
-ipcMain.on('set-all-setting', (_, setting: Setting) => setAllSetting(setting));
+ipcMain.on('set-all-setting', async (_, setting: Setting) => {
+  setAllSetting(setting);
+  if (isListening()) {
+    // OSCサーバを開きなおさないと変更が反映されない
+    await closeServer();
+    return openServer(onListenOsc);
+  }
+});
 ipcMain.on('reset-setting', () => resetSetting());
