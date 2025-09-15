@@ -12,7 +12,6 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  // TODO: イベント名これでいいのか
   (e: 'update-setting'): void,
   (e: 'discard-changed-setting'): void,
 }>();

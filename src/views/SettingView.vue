@@ -5,7 +5,6 @@ import type { Setting } from '../../common/types';
 import SettingSlider from '../components/SettingSlider.vue';
 import SettingNotSavedDialog from '../components/SettingNotSavedDialog.vue';
 
-
 const setting = ref<Setting>({ ...SETTING_DEFAULT_VALUE });
 const prevSetting = ref<Setting>({ ...SETTING_DEFAULT_VALUE });
 const isShowResetDialog = ref(false);
