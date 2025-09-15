@@ -1,19 +1,11 @@
 import Store from 'electron-store';
-
-export type MenuUnit = '回' | '秒';
-
-export type Menu = {
-  id: number,
-  name: string,
-  multiplier: number,
-  unit: MenuUnit,
-};
+import type { Menu } from '../../common/types';
 
 const store = new Store<Menu[]>();
 
 const setMenuList = (menuList: Menu[]) => store.set('menuList', menuList);
 
-export const getMenuList = async (): Promise<Menu[]> => await store.get('menuList') || [];
+export const getMenuList = async (): Promise<Menu[]> => await store.get('menuList', []);
 
 export const addMenu = async (menu: Menu) => {
   const menuList = await getMenuList();

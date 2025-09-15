@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import type { Menu, MenuUnit } from '../../electron/api/menu-list'; // HACK: フロントからバックのものをインポートするのってあまりよくない？
+import type { Menu, MenuUnit } from '../../common/types';
 
 const unitType: MenuUnit[] = ['回', '秒'];
 

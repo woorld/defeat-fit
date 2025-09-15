@@ -3,7 +3,8 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { openServer, closeServer, isListening } from './api/osc';
 import { getMenuList, addMenu, deleteMenu, replaceMenu } from './api/menu-list';
-import type { Menu } from './api/menu-list';
+import { getSetting, getAllSetting, setAllSetting, resetSetting } from './api/setting';
+import type { Menu, Setting } from '../common/types';
 
 let deathCount = 0;
 
@@ -132,3 +133,16 @@ ipcMain.handle('get-menu-list', () => getMenuList());
 ipcMain.on('add-menu', (_, menu: Menu) => addMenu(menu));
 ipcMain.on('delete-menu', (_, id: number) => deleteMenu(id));
 ipcMain.on('replace-menu', (_, id: number, newMenu: Menu) => replaceMenu(id, newMenu));
+
+// 設定関連API
+ipcMain.handle('get-setting', (_, settingName: keyof Setting) => getSetting(settingName));
+ipcMain.handle('get-all-setting', () => getAllSetting());
+ipcMain.on('set-all-setting', async (_, setting: Setting) => {
+  setAllSetting(setting);
+  if (isListening()) {
+    // OSCサーバを開きなおさないと変更が反映されない
+    await closeServer();
+    return openServer(onListenOsc);
+  }
+});
+ipcMain.on('reset-setting', () => resetSetting());

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import MenuTableRow from '../components/MenuTableRow.vue';
-import type { Menu } from '../../electron/api/menu-list'; // HACK: フロントからバックのものをインポートするのってあまりよくない？
+import type { Menu } from '../../common/types';
 
 const menuList = ref<Menu[]>([]);
 const editingMenuId = ref<null | number>(null);

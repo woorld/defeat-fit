@@ -3,19 +3,29 @@ import type { Ref } from 'vue';
 import timerStartCountdownSound from '../assets/timer-start-countdown.mp3';
 import timerStartSound from '../assets/timer-start.mp3';
 import timerEndSound from '../assets/timer-end.mp3';
+import { SETTING_DEFAULT_VALUE } from '../../common/constants';
+import type { Setting } from '../../common/types';
 
-export function useTimer(
-  timerSeconds: Ref<number>,
-  setCount: Ref<number>,
-  breakTimeSeconds: Ref<number>
-) {
+export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>) {
   let recentTimerSeconds = 0;
-  let recentSetCount = 1
+  let recentSetCount = 1;
   let audioPlayCount = 0;
+  let breakTimeSeconds = SETTING_DEFAULT_VALUE.breakTimeSecBetweenSets;
 
   const soundTimerStartCountdown = new Audio(timerStartCountdownSound);
   const soundTimerStart = new Audio(timerStartSound);
   const soundTimerEnd = new Audio(timerEndSound);
+
+  const applySetting = async () => {
+    const setting: Setting = await window.setting.getAllSetting();
+
+    soundTimerStartCountdown.volume = setting.soundVolume;
+    soundTimerStart.volume = setting.soundVolume;
+    soundTimerEnd.volume = setting.soundVolume;
+    breakTimeSeconds = setting.breakTimeSecBetweenSets;
+  };
+
+  applySetting();
 
   const timerId = ref<number | null>(null);
   const timerStatus = ref<'STANDBY' | 'COUNTDOWN' | 'PROGRESS' | 'BREAK_TIME' |'END'>('STANDBY');
@@ -72,7 +82,7 @@ export function useTimer(
 
         audioPlayCount = 0;
         timerStatus.value = 'BREAK_TIME';
-        timerSeconds.value = breakTimeSeconds.value;
+        timerSeconds.value = breakTimeSeconds;
         return;
       case 'BREAK_TIME':
         timerSeconds.value--;

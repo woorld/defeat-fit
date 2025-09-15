@@ -1,5 +1,5 @@
 import { ipcRenderer, contextBridge } from 'electron';
-import type { Menu } from './api/menu-list';
+import type { Menu, Setting } from '../common/types';
 
 // TODO: 型付け
 // TODO: 用途別に分ける
@@ -28,8 +28,21 @@ const menuListApi = {
     ipcRenderer.send('replace-menu', id, newMenu),
 };
 
+const settingApi = {
+  getSetting: (settingName: keyof Setting) =>
+    ipcRenderer.invoke('get-setting', settingName),
+  getAllSetting: () =>
+    ipcRenderer.invoke('get-all-setting'),
+  setAllSetting: (setting: Setting) =>
+    ipcRenderer.send('set-all-setting', setting),
+  resetSetting: () =>
+    ipcRenderer.send('reset-setting'),
+};
+
 contextBridge.exposeInMainWorld('osc', oscApi);
 contextBridge.exposeInMainWorld('menuList', menuListApi);
+contextBridge.exposeInMainWorld('setting', settingApi);
 
 export type OscApi = typeof oscApi;
 export type MenuListApi = typeof menuListApi;
+export type SettingApi = typeof settingApi;
