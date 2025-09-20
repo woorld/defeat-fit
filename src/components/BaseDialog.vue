@@ -1,9 +1,13 @@
 <script setup lang="ts">
+const props = defineProps<{
+  activateByParent?: boolean,
+}>();
+
 const model = defineModel<boolean>({ required: true });
 </script>
 
 <template>
-  <VDialog v-model="model">
+  <VDialog v-model="model" :activator="props.activateByParent ? 'parent' : undefined">
     <VSheet class="pa-8 text-center">
       <slot />
     </VSheet>
