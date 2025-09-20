@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import BaseDialog from './BaseDialog.vue';
 
 const props = defineProps<{
-  countResult: number,
+  deathCount: number,
 }>();
 
 const isShow = ref(false);
 const setCount = ref(4);
 
-const secondsPerSet = computed(() => Math.ceil(props.countResult / setCount.value));
+const secondsPerSet = computed(() => Math.ceil(props.deathCount / setCount.value));
 const maxSet = computed(() => secondsPerSet.value === 1
   ? setCount.value // 1回あたり1秒になる場合、それ以上セット数を増やしても意味がないため+を押させない
   : Infinity
@@ -17,13 +18,13 @@ const maxSet = computed(() => secondsPerSet.value === 1
 
 <template>
   <VBtn
-    :disabled="countResult <= 0"
+    :disabled="deathCount <= 0"
     append-icon="mdi-chevron-right"
     color="green"
   >
     やる
-    <VDialog v-model="isShow" activator="parent">
-      <VSheet class="pa-8 text-center d-flex justify-center align-center ga-6 flex-column">
+    <BaseDialog v-model="isShow" activateByParent>
+      <div class="d-flex justify-center align-center ga-6 flex-column">
         <h3 class="text-h5">何セットに分ける？</h3>
         <div class="d-flex justify-center align-center ga-4">
           <VNumberInput
@@ -41,18 +42,13 @@ const maxSet = computed(() => secondsPerSet.value === 1
             <span class="text-h6">秒</span>
           </span>
         </div>
-        <small class="text-grey">※小数は繰り上げ</small>
+        <small class="text-grey">※小数繰り上げ</small>
         <VBtn
           append-icon="mdi-chevron-right"
           color="green"
           :to="`/timer/${secondsPerSet}/${setCount}`"
         >タイマー画面へ</VBtn>
-      </VSheet>
-      <VBtn
-        class="position-absolute top-0 right-0 mt-6 mr-6 elevation-0"
-        icon="mdi-close"
-        @click="isShow = false"
-      />
-    </VDialog>
+      </div>
+    </BaseDialog>
   </VBtn>
 </template>

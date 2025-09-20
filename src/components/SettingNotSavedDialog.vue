@@ -2,6 +2,7 @@
 import { ref, computed, toRaw } from 'vue';
 import { useRouter, onBeforeRouteLeave } from 'vue-router';
 import type { Setting } from '../../common/types';
+import ConfirmDialog from './ConfirmDialog.vue';
 
 const router = useRouter();
 let nextPagePath = '';
@@ -45,19 +46,11 @@ onBeforeRouteLeave((to) => {
 </script>
 
 <template>
-  <!-- TODO: ダイアログの共通化 -->
-  <VDialog v-model="isShow">
-    <VSheet class="pa-8 text-center">
-      <p>変更された設定があるけどどうする？</p>
-      <div class="w-100 mt-8 d-flex justify-center align-center ga-4">
-        <VBtn variant="outlined" @click="leavePage(false)">破棄して移動</VBtn>
-        <VBtn color="green" @click="leavePage(true)">保存して移動</VBtn>
-      </div>
-    </VSheet>
-    <VBtn
-      class="position-absolute top-0 right-0 mt-2 mr-2 elevation-0"
-      icon="mdi-close"
-      @click="isShow = false"
-    />
-  </VDialog>
+  <ConfirmDialog
+    v-model="isShow"
+    explanation="変更された設定を保存する？"
+    yesBtnColor="green"
+    @click-yes="leavePage(true)"
+    @click-no="leavePage(false)"
+  />
 </template>

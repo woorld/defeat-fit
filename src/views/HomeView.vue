@@ -36,7 +36,7 @@ const menuList = ref<Menu[]>([]);
           <td class="text-right">
             <ToTimerBtn
               v-if="menu.unit === '秒'"
-              :countResult="deathCount.count * menu.multiplier"
+              :deathCount="deathCount.count * menu.multiplier"
             />
           </td>
         </tr>
