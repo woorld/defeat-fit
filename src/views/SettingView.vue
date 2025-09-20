@@ -4,6 +4,7 @@ import { SETTING_DEFAULT_VALUE } from '../../common/constants';
 import type { Setting } from '../../common/types';
 import SettingSlider from '../components/SettingSlider.vue';
 import SettingNotSavedDialog from '../components/SettingNotSavedDialog.vue';
+import ConfirmDialog from '../components/ConfirmDialog.vue';
 
 const setting = ref<Setting>({ ...SETTING_DEFAULT_VALUE });
 const prevSetting = ref<Setting>({ ...SETTING_DEFAULT_VALUE });
@@ -59,21 +60,14 @@ getSetting();
       <div class="d-flex justify-space-around align-center ga-4">
         <VBtn class="flex-1-1-0" color="yellow">
           設定をリセット
-          <!-- TODO: 確認ダイアログの共通化 -->
-          <VDialog v-model="isShowResetDialog" activator="parent">
-            <VSheet class="pa-8 text-center">
-              <p>ほんとに設定をリセットする？</p>
-              <div class="w-100 mt-8 d-flex justify-center align-center ga-4">
-                <VBtn color="yellow" @click="resetSetting">はい</VBtn>
-                <VBtn @click="isShowResetDialog = false">いいえ</VBtn>
-              </div>
-            </VSheet>
-            <VBtn
-              class="position-absolute top-0 right-0 mt-2 mr-2 elevation-0"
-              icon="mdi-close"
-              @click="isShowResetDialog = false"
-            />
-          </VDialog>
+          <ConfirmDialog
+            v-model="isShowResetDialog"
+            explanation="ほんとに設定をリセットする？"
+            yesBtnColor="yellow"
+            reverseYesNoPosition
+            activateByParent
+            @click-yes="resetSetting"
+          />
         </VBtn>
         <VBtn
           class="flex-1-1-0"
