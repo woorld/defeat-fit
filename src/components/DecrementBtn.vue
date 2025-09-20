@@ -22,6 +22,7 @@ const onDecrement = async () => {
       reverseYesNoPosition
       activateByParent
       @click-yes="onDecrement"
+      @click-no="isShowDialog = false"
     />
   </VBtn>
 </template>

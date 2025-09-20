@@ -67,6 +67,7 @@ getSetting();
             reverseYesNoPosition
             activateByParent
             @click-yes="resetSetting"
+            @click-no="isShowResetDialog = false"
           />
         </VBtn>
         <VBtn
