@@ -6,13 +6,13 @@ import { getMenuList, addMenu, deleteMenu, replaceMenu } from './api/menu-list';
 import { getSetting, getAllSetting, setAllSetting, resetSetting } from './api/setting';
 import type { Menu, Setting } from '../common/types';
 
-let deathCount = 0;
+let defeatCount = 0;
 
 const onListenOsc = () => {
-  deathCount++;
-  console.log('DefeatFit: listened! count: ' + deathCount);
+  defeatCount++;
+  console.log('DefeatFit: listened! count: ' + defeatCount);
 
-  win?.webContents.send('update-defeat-count', deathCount);
+  win?.webContents.send('update-defeat-count', defeatCount);
 };
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -106,14 +106,14 @@ app.on('activate', () => {
 app.whenReady().then(createWindow);
 
 ipcMain.handle('decrement-defeat-count', () => {
-  if (deathCount >= 1) {
-    deathCount--;
+  if (defeatCount >= 1) {
+    defeatCount--;
   }
 
-  return deathCount;
+  return defeatCount;
 });
 
-ipcMain.handle('get-defeat-count', () => deathCount);
+ipcMain.handle('get-defeat-count', () => defeatCount);
 
 ipcMain.handle('get-listening-status', () => isListening());
 

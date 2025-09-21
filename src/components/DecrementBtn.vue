@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useDeathCountStore } from '../stores/death-count';
+import { useDefeatCountStore } from '../stores/death-count';
 import ConfirmDialog from './ConfirmDialog.vue';
 
-const deathCount = useDeathCountStore();
+const defeatCount = useDefeatCountStore();
 const isShowDialog = ref(false);
 
 const onDecrement = async () => {
-  await deathCount.decrement();
+  await defeatCount.decrement();
   isShowDialog.value = false;
 };
 </script>
 
 <template>
-  <VBtn class="w-100 mt-8 bg-red-darken-4" :disabled="deathCount.count <= 0">今のなし
+  <VBtn class="w-100 mt-8 bg-red-darken-4" :disabled="defeatCount.count <= 0">今のなし
     <ConfirmDialog
       v-model="isShowDialog"
       title="事故死？"

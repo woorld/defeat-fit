@@ -3,13 +3,13 @@ import { ref, computed } from 'vue';
 import BaseDialog from './BaseDialog.vue';
 
 const props = defineProps<{
-  deathCount: number,
+  defeatCount: number,
 }>();
 
 const isShow = ref(false);
 const setCount = ref(4);
 
-const secondsPerSet = computed(() => Math.ceil(props.deathCount / setCount.value));
+const secondsPerSet = computed(() => Math.ceil(props.defeatCount / setCount.value));
 const maxSet = computed(() => secondsPerSet.value === 1
   ? setCount.value // 1回あたり1秒になる場合、それ以上セット数を増やしても意味がないため+を押させない
   : Infinity
@@ -18,7 +18,7 @@ const maxSet = computed(() => secondsPerSet.value === 1
 
 <template>
   <VBtn
-    :disabled="deathCount <= 0"
+    :disabled="defeatCount <= 0"
     append-icon="mdi-chevron-right"
     color="green"
   >
