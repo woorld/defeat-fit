@@ -2,15 +2,17 @@ import { ipcRenderer, contextBridge } from 'electron';
 import type { Menu, Setting } from '../common/types';
 
 // TODO: 型付け
-// TODO: 用途別に分ける
 // TODO: invoke, sendの使い分け見直し
-const oscApi = {
+const defeatCountApi = {
   onUpdateDefeatCount: (callback: (defeatCount: number) => void) =>
     ipcRenderer.on('update-defeat-count', (_, defeatCount: number) => callback(defeatCount)),
   decrementDefeatCount: () =>
     ipcRenderer.invoke('decrement-defeat-count'),
   getDefeatCount: () =>
     ipcRenderer.invoke('get-defeat-count'),
+};
+
+const oscApi = {
   getListeningStatus: () =>
     ipcRenderer.invoke('get-listening-status'),
   toggleListening: () =>
@@ -39,10 +41,12 @@ const settingApi = {
     ipcRenderer.send('reset-setting'),
 };
 
+contextBridge.exposeInMainWorld('defeatCount', defeatCountApi);
 contextBridge.exposeInMainWorld('osc', oscApi);
 contextBridge.exposeInMainWorld('menuList', menuListApi);
 contextBridge.exposeInMainWorld('setting', settingApi);
 
+export type DefeatCountApi = typeof defeatCountApi;
 export type OscApi = typeof oscApi;
 export type MenuListApi = typeof menuListApi;
 export type SettingApi = typeof settingApi;

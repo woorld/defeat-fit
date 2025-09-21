@@ -24,6 +24,7 @@ declare namespace NodeJS {
 // Used in Renderer process, expose in `preload.ts`
 
 interface Window {
+  defeatCount: import('./preload').DefeatCountApi;
   osc: import('./preload').OscApi;
   menuList: import('./preload').MenuListApi;
   setting: import('./preload').SettingApi;
