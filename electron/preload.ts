@@ -5,12 +5,12 @@ import type { Menu, Setting } from '../common/types';
 // TODO: 用途別に分ける
 // TODO: invoke, sendの使い分け見直し
 const oscApi = {
-  onUpdateDeathCount: (callback: (deathCount: number) => void) =>
-    ipcRenderer.on('update-death-count', (_, deathCount: number) => callback(deathCount)),
-  decrementDeathCount: () =>
-    ipcRenderer.invoke('decrement-death-count'),
-  getDeathCount: () =>
-    ipcRenderer.invoke('get-death-count'),
+  onUpdateDefeatCount: (callback: (defeatCount: number) => void) =>
+    ipcRenderer.on('update-defeat-count', (_, defeatCount: number) => callback(defeatCount)),
+  decrementDefeatCount: () =>
+    ipcRenderer.invoke('decrement-defeat-count'),
+  getDefeatCount: () =>
+    ipcRenderer.invoke('get-defeat-count'),
   getListeningStatus: () =>
     ipcRenderer.invoke('get-listening-status'),
   toggleListening: () =>

@@ -12,7 +12,7 @@ const onListenOsc = () => {
   deathCount++;
   console.log('DefeatFit: listened! count: ' + deathCount);
 
-  win?.webContents.send('update-death-count', deathCount);
+  win?.webContents.send('update-defeat-count', deathCount);
 };
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -105,7 +105,7 @@ app.on('activate', () => {
 
 app.whenReady().then(createWindow);
 
-ipcMain.handle('decrement-death-count', () => {
+ipcMain.handle('decrement-defeat-count', () => {
   if (deathCount >= 1) {
     deathCount--;
   }
@@ -113,7 +113,7 @@ ipcMain.handle('decrement-death-count', () => {
   return deathCount;
 });
 
-ipcMain.handle('get-death-count', () => deathCount);
+ipcMain.handle('get-defeat-count', () => deathCount);
 
 ipcMain.handle('get-listening-status', () => isListening());
 

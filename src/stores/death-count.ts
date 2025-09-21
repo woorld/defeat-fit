@@ -5,16 +5,16 @@ export const useDeathCountStore = defineStore('death-count', () => {
   const count = ref(0);
 
   const decrement = async () => {
-    count.value = await window.osc.decrementDeathCount();
+    count.value = await window.osc.decrementDefeatCount();
   };
 
   const getDeathCount = async () => {
-    count.value = await window.osc.getDeathCount();
+    count.value = await window.osc.getDefeatCount();
   };
 
   (async () => {
     getDeathCount();
-    window.osc.onUpdateDeathCount((newCount) => {
+    window.osc.onUpdateDefeatCount((newCount) => {
       count.value = newCount;
     });
   })();
