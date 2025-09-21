@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useDefeatCountStore } from '../stores/death-count';
+import { useDefeatCountStore } from '../stores/defeat-count';
 import DecrementBtn from '../components/DecrementBtn.vue';
 import OscControlBtn from '../components/OscControlBtn.vue';
 import ToTimerBtn from '../components/ToTimerBtn.vue';

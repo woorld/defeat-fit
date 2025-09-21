@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useDefeatCountStore } from '../stores/death-count';
+import { useDefeatCountStore } from '../stores/defeat-count';
 import ConfirmDialog from './ConfirmDialog.vue';
 
 const defeatCount = useDefeatCountStore();
