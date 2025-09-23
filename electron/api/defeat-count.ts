@@ -1,5 +1,7 @@
 let defeatCount = 0;
 
-export const getDefeatCount = () => defeatCount;
-export const incrementDefeatCount = () => ++defeatCount;
-export const decrementDefeatCount = () => defeatCount >= 1 ? --defeatCount : defeatCount;
+export const defeatCountApi = {
+  getDefeatCount: () => defeatCount,
+  incrementDefeatCount: () => ++defeatCount,
+  decrementDefeatCount: () => defeatCount >= 1 ? --defeatCount : defeatCount,
+} as const;

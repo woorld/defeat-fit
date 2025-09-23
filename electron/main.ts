@@ -1,10 +1,10 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { getDefeatCount, incrementDefeatCount, decrementDefeatCount } from './api/defeat-count';
-import { openServer, closeServer, isListening } from './api/osc';
-import { getMenuList, addMenu, deleteMenu, replaceMenu } from './api/menu-list';
-import { getSetting, getAllSetting, setAllSetting, resetSetting } from './api/setting';
+import { defeatCountApi } from './api/defeat-count';
+import { oscApi } from './api/osc';
+import { menuListApi } from './api/menu-list';
+import { settingApi } from './api/setting';
 import type { Menu, Setting } from '../common/types';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -72,7 +72,7 @@ function createWindow() {
     win.loadFile(path.join(RENDERER_DIST, 'index.html'));
   }
 
-  openServer(onListenOsc);
+  oscApi.openServer(onListenOsc);
 }
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -84,7 +84,7 @@ app.on('window-all-closed', () => {
     win = null;
   }
 
-  closeServer();
+  oscApi.closeServer();
 });
 
 app.on('activate', () => {
@@ -100,41 +100,41 @@ app.whenReady().then(createWindow);
 // -------- ↑ウィンドウ設定 API関連処理↓ --------
 
 const onListenOsc = () => {
-  const newCount = incrementDefeatCount();
+  const newCount = defeatCountApi.incrementDefeatCount();
   console.log('DefeatFit: listened! count: ' + newCount);
   win?.webContents.send('update-defeat-count', newCount);
 };
 
 // 負けカウント関連API
-ipcMain.handle('get-defeat-count', () => getDefeatCount());
-ipcMain.handle('decrement-defeat-count', () => decrementDefeatCount());
+ipcMain.handle('get-defeat-count', () => defeatCountApi.getDefeatCount());
+ipcMain.handle('decrement-defeat-count', () => defeatCountApi.decrementDefeatCount());
 
 // OSCサーバ関連API
-ipcMain.handle('get-listening-status', () => isListening());
+ipcMain.handle('get-listening-status', () => oscApi.isListening());
 ipcMain.handle('start-listening', async () => {
-  await openServer(onListenOsc);
-  return isListening();
+  await oscApi.openServer(onListenOsc);
+  return oscApi.isListening();
 });
 ipcMain.handle('stop-listening', async () => {
-  await closeServer();
-  return isListening();
+  await oscApi.closeServer();
+  return oscApi.isListening();
 });
 
 // メニュー関連API
-ipcMain.handle('get-menu-list', () => getMenuList());
-ipcMain.on('add-menu', (_, menu: Menu) => addMenu(menu));
-ipcMain.on('delete-menu', (_, id: number) => deleteMenu(id));
-ipcMain.on('replace-menu', (_, id: number, newMenu: Menu) => replaceMenu(id, newMenu));
+ipcMain.handle('get-menu-list', () => menuListApi.getMenuList());
+ipcMain.on('add-menu', (_, menu: Menu) => menuListApi.addMenu(menu));
+ipcMain.on('delete-menu', (_, id: number) => menuListApi.deleteMenu(id));
+ipcMain.on('replace-menu', (_, id: number, newMenu: Menu) => menuListApi.replaceMenu(id, newMenu));
 
 // 設定関連API
-ipcMain.handle('get-setting', (_, settingName: keyof Setting) => getSetting(settingName));
-ipcMain.handle('get-all-setting', () => getAllSetting());
+ipcMain.handle('get-setting', (_, settingName: keyof Setting) => settingApi.getSetting(settingName));
+ipcMain.handle('get-all-setting', () => settingApi.getAllSetting());
 ipcMain.on('set-all-setting', async (_, setting: Setting) => {
-  setAllSetting(setting);
-  if (isListening()) {
+  settingApi.setAllSetting(setting);
+  if (oscApi.isListening()) {
     // OSCサーバを開きなおさないと変更が反映されない
-    await closeServer();
-    return openServer(onListenOsc);
+    await oscApi.closeServer();
+    return oscApi.openServer(onListenOsc);
   }
 });
-ipcMain.on('reset-setting', () => resetSetting());
+ipcMain.on('reset-setting', () => settingApi.resetSetting());
