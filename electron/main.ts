@@ -105,26 +105,23 @@ app.on('activate', () => {
 
 app.whenReady().then(createWindow);
 
+// 負けカウント関連API
+ipcMain.handle('get-defeat-count', () => defeatCount);
 ipcMain.handle('decrement-defeat-count', () => {
   if (defeatCount >= 1) {
     defeatCount--;
   }
-
   return defeatCount;
 });
 
-ipcMain.handle('get-defeat-count', () => defeatCount);
-
+// OSCサーバ関連API
 ipcMain.handle('get-listening-status', () => isListening());
-
-ipcMain.handle('toggle-listening', async () => {
-  if (isListening()) {
-    await closeServer();
-  }
-  else {
-    await openServer(onListenOsc);
-  }
-
+ipcMain.handle('start-listening', async () => {
+  await openServer(onListenOsc);
+  return isListening();
+});
+ipcMain.handle('stop-listening', async () => {
+  await closeServer();
   return isListening();
 });
 

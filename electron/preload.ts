@@ -6,17 +6,19 @@ import type { Menu, Setting } from '../common/types';
 const defeatCountApi = {
   onUpdateDefeatCount: (callback: (defeatCount: number) => void) =>
     ipcRenderer.on('update-defeat-count', (_, defeatCount: number) => callback(defeatCount)),
-  decrementDefeatCount: () =>
-    ipcRenderer.invoke('decrement-defeat-count'),
   getDefeatCount: () =>
     ipcRenderer.invoke('get-defeat-count'),
+  decrementDefeatCount: () =>
+    ipcRenderer.invoke('decrement-defeat-count'),
 };
 
 const oscApi = {
   getListeningStatus: () =>
     ipcRenderer.invoke('get-listening-status'),
-  toggleListening: () =>
-    ipcRenderer.invoke('toggle-listening'),
+  startListening: () =>
+    ipcRenderer.invoke('start-listening'),
+  stopListening: () =>
+    ipcRenderer.invoke('stop-listening'),
 };
 
 const menuListApi = {

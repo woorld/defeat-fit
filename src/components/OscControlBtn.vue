@@ -4,7 +4,9 @@ import { ref } from 'vue';
 const isListening = ref(false);
 
 const onClick = async () => {
-  isListening.value = await window.osc.toggleListening();
+  isListening.value = isListening.value
+    ? await window.osc.stopListening()
+    : await window.osc.startListening();
 };
 
 (async () => {
