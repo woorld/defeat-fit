@@ -1,19 +1,11 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { getDefeatCount, incrementDefeatCount, decrementDefeatCount } from './api/defeat-count';
 import { openServer, closeServer, isListening } from './api/osc';
 import { getMenuList, addMenu, deleteMenu, replaceMenu } from './api/menu-list';
 import { getSetting, getAllSetting, setAllSetting, resetSetting } from './api/setting';
 import type { Menu, Setting } from '../common/types';
-
-let defeatCount = 0;
-
-const onListenOsc = () => {
-  defeatCount++;
-  console.log('DefeatFit: listened! count: ' + defeatCount);
-
-  win?.webContents.send('update-defeat-count', defeatCount);
-};
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -105,14 +97,17 @@ app.on('activate', () => {
 
 app.whenReady().then(createWindow);
 
+// -------- ↑ウィンドウ設定 API関連処理↓ --------
+
+const onListenOsc = () => {
+  const newCount = incrementDefeatCount();
+  console.log('DefeatFit: listened! count: ' + newCount);
+  win?.webContents.send('update-defeat-count', newCount);
+};
+
 // 負けカウント関連API
-ipcMain.handle('get-defeat-count', () => defeatCount);
-ipcMain.handle('decrement-defeat-count', () => {
-  if (defeatCount >= 1) {
-    defeatCount--;
-  }
-  return defeatCount;
-});
+ipcMain.handle('get-defeat-count', () => getDefeatCount());
+ipcMain.handle('decrement-defeat-count', () => decrementDefeatCount());
 
 // OSCサーバ関連API
 ipcMain.handle('get-listening-status', () => isListening());
