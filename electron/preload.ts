@@ -1,8 +1,6 @@
 import { ipcRenderer, contextBridge } from 'electron';
 import type { Menu, Setting } from '../common/types';
 
-// TODO: 型付け
-// TODO: invoke, sendの使い分け見直し
 const defeatCountApi = {
   onUpdateDefeatCount: (callback: (defeatCount: number) => void) =>
     ipcRenderer.on('update-defeat-count', (_, defeatCount: number) => callback(defeatCount)),
@@ -10,7 +8,7 @@ const defeatCountApi = {
     ipcRenderer.invoke('get-defeat-count'),
   decrementDefeatCount: () =>
     ipcRenderer.invoke('decrement-defeat-count'),
-};
+} as const;
 
 const oscApi = {
   getListeningStatus: () =>
@@ -19,7 +17,7 @@ const oscApi = {
     ipcRenderer.invoke('start-listening'),
   stopListening: () =>
     ipcRenderer.invoke('stop-listening'),
-};
+} as const;
 
 const menuListApi = {
   getMenuList: () =>
@@ -30,7 +28,7 @@ const menuListApi = {
     ipcRenderer.send('delete-menu', id),
   replaceMenu: (id: number, newMenu: Menu) =>
     ipcRenderer.send('replace-menu', id, newMenu),
-};
+} as const;
 
 const settingApi = {
   getSetting: (settingName: keyof Setting) =>
@@ -41,7 +39,7 @@ const settingApi = {
     ipcRenderer.send('set-all-setting', setting),
   resetSetting: () =>
     ipcRenderer.send('reset-setting'),
-};
+} as const;
 
 contextBridge.exposeInMainWorld('defeatCount', defeatCountApi);
 contextBridge.exposeInMainWorld('osc', oscApi);
