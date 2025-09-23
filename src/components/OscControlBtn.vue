@@ -3,8 +3,10 @@ import { ref } from 'vue';
 
 const isListening = ref(false);
 
-const onClick = async () => {
-  isListening.value = await window.osc.toggleListening();
+const toggleListeningStatus = async () => {
+  isListening.value = isListening.value
+    ? await window.osc.stopListening()
+    : await window.osc.startListening();
 };
 
 (async () => {
@@ -15,8 +17,8 @@ const onClick = async () => {
 <template>
   <VBtn
     class="position-fixed top-0 right-0 ma-4"
-    :class="isListening ? ' bg-amber' : ' bg-green'"
+    :color="isListening ? 'yellow' : 'green'"
     :icon="isListening ? 'mdi-pause' : 'mdi-play'"
-    @click="onClick"
+    @click="toggleListeningStatus"
   />
 </template>

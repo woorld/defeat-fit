@@ -1,21 +1,23 @@
 import { ipcRenderer, contextBridge } from 'electron';
 import type { Menu, Setting } from '../common/types';
 
-// TODO: 型付け
-// TODO: 用途別に分ける
-// TODO: invoke, sendの使い分け見直し
+const defeatCountApi = {
+  onUpdateDefeatCount: (callback: (defeatCount: number) => void) =>
+    ipcRenderer.on('update-defeat-count', (_, defeatCount: number) => callback(defeatCount)),
+  getDefeatCount: () =>
+    ipcRenderer.invoke('get-defeat-count'),
+  decrementDefeatCount: () =>
+    ipcRenderer.invoke('decrement-defeat-count'),
+} as const;
+
 const oscApi = {
-  onUpdateDeathCount: (callback: (deathCount: number) => void) =>
-    ipcRenderer.on('update-death-count', (_, deathCount: number) => callback(deathCount)),
-  decrementDeathCount: () =>
-    ipcRenderer.invoke('decrement-death-count'),
-  getDeathCount: () =>
-    ipcRenderer.invoke('get-death-count'),
   getListeningStatus: () =>
     ipcRenderer.invoke('get-listening-status'),
-  toggleListening: () =>
-    ipcRenderer.invoke('toggle-listening'),
-};
+  startListening: () =>
+    ipcRenderer.invoke('start-listening'),
+  stopListening: () =>
+    ipcRenderer.invoke('stop-listening'),
+} as const;
 
 const menuListApi = {
   getMenuList: () =>
@@ -26,7 +28,7 @@ const menuListApi = {
     ipcRenderer.send('delete-menu', id),
   replaceMenu: (id: number, newMenu: Menu) =>
     ipcRenderer.send('replace-menu', id, newMenu),
-};
+} as const;
 
 const settingApi = {
   getSetting: (settingName: keyof Setting) =>
@@ -37,12 +39,14 @@ const settingApi = {
     ipcRenderer.send('set-all-setting', setting),
   resetSetting: () =>
     ipcRenderer.send('reset-setting'),
-};
+} as const;
 
+contextBridge.exposeInMainWorld('defeatCount', defeatCountApi);
 contextBridge.exposeInMainWorld('osc', oscApi);
 contextBridge.exposeInMainWorld('menuList', menuListApi);
 contextBridge.exposeInMainWorld('setting', settingApi);
 
+export type DefeatCountApi = typeof defeatCountApi;
 export type OscApi = typeof oscApi;
 export type MenuListApi = typeof menuListApi;
 export type SettingApi = typeof settingApi;
