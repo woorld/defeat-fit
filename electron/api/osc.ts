@@ -4,7 +4,7 @@ import { settingApi } from './setting';
 let oscServer: Server | null = null;
 
 export const oscApi = {
-  openServer: async (onListen: Function) => {
+  async openServer(onListen: Function) {
     try {
       oscServer = new Server(9001, '0.0.0.0', () => {
         console.log('DefeatFit: Start listening');
@@ -25,7 +25,7 @@ export const oscApi = {
     });
   },
 
-  closeServer: async () => {
+  async closeServer() {
     if (oscServer == null) {
       return;
     }
@@ -36,5 +36,7 @@ export const oscApi = {
     });
   },
 
-  isListening: () => oscServer != null,
+  isListening() {
+    return oscServer != null;
+  },
 } as const;
