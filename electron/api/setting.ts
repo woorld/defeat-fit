@@ -20,6 +20,6 @@ export const settingApi = {
   },
 
   async resetSetting() {
-    return await settingApi.setAllSetting(SETTING_DEFAULT_VALUE); // FIXME: awaitいる？
+    return settingApi.setAllSetting(SETTING_DEFAULT_VALUE);
   },
 } as const;

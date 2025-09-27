@@ -8,7 +8,7 @@ const setMenuList = (menuList: Menu[]) => store.set(storeKey, menuList);
 
 export const menuListApi = {
   async getMenuList(): Promise<Menu[]> {
-    return await store.get(storeKey, []); // FIXME: awaitいる？
+    return store.get(storeKey, []);
   },
 
   async addMenu(menu: Menu) {
