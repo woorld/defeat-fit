@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import ConfirmDialog from './ConfirmDialog.vue';
 import type { Menu, StatsMenu } from '../../common/types';
 import { useDefeatCountStore } from '../stores/defeat-count';
 
+const router = useRouter();
 const defeatCount = useDefeatCountStore();
 
 const props = defineProps<{
@@ -23,6 +25,7 @@ const onDone = async () => {
   await window.stats.addStats(defeatCount.count, newStats);
   window.defeatCount.resetDefeatCount();
 
+  router.push('stats');
   isShowDialog.value = false;
 };
 </script>
