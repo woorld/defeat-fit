@@ -8,6 +8,8 @@ const defeatCountApi = {
     ipcRenderer.invoke('get-defeat-count'),
   decrementDefeatCount: () =>
     ipcRenderer.invoke('decrement-defeat-count'),
+  resetDefeatCount: () =>
+    ipcRenderer.send('reset-defeat-count'),
 } as const;
 
 const oscApi = {

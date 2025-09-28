@@ -109,6 +109,10 @@ const onListenOsc = () => {
 // 負けカウントAPI
 ipcMain.handle('get-defeat-count', () => defeatCountApi.getDefeatCount());
 ipcMain.handle('decrement-defeat-count', () => defeatCountApi.decrementDefeatCount());
+ipcMain.on('reset-defeat-count', () => {
+  defeatCountApi.resetDefeatCount();
+  win?.webContents.send('update-defeat-count', defeatCountApi.getDefeatCount());
+});
 
 // OSCサーバAPI
 ipcMain.handle('get-listening-status', () => oscApi.isListening());

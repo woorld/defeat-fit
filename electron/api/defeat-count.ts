@@ -12,4 +12,8 @@ export const defeatCountApi = {
   decrementDefeatCount() {
     return defeatCount >= 1 ? --defeatCount : defeatCount;
   },
+
+  resetDefeatCount() {
+    defeatCount = 0;
+  },
 } as const;
