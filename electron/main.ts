@@ -5,7 +5,8 @@ import { defeatCountApi } from './api/defeat-count';
 import { oscApi } from './api/osc';
 import { menuListApi } from './api/menu-list';
 import { settingApi } from './api/setting';
-import type { Menu, Setting } from '../common/types';
+import { statsApi } from './api/stats';
+import type { Menu, Setting, StatsMenu } from '../common/types';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -105,11 +106,11 @@ const onListenOsc = () => {
   win?.webContents.send('update-defeat-count', newCount);
 };
 
-// 負けカウント関連API
+// 負けカウントAPI
 ipcMain.handle('get-defeat-count', () => defeatCountApi.getDefeatCount());
 ipcMain.handle('decrement-defeat-count', () => defeatCountApi.decrementDefeatCount());
 
-// OSCサーバ関連API
+// OSCサーバAPI
 ipcMain.handle('get-listening-status', () => oscApi.isListening());
 ipcMain.handle('start-listening', async () => {
   await oscApi.openServer(onListenOsc);
@@ -120,13 +121,13 @@ ipcMain.handle('stop-listening', async () => {
   return oscApi.isListening();
 });
 
-// メニュー関連API
+// メニューAPI
 ipcMain.handle('get-menu-list', () => menuListApi.getMenuList());
 ipcMain.on('add-menu', (_, menu: Menu) => menuListApi.addMenu(menu));
 ipcMain.on('delete-menu', (_, id: number) => menuListApi.deleteMenu(id));
 ipcMain.on('replace-menu', (_, id: number, newMenu: Menu) => menuListApi.replaceMenu(id, newMenu));
 
-// 設定関連API
+// 設定API
 ipcMain.handle('get-setting', (_, settingName: keyof Setting) => settingApi.getSetting(settingName));
 ipcMain.handle('get-all-setting', () => settingApi.getAllSetting());
 ipcMain.on('set-all-setting', async (_, setting: Setting) => {
@@ -138,3 +139,7 @@ ipcMain.on('set-all-setting', async (_, setting: Setting) => {
   }
 });
 ipcMain.on('reset-setting', () => settingApi.resetSetting());
+
+// 統計API
+ipcMain.handle('get-stats', () => statsApi.getStats());
+ipcMain.handle('add-stats', (_, defeatCount: number, menu: StatsMenu[]) => statsApi.addStats(defeatCount, menu))

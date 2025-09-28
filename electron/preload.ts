@@ -1,5 +1,5 @@
 import { ipcRenderer, contextBridge } from 'electron';
-import type { Menu, Setting } from '../common/types';
+import type { Menu, Setting, StatsMenu } from '../common/types';
 
 const defeatCountApi = {
   onUpdateDefeatCount: (callback: (defeatCount: number) => void) =>
@@ -41,12 +41,21 @@ const settingApi = {
     ipcRenderer.send('reset-setting'),
 } as const;
 
+const statsApi = {
+  getStats: () =>
+    ipcRenderer.invoke('get-stats'),
+  addStats: (defeatCount: number, menu: StatsMenu[]) =>
+    ipcRenderer.invoke('add-stats', defeatCount, menu),
+} as const;
+
 contextBridge.exposeInMainWorld('defeatCount', defeatCountApi);
 contextBridge.exposeInMainWorld('osc', oscApi);
 contextBridge.exposeInMainWorld('menuList', menuListApi);
 contextBridge.exposeInMainWorld('setting', settingApi);
+contextBridge.exposeInMainWorld('stats', statsApi);
 
 export type DefeatCountApi = typeof defeatCountApi;
 export type OscApi = typeof oscApi;
 export type MenuListApi = typeof menuListApi;
 export type SettingApi = typeof settingApi;
+export type StatsApi = typeof statsApi;
