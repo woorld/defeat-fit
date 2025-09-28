@@ -1,3 +1,10 @@
+// TODO: StatsをMapで管理すると絞り込みとかが楽かも
+/*
+ * 例
+ * // let arr: { id: string }[]
+ * const byId = new Map<string, { id: string }>(arr.map(e => [e.id, e]));
+ */
+// TODO: menuListに合わせて、statsからstatsListに名称を変更
 import Store from 'electron-store';
 import type { Stats, StatsMenu } from '../../common/types';
 
@@ -13,14 +20,19 @@ export const statsApi = {
   },
 
   async addStats(defeatCount: number, menu: StatsMenu[]) {
-    // YYYY-MM-DD（スウェーデンの標準形式）で日付を取得
-    const nowDate = new Date().toLocaleDateString('sv-SE');
+    // 次の日の朝5時までを本日とする
+    // TODO: いつまでが今日なのかを設定で変えられるようにする
+    const nowDate = new Date();
+    nowDate.setHours(nowDate.getHours() - 5);
+    // YYYY-MM-DD（sv-SE=スウェーデンの標準形式）で日付を取得
+    const roundedNowDateString = nowDate.toLocaleDateString('sv-SE');
+
     const stats = await statsApi.getStats();
-    const todayStatsIndex = stats.findIndex(statsItem => statsItem.date === nowDate);
+    const todayStatsIndex = stats.findIndex(statsItem => statsItem.date === roundedNowDateString);
 
     if (todayStatsIndex <= -1) {
       stats.push({
-        date: nowDate,
+        date: roundedNowDateString,
         defeatCount,
         menu,
       });
@@ -44,7 +56,7 @@ export const statsApi = {
     }
 
     const newTodayStats = {
-      date: nowDate,
+      date: roundedNowDateString,
       defeatCount: todayStats.defeatCount + defeatCount,
       menu: mergedMenu,
     };
