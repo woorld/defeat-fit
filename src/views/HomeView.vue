@@ -5,6 +5,7 @@ import DecrementBtn from '../components/DecrementBtn.vue';
 import OscControlBtn from '../components/OscControlBtn.vue';
 import ToTimerBtn from '../components/ToTimerBtn.vue';
 import type { Menu } from '../../common/types';
+import DoneBtn from '../components/DoneBtn.vue';
 
 const defeatCount = useDefeatCountStore();
 
@@ -42,7 +43,10 @@ const menuList = ref<Menu[]>([]);
         </tr>
       </tbody>
     </VTable>
-    <DecrementBtn />
+    <div class="w-100 mt-8 d-flex justify-center align-center ga-4">
+      <DecrementBtn class="flex-1-1-0" />
+      <DoneBtn class="flex-1-1-0" :menuList="menuList" />
+    </div>
     <OscControlBtn />
   </VContainer>
 </template>

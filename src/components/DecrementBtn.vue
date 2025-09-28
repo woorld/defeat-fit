@@ -13,7 +13,8 @@ const onDecrement = async () => {
 </script>
 
 <template>
-  <VBtn class="w-100 mt-8 bg-red-darken-4" :disabled="defeatCount.count <= 0">今のなし
+  <VBtn color="red" :disabled="defeatCount.count <= 0">
+    今のなし
     <ConfirmDialog
       v-model="isShowDialog"
       title="事故死？"
