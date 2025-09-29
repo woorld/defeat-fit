@@ -8,7 +8,7 @@ import Store from 'electron-store';
 import type { Stats, StatsMenu } from '../../common/types';
 
 const store = new Store<Stats[]>({ name: 'stats-list' });
-const storeKey = 'stats-list';
+const storeKey = 'statsList';
 
 const setStatsList = async (statsList: Stats[]) => store.set(storeKey, statsList);
 
@@ -18,7 +18,7 @@ export const statsListApi = {
     return store.get(storeKey, []);
   },
 
-  async addStats(defeatCount: number, menu: StatsMenu[]) {
+  async addStats(defeatCount: number, menuList: StatsMenu[]) {
     // 次の日の朝5時までを本日とする
     // TODO: いつまでが今日なのかを設定で変えられるようにする
     const nowDate = new Date();
@@ -27,37 +27,37 @@ export const statsListApi = {
     const roundedNowDateString = nowDate.toLocaleDateString('sv-SE');
 
     const statsList = await statsListApi.getStatsList();
-    const todayStatsIndex = statsList.findIndex(statsItem => statsItem.date === roundedNowDateString);
+    const todayStatsIndex = statsList.findIndex(stats => stats.date === roundedNowDateString);
 
     if (todayStatsIndex <= -1) {
       statsList.push({
         date: roundedNowDateString,
         defeatCount,
-        menu,
+        menuList,
       });
       return setStatsList(statsList);
     }
 
     // 本日分がすでにある場合は負け回数、筋トレ回数をマージして格納
     const todayStats = statsList[todayStatsIndex];
-    const mergedMenu = [ ...todayStats.menu ];
+    const mergedMenu = [ ...todayStats.menuList ];
 
     // TODO: もっといい書き方がありそう
-    for (const menuItem of menu) {
-      const existingMenuItemIndex = mergedMenu.findIndex(mergedMenuItem => mergedMenuItem.id === menuItem.id);
+    for (const menu of menuList) {
+      const existingMenuIndex = mergedMenu.findIndex(mergedMenu => mergedMenu.id === menu.id);
 
-      if (existingMenuItemIndex <= -1) {
-        mergedMenu.push(menuItem);
+      if (existingMenuIndex <= -1) {
+        mergedMenu.push(menu);
         continue;
       }
 
-      mergedMenu[existingMenuItemIndex].count = mergedMenu[existingMenuItemIndex].count + menuItem.count;
+      mergedMenu[existingMenuIndex].count = mergedMenu[existingMenuIndex].count + menu.count;
     }
 
     const newTodayStats = {
       date: roundedNowDateString,
       defeatCount: todayStats.defeatCount + defeatCount,
-      menu: mergedMenu,
+      menuList: mergedMenu,
     };
 
     // もともとあった本日分の統計を置き換えて保存

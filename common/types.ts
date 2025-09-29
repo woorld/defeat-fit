@@ -20,5 +20,5 @@ export type StatsMenu = Omit<Menu, 'multiplier'> & {
 export type Stats = {
   date: string,
   defeatCount: number,
-  menu: StatsMenu[],
+  menuList: StatsMenu[],
 };
