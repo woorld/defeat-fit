@@ -1,4 +1,3 @@
-// TODO: stats-list.tsにファイル名変更
 // TODO: StatsをMapで管理すると絞り込みとかが楽かも
 /*
  * 例

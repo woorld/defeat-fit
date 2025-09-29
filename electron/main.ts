@@ -5,7 +5,7 @@ import { defeatCountApi } from './api/defeat-count';
 import { oscApi } from './api/osc';
 import { menuListApi } from './api/menu-list';
 import { settingApi } from './api/setting';
-import { statsListApi } from './api/stats'; // TODO: ファイル名変更後に変更
+import { statsListApi } from './api/stats-list';
 import type { Menu, Setting, StatsMenu } from '../common/types';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
