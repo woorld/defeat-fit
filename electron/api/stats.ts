@@ -8,7 +8,7 @@
 import Store from 'electron-store';
 import type { Stats, StatsMenu } from '../../common/types';
 
-const store = new Store<Stats[]>();
+const store = new Store<Stats[]>({ name: 'stats' });
 const storeKey = 'stats';
 
 const setStats = async (stats: Stats[]) => store.set(storeKey, stats);
