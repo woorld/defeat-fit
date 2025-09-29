@@ -22,7 +22,7 @@ const onDone = async () => {
     count: menu.multiplier * defeatCount.count,
   }));
 
-  await window.stats.addStats(defeatCount.count, newStats);
+  await window.statsList.addStats(defeatCount.count, newStats);
   window.defeatCount.resetDefeatCount();
 
   router.push('stats');

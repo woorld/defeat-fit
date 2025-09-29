@@ -3,17 +3,17 @@ import { ref } from 'vue';
 import type { Stats } from '../../common/types';
 import ViewHeading from '../components/ViewHeading.vue';
 
-const stats = ref<Stats[]>([]);
+const statsList = ref<Stats[]>([]);
 
 (async () => {
-  stats.value = await window.stats.getStats();
+  statsList.value = await window.statsList.getStatsList();
 })();
 </script>
 
 <template>
   <VContainer>
     <ViewHeading title="統計" />
-    <VCard v-for="statsItem in stats" class="mb-6">
+    <VCard v-for="statsItem in statsList" class="mb-6">
       <template #text>
         <div class="d-flex justify-space-between align-center ga-4">
           <div class="w-25 text-center">

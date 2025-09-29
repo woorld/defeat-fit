@@ -1,21 +1,21 @@
+// TODO: stats-list.tsにファイル名変更
 // TODO: StatsをMapで管理すると絞り込みとかが楽かも
 /*
  * 例
  * // let arr: { id: string }[]
  * const byId = new Map<string, { id: string }>(arr.map(e => [e.id, e]));
  */
-// TODO: menuListに合わせて、statsからstatsListに名称を変更
 import Store from 'electron-store';
 import type { Stats, StatsMenu } from '../../common/types';
 
-const store = new Store<Stats[]>({ name: 'stats' });
-const storeKey = 'stats';
+const store = new Store<Stats[]>({ name: 'stats-list' });
+const storeKey = 'stats-list';
 
-const setStats = async (stats: Stats[]) => store.set(storeKey, stats);
+const setStatsList = async (statsList: Stats[]) => store.set(storeKey, statsList);
 
-export const statsApi = {
+export const statsListApi = {
   // TODO: 期間指定して取得できる関数の追加
-  async getStats(): Promise<Stats[]> {
+  async getStatsList(): Promise<Stats[]> {
     return store.get(storeKey, []);
   },
 
@@ -27,20 +27,20 @@ export const statsApi = {
     // YYYY-MM-DD（sv-SE=スウェーデンの標準形式）で日付を取得
     const roundedNowDateString = nowDate.toLocaleDateString('sv-SE');
 
-    const stats = await statsApi.getStats();
-    const todayStatsIndex = stats.findIndex(statsItem => statsItem.date === roundedNowDateString);
+    const statsList = await statsListApi.getStatsList();
+    const todayStatsIndex = statsList.findIndex(statsItem => statsItem.date === roundedNowDateString);
 
     if (todayStatsIndex <= -1) {
-      stats.push({
+      statsList.push({
         date: roundedNowDateString,
         defeatCount,
         menu,
       });
-      return setStats(stats);
+      return setStatsList(statsList);
     }
 
     // 本日分がすでにある場合は負け回数、筋トレ回数をマージして格納
-    const todayStats = stats[todayStatsIndex];
+    const todayStats = statsList[todayStatsIndex];
     const mergedMenu = [ ...todayStats.menu ];
 
     // TODO: もっといい書き方がありそう
@@ -62,7 +62,7 @@ export const statsApi = {
     };
 
     // もともとあった本日分の統計を置き換えて保存
-    stats.splice(todayStatsIndex, 1, newTodayStats);
-    return setStats(stats);
+    statsList.splice(todayStatsIndex, 1, newTodayStats);
+    return setStatsList(statsList);
   },
 } as const;
