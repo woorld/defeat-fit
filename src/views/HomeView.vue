@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { useDefeatCountStore } from '../stores/defeat-count';
 import DecrementBtn from '../components/DecrementBtn.vue';
 import OscControlBtn from '../components/OscControlBtn.vue';
-import ToTimerBtn from '../components/ToTimerBtn.vue';
+import DoMenuBtn from '../components/DoMenuBtn.vue';
 import type { Menu } from '../../common/types';
 
 const defeatCount = useDefeatCountStore();
@@ -34,7 +34,7 @@ const menuList = ref<Menu[]>([]);
             >{{ defeatCount.count * menu.multiplier }} {{ menu.unit }}</span>
           </td>
           <td class="text-right">
-            <ToTimerBtn
+            <DoMenuBtn
               v-if="menu.unit === '秒'"
               :defeatCount="defeatCount.count * menu.multiplier"
             />
