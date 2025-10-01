@@ -35,8 +35,8 @@ const menuList = ref<Menu[]>([]);
           </td>
           <td class="text-right">
             <DoMenuBtn
-              v-if="menu.unit === '秒'"
               :defeatCount="defeatCount.count * menu.multiplier"
+              :menuUnit="menu.unit"
             />
           </td>
         </tr>
