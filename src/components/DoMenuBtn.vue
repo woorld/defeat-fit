@@ -11,13 +11,22 @@ const props = defineProps<{
 }>();
 
 const isVisibleDialog = ref(false);
-const setCount = ref(4);
+const setCount = ref(1);
 
-const secondsPerSet = computed(() => Math.ceil((defeatCount.count * props.menu.multiplier) / setCount.value));
+const doMenuCount = computed(() => defeatCount.count * props.menu.multiplier);
+const secondsPerSet = computed(() => Math.ceil(doMenuCount.value / setCount.value));
 const maxSet = computed(() => secondsPerSet.value === 1
   ? setCount.value // 1回あたり1秒になる場合、それ以上セット数を増やしても意味がないため+を押させない
   : Infinity
 );
+
+const stepSetCount = (addValue: 1 | -1) => {
+  let currentSetCount = setCount.value + addValue;
+  while (doMenuCount.value % currentSetCount !== 0 && currentSetCount >= 1 && currentSetCount <= maxSet.value) {
+    currentSetCount += addValue;
+  }
+  setCount.value = currentSetCount;
+};
 </script>
 
 <template>
@@ -30,16 +39,23 @@ const maxSet = computed(() => secondsPerSet.value === 1
     <BaseDialog v-model="isVisibleDialog" activateByParent>
       <div class="d-flex justify-center align-center ga-6 flex-column">
         <h3 class="text-h5">何セットに分ける？</h3>
-        <div class="d-flex justify-center align-center ga-4">
-          <VNumberInput
-            v-model="setCount"
-            inset
-            hide-details
-            max-width="120"
-            :min="1"
-            :max="maxSet"
-          />
-          <VIcon>mdi-arrow-right</VIcon>
+        <div class="d-flex justify-center align-center ga-2 flex-column">
+          <div class="d-flex justify-center align-center ga-6">
+            <VBtn
+              flat
+              icon="mdi-minus"
+              :disabled="setCount <= 1"
+              @click="stepSetCount(-1)"
+            />
+            <span class="text-h5">{{ setCount }}</span>
+            <VBtn
+              flat
+              icon="mdi-plus"
+              :disabled="setCount >= maxSet"
+              @click="stepSetCount(1)"
+            />
+          </div>
+          <VIcon size="32">mdi-chevron-down</VIcon>
           <span class="d-flex justify-center align-baseline ga-2">
             <span class="text-h6">1セット</span>
             <span class="text-h4">{{ secondsPerSet }}</span>
@@ -52,6 +68,7 @@ const maxSet = computed(() => secondsPerSet.value === 1
           append-icon="mdi-chevron-right"
           color="green"
           :to="`/timer/${secondsPerSet}/${setCount}`"
+          :disabled="!setCount"
         >タイマー画面へ</VBtn>
       </div>
     </BaseDialog>
