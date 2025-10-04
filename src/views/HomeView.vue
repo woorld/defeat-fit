@@ -34,10 +34,7 @@ const menuList = ref<Menu[]>([]);
             >{{ defeatCount.count * menu.multiplier }} {{ menu.unit }}</span>
           </td>
           <td class="text-right">
-            <DoMenuBtn
-              :defeatCount="defeatCount.count * menu.multiplier"
-              :menuUnit="menu.unit"
-            />
+            <DoMenuBtn :menu />
           </td>
         </tr>
       </tbody>
