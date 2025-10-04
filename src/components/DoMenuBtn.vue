@@ -10,19 +10,24 @@ const props = defineProps<{
   menu: Menu,
 }>();
 
-const isVisibleDialog = ref(false);
+const isDialogVisible = ref(false);
+const isDecimalVisible = ref(false);
 const setCount = ref(1);
 
 const doMenuCount = computed(() => defeatCount.count * props.menu.multiplier);
-const secondsPerSet = computed(() => Math.ceil(doMenuCount.value / setCount.value));
-const maxSet = computed(() => secondsPerSet.value === 1
-  ? setCount.value // 1回あたり1秒になる場合、それ以上セット数を増やしても意味がないため+を押させない
-  : Infinity
+const secondsPerSet = computed(
+  () => Math.floor(doMenuCount.value / setCount.value * 1000) / 1000 // 表示用に小数第4位以下を切り捨て
 );
 
 const stepSetCount = (addValue: 1 | -1) => {
+  if (isDecimalVisible.value) {
+    setCount.value += addValue;
+    return;
+  }
+
+  // セット数を筋トレ回数が割り切れる数まで増やす
   let currentSetCount = setCount.value + addValue;
-  while (doMenuCount.value % currentSetCount !== 0 && currentSetCount >= 1 && currentSetCount <= maxSet.value) {
+  while (doMenuCount.value % currentSetCount !== 0 && currentSetCount >= 1 && currentSetCount <= doMenuCount.value) {
     currentSetCount += addValue;
   }
   setCount.value = currentSetCount;
@@ -36,7 +41,7 @@ const stepSetCount = (addValue: 1 | -1) => {
     color="green"
   >
     やる
-    <BaseDialog v-model="isVisibleDialog" activateByParent>
+    <BaseDialog v-model="isDialogVisible" activateByParent>
       <div class="d-flex justify-center align-center ga-6 flex-column">
         <h3 class="text-h5">何セットに分ける？</h3>
         <div class="d-flex justify-center align-center ga-4 flex-column">
@@ -51,25 +56,36 @@ const stepSetCount = (addValue: 1 | -1) => {
             <VBtn
               flat
               icon="mdi-plus"
-              :disabled="setCount >= maxSet"
+              :disabled="setCount >= doMenuCount"
               @click="stepSetCount(1)"
             />
           </div>
           <VIcon size="32">mdi-chevron-down</VIcon>
-          <span class="d-flex justify-center align-baseline ga-2">
+          <div class="d-flex justify-center align-baseline ga-2">
             <span class="text-body">{{ doMenuCount }} {{ props.menu.unit }} ÷ {{ setCount }} セット =</span>
             <span class="text-h4 text-green">{{ secondsPerSet }}</span>
             <span class="text-body">{{ props.menu.unit }} / セット</span>
-          </span>
+          </div>
         </div>
-        <small class="text-grey">※小数繰り上げ</small>
+        <VCheckbox
+          v-model="isDecimalVisible"
+          label="割り切れないセット数を表示"
+          hide-details
+        />
         <VBtn
           v-show="props.menu.unit === '秒'"
           append-icon="mdi-chevron-right"
           color="green"
-          :to="`/timer/${secondsPerSet}/${setCount}`"
+          :to="`/timer/${Math.ceil(secondsPerSet)}/${setCount}`"
           :disabled="!setCount"
-        >タイマー画面へ</VBtn>
+        >
+          タイマー画面へ
+          <VTooltip
+            v-if="isDecimalVisible"
+            text="小数は切り上げ"
+            activator="parent"
+          />
+        </VBtn>
       </div>
     </BaseDialog>
   </VBtn>
