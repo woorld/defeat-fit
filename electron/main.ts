@@ -65,6 +65,8 @@ function createWindow() {
     }
   });
 
+  win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL);
   } else {
