@@ -39,15 +39,15 @@ const stepSetCount = (addValue: 1 | -1) => {
     <BaseDialog v-model="isVisibleDialog" activateByParent>
       <div class="d-flex justify-center align-center ga-6 flex-column">
         <h3 class="text-h5">何セットに分ける？</h3>
-        <div class="d-flex justify-center align-center ga-2 flex-column">
-          <div class="d-flex justify-center align-center ga-6">
+        <div class="d-flex justify-center align-center ga-4 flex-column">
+          <div class="d-flex justify-center align-center ga-4">
             <VBtn
               flat
               icon="mdi-minus"
               :disabled="setCount <= 1"
               @click="stepSetCount(-1)"
             />
-            <span class="text-h5">{{ setCount }}</span>
+            <span class="set-count text-h4">{{ setCount }}</span>
             <VBtn
               flat
               icon="mdi-plus"
@@ -57,9 +57,9 @@ const stepSetCount = (addValue: 1 | -1) => {
           </div>
           <VIcon size="32">mdi-chevron-down</VIcon>
           <span class="d-flex justify-center align-baseline ga-2">
-            <span class="text-h6">1セット</span>
-            <span class="text-h4">{{ secondsPerSet }}</span>
-            <span class="text-h6">{{ props.menu.unit }}</span>
+            <span class="text-body">{{ doMenuCount }} {{ props.menu.unit }} ÷ {{ setCount }} セット =</span>
+            <span class="text-h4 text-green">{{ secondsPerSet }}</span>
+            <span class="text-body">{{ props.menu.unit }} / セット</span>
           </span>
         </div>
         <small class="text-grey">※小数繰り上げ</small>
@@ -74,3 +74,9 @@ const stepSetCount = (addValue: 1 | -1) => {
     </BaseDialog>
   </VBtn>
 </template>
+
+<style scoped>
+.set-count {
+  width: 70px;
+}
+</style>
