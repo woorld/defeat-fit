@@ -14,9 +14,9 @@ const isDialogVisible = ref(false);
 const isDecimalVisible = ref(false);
 const setCount = ref(1);
 
-const doMenuCount = computed(() => defeatCount.count * props.menu.multiplier);
+const totalReps = computed(() => defeatCount.count * props.menu.multiplier);
 const secondsPerSet = computed(
-  () => Math.floor(doMenuCount.value / setCount.value * 1000) / 1000 // 表示用に小数第4位以下を切り捨て
+  () => Math.floor(totalReps.value / setCount.value * 1000) / 1000 // 表示用に小数第4位以下を切り捨て
 );
 
 const stepSetCount = (addValue: 1 | -1) => {
@@ -27,10 +27,17 @@ const stepSetCount = (addValue: 1 | -1) => {
 
   // セット数を筋トレ回数が割り切れる数まで増やす
   let currentSetCount = setCount.value + addValue;
-  while (doMenuCount.value % currentSetCount !== 0 && currentSetCount >= 1 && currentSetCount <= doMenuCount.value) {
+  while (totalReps.value % currentSetCount !== 0 && currentSetCount >= 1 && currentSetCount <= totalReps.value) {
     currentSetCount += addValue;
   }
   setCount.value = currentSetCount;
+};
+
+const restoreIntegerTotalReps = () => {
+  if (Number.isInteger(secondsPerSet.value) || setCount.value <= 1) {
+    return;
+  }
+  stepSetCount(-1);
 };
 </script>
 
@@ -55,13 +62,13 @@ const stepSetCount = (addValue: 1 | -1) => {
           <VBtn
             flat
             icon="mdi-plus"
-            :disabled="setCount >= doMenuCount"
+            :disabled="setCount >= totalReps"
             @click="stepSetCount(1)"
           />
         </div>
         <VIcon size="32">mdi-chevron-down</VIcon>
         <div class="d-flex justify-center align-baseline ga-2">
-          <span class="text-body">{{ doMenuCount }} {{ props.menu.unit }} ÷ {{ setCount }} セット =</span>
+          <span class="text-body">{{ totalReps }} {{ props.menu.unit }} ÷ {{ setCount }} セット =</span>
           <span class="text-h4 text-green">{{ secondsPerSet }}</span>
           <span class="text-body">{{ props.menu.unit }} / セット</span>
         </div>
@@ -69,6 +76,7 @@ const stepSetCount = (addValue: 1 | -1) => {
           v-model="isDecimalVisible"
           label="割り切れないセット数を表示"
           hide-details
+          @change="restoreIntegerTotalReps"
         />
         <VBtn
           v-show="props.menu.unit === '秒'"
