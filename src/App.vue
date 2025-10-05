@@ -4,9 +4,11 @@
 <template>
   <VApp>
     <VMain>
-      <Transition>
-        <RouterView />
-      </Transition>
+      <RouterView v-slot="{Component}">
+        <Transition mode="out-in">
+          <Component :is="Component" />
+        </Transition>
+      </RouterView>
     </VMain>
     <VBottomNavigation>
       <VBtn to="/">
@@ -32,7 +34,7 @@
 <style scoped>
 .v-enter-active,
 .v-leave-active {
-  transition: 300ms ease;
+  transition: .15s ease;
 }
 
 .v-enter-from,
