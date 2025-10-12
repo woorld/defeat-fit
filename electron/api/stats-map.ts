@@ -1,6 +1,6 @@
-// TODO: API名に合わせてファイル名を変更
 import Store from 'electron-store';
 import type { Stats, StatsMenu, StatsMap } from '../../common/types';
+import { mergeStatsMenu } from '../../common/util';
 
 const storeKey = 'stats-map';
 const store = new Store<(string | Stats)[]>({ name: storeKey });
@@ -35,19 +35,7 @@ export const statsMapApi = {
     }
 
     // 本日分がすでにある場合は負け回数、筋トレ回数をマージして格納
-    const mergedMenu = [ ...todayStats.menuList ];
-
-    // TODO: もっといい書き方がありそう
-    for (const menu of menuList) {
-      const existingMenuIndex = mergedMenu.findIndex(mergedMenu => mergedMenu.id === menu.id);
-
-      if (existingMenuIndex <= -1) {
-        mergedMenu.push(menu);
-        continue;
-      }
-
-      mergedMenu[existingMenuIndex].count = mergedMenu[existingMenuIndex].count + menu.count;
-    }
+    const mergedMenu = mergeStatsMenu(todayStats.menuList, menuList);
 
     const newTodayStats = {
       date: roundedNowDateString,

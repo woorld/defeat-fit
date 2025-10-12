@@ -18,7 +18,7 @@ export type StatsMenu = Omit<Menu, 'multiplier'> & {
 };
 
 export type Stats = {
-  date: string, // YYYY-MM-DD
+  date?: string, // YYYY-MM-DD、任意なのは合計を算出する場合にdateが不要なため
   defeatCount: number,
   menuList: StatsMenu[],
 };

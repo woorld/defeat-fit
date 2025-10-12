@@ -1,9 +1,13 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import type { Stats } from '../../common/types';
 
 const props = defineProps<{
   stats: Stats,
 }>();
+
+// dateがない場合は合計表示とする
+const title = computed(() => props.stats.date ? props.stats.date.replace(/\-/g, '/') : 'Total');
 </script>
 
 <template>
@@ -11,7 +15,7 @@ const props = defineProps<{
     <template #text>
       <div class="d-flex justify-space-between align-center ga-4">
         <div class="w-25 text-center">
-          <span class="text-h6">{{ props.stats.date.replace(/\-/g, '/') }}</span>
+          <span class="text-h6">{{ title }}</span>
           <div class="text-h4 d-flex justify-center align-center mt-3">
             <VIcon>mdi-coffin</VIcon>
             <!-- NOTE: marginはアイコンの余白に合わせるためのもの -->
