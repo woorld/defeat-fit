@@ -1,9 +1,21 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import type { StatsMap } from '../../common/types';
 import ViewHeading from '../components/ViewHeading.vue';
 
 const statsMap = ref<StatsMap>(new Map());
+
+const dateDescStatsList = computed(() => {
+  const statsArr = Array.from(statsMap.value.values());
+
+  statsArr.sort((statsA, statsB) => {
+    const dateA = new Date(statsA.date);
+    const dateB = new Date(statsB.date);
+    return dateB.getTime() - dateA.getTime(); // 直近の日付順でソート
+  });
+
+  return statsArr;
+});
 
 (async () => {
   statsMap.value = await window.statsMap.getStatsMap();
@@ -13,7 +25,7 @@ const statsMap = ref<StatsMap>(new Map());
 <template>
   <VContainer>
     <ViewHeading title="統計" />
-    <VCard v-for="stats in statsMap.values()" class="mb-6">
+    <VCard v-for="stats in dateDescStatsList" class="mb-6">
       <template #text>
         <div class="d-flex justify-space-between align-center ga-4">
           <div class="w-25 text-center">
