@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import type { Stats, StatsMap } from '../../common/types';
+import type { StatsMap } from '../../common/types';
 import ViewHeading from '../components/ViewHeading.vue';
 
 const statsMap = ref<StatsMap>(new Map());
