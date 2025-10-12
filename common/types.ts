@@ -18,7 +18,9 @@ export type StatsMenu = Omit<Menu, 'multiplier'> & {
 };
 
 export type Stats = {
-  date: string,
+  date: string, // YYYY-MM-DD
   defeatCount: number,
   menuList: StatsMenu[],
 };
+
+export type StatsMap = Map<string, Stats>; // stringはYYYY-MM-DD

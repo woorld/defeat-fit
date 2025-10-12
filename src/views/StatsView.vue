@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import type { Stats } from '../../common/types';
+import type { Stats, StatsMap } from '../../common/types';
 import ViewHeading from '../components/ViewHeading.vue';
 
-const statsList = ref<Stats[]>([]);
+const statsMap = ref<StatsMap>(new Map());
 
 (async () => {
-  statsList.value = await window.statsList.getStatsList();
+  statsMap.value = await window.statsMap.getStatsMap();
 })();
 </script>
 
 <template>
   <VContainer>
     <ViewHeading title="統計" />
-    <VCard v-for="stats in statsList" class="mb-6">
+    <VCard v-for="stats in statsMap.values()" class="mb-6">
       <template #text>
         <div class="d-flex justify-space-between align-center ga-4">
           <div class="w-25 text-center">

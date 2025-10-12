@@ -5,7 +5,7 @@ import { defeatCountApi } from './api/defeat-count';
 import { oscApi } from './api/osc';
 import { menuListApi } from './api/menu-list';
 import { settingApi } from './api/setting';
-import { statsListApi } from './api/stats-list';
+import { statsMapApi } from './api/stats-list';
 import type { Menu, Setting, StatsMenu } from '../common/types';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -145,5 +145,5 @@ ipcMain.on('set-all-setting', async (_, setting: Setting) => {
 ipcMain.on('reset-setting', () => settingApi.resetSetting());
 
 // 統計API
-ipcMain.handle('get-stats-list', () => statsListApi.getStatsList());
-ipcMain.handle('add-stats', (_, defeatCount: number, menu: StatsMenu[]) => statsListApi.addStats(defeatCount, menu));
+ipcMain.handle('get-stats-map', () => statsMapApi.getStatsMap());
+ipcMain.handle('add-stats', (_, defeatCount: number, menu: StatsMenu[]) => statsMapApi.addStats(defeatCount, menu));

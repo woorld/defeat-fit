@@ -1,21 +1,17 @@
-// TODO: StatsをMapで管理すると絞り込みとかが楽かも
-/*
- * 例
- * // let arr: { id: string }[]
- * const byId = new Map<string, { id: string }>(arr.map(e => [e.id, e]));
- */
+// TODO: API名に合わせてファイル名を変更
 import Store from 'electron-store';
-import type { Stats, StatsMenu } from '../../common/types';
+import type { Stats, StatsMenu, StatsMap } from '../../common/types';
 
-const store = new Store<Stats[]>({ name: 'stats-list' });
-const storeKey = 'statsList';
+const storeKey = 'stats-map';
+const store = new Store<(string | Stats)[]>({ name: storeKey });
 
-const setStatsList = async (statsList: Stats[]) => store.set(storeKey, statsList);
+const setStatsMap = async (statsMap: StatsMap) => store.set(storeKey, Array.from(statsMap));
 
-export const statsListApi = {
+export const statsMapApi = {
   // TODO: 期間指定して取得できる関数の追加
-  async getStatsList(): Promise<Stats[]> {
-    return store.get(storeKey, []);
+  async getStatsMap(): Promise<StatsMap> {
+    const statsMap = store.get(storeKey, []);
+    return new Map(statsMap); // TODO: ファイルから取得した値のチェック入れなくて大丈夫？
   },
 
   async addStats(defeatCount: number, menuList: StatsMenu[]) {
@@ -26,20 +22,19 @@ export const statsListApi = {
     // YYYY-MM-DD（sv-SE=スウェーデンの標準形式）で日付を取得
     const roundedNowDateString = nowDate.toLocaleDateString('sv-SE');
 
-    const statsList = await statsListApi.getStatsList();
-    const todayStatsIndex = statsList.findIndex(stats => stats.date === roundedNowDateString);
+    const statsMap = await statsMapApi.getStatsMap();
+    const todayStats = statsMap.get(roundedNowDateString);
 
-    if (todayStatsIndex <= -1) {
-      statsList.push({
+    if (todayStats == undefined) {
+      statsMap.set(roundedNowDateString, {
         date: roundedNowDateString,
         defeatCount,
         menuList,
       });
-      return setStatsList(statsList);
+      return setStatsMap(statsMap);
     }
 
     // 本日分がすでにある場合は負け回数、筋トレ回数をマージして格納
-    const todayStats = statsList[todayStatsIndex];
     const mergedMenu = [ ...todayStats.menuList ];
 
     // TODO: もっといい書き方がありそう
@@ -61,7 +56,7 @@ export const statsListApi = {
     };
 
     // もともとあった本日分の統計を置き換えて保存
-    statsList.splice(todayStatsIndex, 1, newTodayStats);
-    return setStatsList(statsList);
+    statsMap.set(roundedNowDateString, newTodayStats);
+    return setStatsMap(statsMap);
   },
 } as const;
