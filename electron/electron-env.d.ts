@@ -28,4 +28,5 @@ interface Window {
   osc: import('./preload').OscApi;
   menuList: import('./preload').MenuListApi;
   setting: import('./preload').SettingApi;
+  statsMap: import('./preload').StatsMapApi;
 }

@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import MenuTableRow from '../components/MenuTableRow.vue';
 import type { Menu } from '../../common/types';
+import ViewHeading from '../components/ViewHeading.vue';
 
 const menuList = ref<Menu[]>([]);
 const editingMenuId = ref<null | number>(null);
@@ -34,7 +35,7 @@ const updateEditingMenu = (id: null | number) => {
 
 <template>
   <VContainer class="d-flex justify-center flex-column">
-    <h2 class="text-h4 text-center mt-6 mb-10">メニュー編集</h2>
+    <ViewHeading title="メニュー編集" />
     <VTable hover :items="menuList">
       <thead>
         <tr class="font-weight-bold">

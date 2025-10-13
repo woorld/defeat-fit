@@ -5,6 +5,7 @@ import type { Setting } from '../../common/types';
 import SettingSlider from '../components/SettingSlider.vue';
 import SettingNotSavedDialog from '../components/SettingNotSavedDialog.vue';
 import ConfirmDialog from '../components/ConfirmDialog.vue';
+import ViewHeading from '../components/ViewHeading.vue';
 
 const setting = ref<Setting>({ ...SETTING_DEFAULT_VALUE });
 const prevSetting = ref<Setting>({ ...SETTING_DEFAULT_VALUE });
@@ -34,7 +35,7 @@ getSetting();
 
 <template>
   <VContainer>
-    <h2 class="text-h4 text-center mt-6 mb-10">設定</h2>
+    <ViewHeading title="設定" />
     <div class="d-flex flex-column ga-10">
       <VTextField
         label="対象のOSCメッセージ"
