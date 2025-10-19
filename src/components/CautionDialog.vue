@@ -33,5 +33,6 @@ const saveDialogSetting = () => {
         hide-details
       />
     </div>
+    <VBtn color="green" @click="isVisible = false">わかった</VBtn>
   </BaseDialog>
 </template>
