@@ -6,6 +6,7 @@ import OscControlBtn from '../components/OscControlBtn.vue';
 import DoMenuBtn from '../components/DoMenuBtn.vue';
 import type { Menu } from '../../common/types';
 import DoneBtn from '../components/DoneBtn.vue';
+import CautionDialog from '../components/CautionDialog.vue';
 
 const defeatCount = useDefeatCountStore();
 
@@ -45,5 +46,6 @@ const menuList = ref<Menu[]>([]);
       <DoneBtn class="flex-1-1-0" :menuList="menuList" />
     </div>
     <OscControlBtn />
+    <CautionDialog />
   </VContainer>
 </template>
