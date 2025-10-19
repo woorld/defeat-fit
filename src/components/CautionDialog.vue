@@ -3,7 +3,13 @@ import { ref } from 'vue';
 import BaseDialog from './BaseDialog.vue';
 
 const isVisible = ref(false);
-const dontShowAgain = ref(false); // TODO: チェックすることで設定を変更できるようにする 閉じるときに設定に反映させたほうがいい？
+const dontShowAgain = ref(false);
+
+const saveDialogSetting = () => {
+  if (dontShowAgain.value) {
+    window.setting.setSetting('showCautionDialog', false);
+  }
+};
 
 (async () => {
   const showCautionDialog = await window.setting.getSetting('showCautionDialog');
@@ -12,7 +18,7 @@ const dontShowAgain = ref(false); // TODO: チェックすることで設定を�
 </script>
 
 <template>
-  <BaseDialog v-model="isVisible">
+  <BaseDialog v-model="isVisible" @close="saveDialogSetting">
     <h3 class="text-h5 mb-6 text-yellow">戦いやめるな！筋トレやめろ！</h3>
     <div class="d-flex justify-center align-center flex-column ga-4">
       <div class="text-left">
