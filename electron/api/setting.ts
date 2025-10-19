@@ -8,11 +8,17 @@ const storeKey = 'setting';
 export const settingApi = {
   async getSetting<K extends keyof Setting>(settingName: K): Promise<Setting[K]> {
     const setting = await settingApi.getAllSetting();
-    return setting[settingName];
+    return setting[settingName] ?? SETTING_DEFAULT_VALUE[settingName];
   },
 
   async getAllSetting() {
     return store.get(storeKey, SETTING_DEFAULT_VALUE);
+  },
+
+  async setSetting<K extends keyof Setting>(settingName: K, value: Setting[K]) {
+    const setting = await settingApi.getAllSetting();
+    setting[settingName] = value;
+    return settingApi.setAllSetting(setting);
   },
 
   async setAllSetting(setting: Setting) {

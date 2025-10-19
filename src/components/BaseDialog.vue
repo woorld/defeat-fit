@@ -3,11 +3,19 @@ const props = defineProps<{
   activateByParent?: boolean,
 }>();
 
+const emit = defineEmits<{
+  (e: 'close'): void,
+}>();
+
 const model = defineModel<boolean>({ required: true });
 </script>
 
 <template>
-  <VDialog v-model="model" :activator="props.activateByParent ? 'parent' : undefined">
+  <VDialog
+    v-model="model"
+    :activator="props.activateByParent ? 'parent' : undefined"
+    @afterLeave="emit('close')"
+  >
     <VSheet class="pa-8 text-center">
       <slot />
     </VSheet>

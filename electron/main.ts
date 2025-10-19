@@ -1,4 +1,5 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
+import type { IpcMainInvokeEvent } from 'electron';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { defeatCountApi } from './api/defeat-count';
@@ -136,6 +137,14 @@ ipcMain.on('replace-menu', (_, id: number, newMenu: Menu) => menuListApi.replace
 // 設定API
 ipcMain.handle('get-setting', (_, settingName: keyof Setting) => settingApi.getSetting(settingName));
 ipcMain.handle('get-all-setting', () => settingApi.getAllSetting());
+ipcMain.handle(
+  'set-setting',
+  <K extends keyof Setting>(
+    _: IpcMainInvokeEvent,
+    settingName: K,
+    value: Setting[K]
+  ) => settingApi.setSetting(settingName, value)
+);
 ipcMain.on('set-all-setting', async (_, setting: Setting) => {
   settingApi.setAllSetting(setting);
   if (oscApi.isListening()) {

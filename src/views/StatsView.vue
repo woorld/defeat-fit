@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, toRaw } from 'vue';
+import { ref, computed } from 'vue';
 import type { Stats, StatsMap, StatsMenu } from '../../common/types';
 import ViewHeading from '../components/ViewHeading.vue';
 import { mergeStatsMenu } from '../../common/util';
@@ -24,7 +24,6 @@ const totalStats = computed<Stats>(() => {
   let totalMenuList: StatsMenu[] = [];
 
   for (const stats of Array.from(statsMap.value.values())) {
-    console.log(toRaw(stats))
     totalDefeatCount += stats.defeatCount;
     totalMenuList = mergeStatsMenu(totalMenuList, stats.menuList);
   }
