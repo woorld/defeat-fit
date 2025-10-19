@@ -37,6 +37,8 @@ const settingApi = {
     ipcRenderer.invoke('get-setting', settingName),
   getAllSetting: () =>
     ipcRenderer.invoke('get-all-setting'),
+  setSetting: <K extends keyof Setting>(settingName: K, value: Setting[K]) =>
+    ipcRenderer.invoke('set-setting', settingName, value),
   setAllSetting: (setting: Setting) =>
     ipcRenderer.send('set-all-setting', setting),
   resetSetting: () =>

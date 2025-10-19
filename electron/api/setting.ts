@@ -16,6 +16,13 @@ export const settingApi = {
     return store.get(storeKey, SETTING_DEFAULT_VALUE);
   },
 
+  async setSetting<K extends keyof Setting>(settingName: K, value: Setting[K]) {
+    const setting = await settingApi.getAllSetting();
+    setting[settingName] = value;
+    console.log(setting);
+    return settingApi.setAllSetting(setting);
+  },
+
   async setAllSetting(setting: Setting) {
     return store.set(storeKey, setting);
   },
