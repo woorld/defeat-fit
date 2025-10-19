@@ -2,9 +2,13 @@
 import { ref } from 'vue';
 import BaseDialog from './BaseDialog.vue';
 
-// TODO: 設定の値によって出しわける
-const isVisible = ref(true);
-const dontShowAgain = ref(false);
+const isVisible = ref(false);
+const dontShowAgain = ref(false); // TODO: チェックすることで設定を変更できるようにする 閉じるときに設定に反映させたほうがいい？
+
+(async () => {
+  const showCautionDialog = await window.setting.getSetting('showCautionDialog');
+  isVisible.value = showCautionDialog;
+})();
 </script>
 
 <template>

@@ -7,6 +7,7 @@ const storeKey = 'setting';
 
 export const settingApi = {
   async getSetting<K extends keyof Setting>(settingName: K): Promise<Setting[K]> {
+    // TODO: 設定の値がなかった場合にデフォルト値を返すようにする
     const setting = await settingApi.getAllSetting();
     return setting[settingName];
   },

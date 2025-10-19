@@ -11,6 +11,7 @@ export type Setting = {
   targetOscMessage: string,
   soundVolume: number,
   breakTimeSecBetweenSets: number,
+  showCautionDialog: boolean,
 };
 
 export type StatsMenu = Omit<Menu, 'multiplier'> & {

@@ -58,6 +58,15 @@ getSetting();
         :min="1"
         :max="300"
       />
+      <div class="d-flex justify-space-between align-center">
+        <VLabel>ホーム画面に注意喚起ダイアログを表示する</VLabel>
+        <VSwitch
+          v-model="setting.showCautionDialog"
+          inset
+          color="green"
+          hide-details
+        />
+      </div>
       <div class="d-flex justify-space-around align-center ga-4">
         <VBtn class="flex-1-1-0" color="yellow">
           設定をリセット
