@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import type { Menu, MenuUnit } from '../../common/types';
+import ConfirmDialog from './ConfirmDialog.vue';
 
 const unitType: MenuUnit[] = ['回', '秒'];
 
@@ -17,6 +18,7 @@ const emit = defineEmits<{
 const name = ref(props.menu.name);
 const multiplier = ref(props.menu.multiplier);
 const unit = ref(props.menu.unit);
+const isDeleteDialogVisible = ref(false);
 
 const canEdit = computed(() => props.editingMenuId === props.menu.id);
 const isLockBtn = computed(() => props.editingMenuId !== null && props.editingMenuId !== props.menu.id);
@@ -37,7 +39,9 @@ const editMenu = async () => {
   emit('update-editing-menu', null);
 };
 
-const deleteMenu = async (id: number) => {
+const onDeleteMenu = async (id: number) => {
+  isDeleteDialogVisible.value = false;
+
   await window.menuList.deleteMenu(id);
   if (props.editingMenuId === props.menu.id) {
     emit('update-editing-menu', null);
@@ -107,9 +111,20 @@ const deleteMenu = async (id: number) => {
         :disabled="isLockBtn"
         size="small"
         elevation="0"
-        icon="mdi-close"
-        @click="deleteMenu(props.menu.id)"
+        icon="mdi-trash-can"
+        @click="isDeleteDialogVisible = true"
       />
+      <ConfirmDialog
+        v-model="isDeleteDialogVisible"
+        title="メニュー削除"
+        yesBtnColor="red"
+        reverseYesNoPosition
+        @click-yes="onDeleteMenu(props.menu.id)"
+        @click-no="isDeleteDialogVisible = false"
+      >
+        本当に {{ props.menu.name }} を削除する？<br />
+        <span class="text-red">※統計からも削除されます</span>
+      </ConfirmDialog>
     </td>
   </tr>
 </template>
