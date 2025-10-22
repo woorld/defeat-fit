@@ -33,7 +33,7 @@ const menuList = ref<Menu[]>([]);
           <td class="text-right">
             <span
               class="pt-1 pb-1 pr-2 pl-2 rounded"
-            >{{ defeatCount.count * menu.multiplier }} {{ menu.unit }}</span>
+            >{{ Math.ceil(menu.multiplier * defeatCount.count) }} {{ menu.unit }}</span>
           </td>
           <td class="text-right">
             <DoMenuBtn :menu />

@@ -14,7 +14,7 @@ const isDialogVisible = ref(false);
 const isDecimalVisible = ref(false);
 const setCount = ref(1);
 
-const totalReps = computed(() => defeatCount.count * props.menu.multiplier);
+const totalReps = computed(() => Math.ceil(props.menu.multiplier * defeatCount.count));
 const secondsPerSet = computed(
   () => Math.floor(totalReps.value / setCount.value * 1000) / 1000 // 表示用に小数第4位以下を切り捨て
 );

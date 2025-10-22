@@ -19,7 +19,7 @@ const onDone = async () => {
     id: menu.id,
     name: menu.name,
     unit: menu.unit,
-    count: menu.multiplier * defeatCount.count,
+    count: Math.ceil(menu.multiplier * defeatCount.count),
   }));
 
   await window.statsMap.addStats(defeatCount.count, newStats);
