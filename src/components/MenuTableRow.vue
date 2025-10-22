@@ -54,6 +54,7 @@ const onDeleteMenu = async (id: number) => {
   <tr :class="{'active': canEdit}">
     <template v-if="canEdit">
       <td class="px-2">
+        <!-- HACK: rulesを未入力時の赤枠表示用に使用 -->
         <VTextField
           class="menu-input"
           label="メニュー名"
@@ -64,6 +65,7 @@ const onDeleteMenu = async (id: number) => {
           center-affix
           hide-details
           autofocus
+          :rules="[v => v.length >= 1]"
         />
       </td>
       <td class="px-2">
@@ -100,7 +102,7 @@ const onDeleteMenu = async (id: number) => {
     <td class="text-right">
       <VBtn
         :class="{'text-green': canEdit}"
-        :disabled="isLockBtn"
+        :disabled="isLockBtn || name.length <= 0"
         size="small"
         elevation="0"
         :icon="canEdit ? 'mdi-check' : 'mdi-pencil'"
