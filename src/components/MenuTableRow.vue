@@ -11,6 +11,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
+  (e: 'add-menu', menu: Menu): void,
   (e: 'replace-menu', menu: Menu): void,
   (e: 'delete-menu', id: number): void,
   (e: 'update-editing-menu', id: null | number): void,
@@ -37,7 +38,12 @@ const editMenu = async () => {
     return;
   }
 
-  emit('replace-menu', toRaw(menu.value));
+  if (props.menu === null) {
+    emit('add-menu', toRaw(menu.value));
+  }
+  else {
+    emit('replace-menu', toRaw(menu.value));
+  }
   emit('update-editing-menu', null);
 };
 
@@ -47,6 +53,15 @@ const onDeleteMenu = async (id: number) => {
   if (props.editingMenuId === menu.value.id) {
     emit('update-editing-menu', null);
   }
+};
+
+const onClickDiscard = () => {
+  if (props.menu === null) {
+    // 追加用の行を非表示にする
+    emit('update-editing-menu', null);
+    return;
+  }
+  isDeleteDialogVisible.value = true;
 };
 </script>
 
@@ -113,8 +128,8 @@ const onDeleteMenu = async (id: number) => {
         :disabled="isLockBtn"
         size="small"
         elevation="0"
-        icon="mdi-trash-can"
-        @click="isDeleteDialogVisible = true"
+        :icon="props.menu === null ? 'mdi-close' : 'mdi-trash-can'"
+        @click="onClickDiscard"
       />
       <ConfirmDialog
         v-model="isDeleteDialogVisible"

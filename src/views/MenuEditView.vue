@@ -5,7 +5,7 @@ import type { Menu } from '../../common/types';
 import ViewHeading from '../components/ViewHeading.vue';
 
 const menuList = ref<Menu[]>([]);
-const editingMenuId = ref<null | number>(null);
+const editingMenuId = ref<null | number>(null); // 0の場合は新規追加
 
 const getMenuList = async () => {
   const fetchedMenuList: Menu[] = await window.menuList.getMenuList();
@@ -14,15 +14,9 @@ const getMenuList = async () => {
 };
 
 // HACK: フロント側で表示だけ追加し、確定されたときにファイルに書き込んだほうがよい
-const addMenu = async () => {
-  const id = Date.now();
-  await window.menuList.addMenu({
-    id,
-    name: '',
-    multiplier: 1,
-    unit: '回',
-  });
-  editingMenuId.value = id;
+const addMenu = async (menu: Menu) => {
+  const id = Date.now(); // IDが0になっているのでここで生成し設定
+  await window.menuList.addMenu({ ...menu, id });
   getMenuList();
 };
 
@@ -67,6 +61,16 @@ const updateEditingMenu = (id: null | number) => {
           @delete-menu="deleteMenu"
           @update-editing-menu="updateEditingMenu"
         />
+        <!-- 新規追加用の行 -->
+        <!-- HACK: v-ifにしてメニュー追加ボタンを押すたびにDOMが生成させて入力欄が空になるようにする -->
+        <MenuTableRow
+          v-if="editingMenuId === 0"
+          :menu="null"
+          :editingMenuId
+          @add-menu="addMenu"
+          @delete-menu="deleteMenu"
+          @update-editing-menu="updateEditingMenu"
+        />
       </tbody>
     </VTable>
     <VBtn
@@ -74,7 +78,7 @@ const updateEditingMenu = (id: null | number) => {
       :disabled="editingMenuId !== null"
       rounded
       prepend-icon="mdi-plus"
-      @click="addMenu"
+      @click="editingMenuId = 0"
     >メニューを追加</VBtn>
   </VContainer>
 </template>
