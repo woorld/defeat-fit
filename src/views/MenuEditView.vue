@@ -7,6 +7,12 @@ import ViewHeading from '../components/ViewHeading.vue';
 const menuList = ref<Menu[]>([]);
 const editingMenuId = ref<null | number>(null);
 
+const getMenuList = async () => {
+  const fetchedMenuList: Menu[] = await window.menuList.getMenuList();
+  fetchedMenuList.sort((menuA, menuB) => menuA.id - menuB.id);
+  menuList.value = fetchedMenuList;
+};
+
 // HACK: フロント側で表示だけ追加し、確定されたときにファイルに書き込んだほうがよい
 const addMenu = async () => {
   const id = Date.now();
@@ -17,11 +23,17 @@ const addMenu = async () => {
     unit: '回',
   });
   editingMenuId.value = id;
-  updateMenu();
+  getMenuList();
 };
 
-const updateMenu = async () => {
-  menuList.value = await window.menuList.getMenuList();
+const replaceMenu = async (menu: Menu) => {
+  await window.menuList.replaceMenu(menu.id, menu);
+  getMenuList();
+};
+
+const deleteMenu = async (id: number) => {
+  await window.menuList.deleteMenu(id);
+  getMenuList();
 };
 
 const updateEditingMenu = (id: null | number) => {
@@ -29,7 +41,7 @@ const updateEditingMenu = (id: null | number) => {
 };
 
 (async () => {
-  menuList.value = await window.menuList.getMenuList();
+  getMenuList();
 })();
 </script>
 
@@ -48,9 +60,11 @@ const updateEditingMenu = (id: null | number) => {
       <tbody>
         <MenuTableRow
           v-for="menu of menuList"
+          :key="menu.id"
           :menu
           :editingMenuId
-          @update-menu="updateMenu"
+          @replace-menu="replaceMenu"
+          @delete-menu="deleteMenu"
           @update-editing-menu="updateEditingMenu"
         />
       </tbody>
