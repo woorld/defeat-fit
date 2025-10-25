@@ -13,9 +13,8 @@ const getMenuList = async () => {
   menuList.value = fetchedMenuList;
 };
 
-// HACK: フロント側で表示だけ追加し、確定されたときにファイルに書き込んだほうがよい
 const addMenu = async (menu: Menu) => {
-  const id = Date.now(); // IDが0になっているのでここで生成し設定
+  const id = Date.now(); // IDが0になっているので、ここで生成して設定
   await window.menuList.addMenu({ ...menu, id });
   getMenuList();
 };
@@ -30,7 +29,7 @@ const deleteMenu = async (id: number) => {
   getMenuList();
 };
 
-const updateEditingMenu = (id: null | number) => {
+const updateEditingMenuId = (id: null | number) => {
   editingMenuId.value = id;
 };
 
@@ -59,7 +58,7 @@ const updateEditingMenu = (id: null | number) => {
           :editingMenuId
           @replace-menu="replaceMenu"
           @delete-menu="deleteMenu"
-          @update-editing-menu="updateEditingMenu"
+          @update-editing-menu="updateEditingMenuId"
         />
         <!-- 新規追加用の行 -->
         <!-- HACK: v-ifにしてメニュー追加ボタンを押すたびにDOMが生成させて入力欄が空になるようにする -->
@@ -69,7 +68,7 @@ const updateEditingMenu = (id: null | number) => {
           :editingMenuId
           @add-menu="addMenu"
           @delete-menu="deleteMenu"
-          @update-editing-menu="updateEditingMenu"
+          @update-editing-menu-id="updateEditingMenuId"
         />
       </tbody>
     </VTable>

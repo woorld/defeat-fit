@@ -6,7 +6,7 @@ import ConfirmDialog from './ConfirmDialog.vue';
 const unitType: MenuUnit[] = ['回', '秒'];
 
 const props = defineProps<{
-  menu: Menu | null,
+  menu: Menu | null, // nullの場合は新規追加
   editingMenuId: null | number,
 }>();
 
@@ -14,7 +14,7 @@ const emit = defineEmits<{
   (e: 'add-menu', menu: Menu): void,
   (e: 'replace-menu', menu: Menu): void,
   (e: 'delete-menu', id: number): void,
-  (e: 'update-editing-menu', id: null | number): void,
+  (e: 'update-editing-menu-id', id: null | number): void,
 }>();
 
 const menu = ref<Menu>(props.menu
@@ -34,7 +34,7 @@ const isLockBtn = computed(() => props.editingMenuId !== null && props.editingMe
 const editMenu = async () => {
   if (!canEdit.value) {
     // メニューを編集中にする
-    emit('update-editing-menu', menu.value.id);
+    emit('update-editing-menu-id', menu.value.id);
     return;
   }
 
@@ -44,21 +44,21 @@ const editMenu = async () => {
   else {
     emit('replace-menu', toRaw(menu.value));
   }
-  emit('update-editing-menu', null);
+  emit('update-editing-menu-id', null);
 };
 
 const onDeleteMenu = async (id: number) => {
   isDeleteDialogVisible.value = false;
   emit('delete-menu', id);
   if (props.editingMenuId === menu.value.id) {
-    emit('update-editing-menu', null);
+    emit('update-editing-menu-id', null);
   }
 };
 
 const onClickDiscard = () => {
   if (props.menu === null) {
     // 追加用の行を非表示にする
-    emit('update-editing-menu', null);
+    emit('update-editing-menu-id', null);
     return;
   }
   isDeleteDialogVisible.value = true;
