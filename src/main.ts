@@ -8,7 +8,9 @@ import '@mdi/font/css/materialdesignicons.css';
 import { createMemoryHistory, createRouter } from 'vue-router';
 import HomeView from './views/HomeView.vue';
 import TimerView from './views/TimerView.vue';
+import MenuView from './views/MenuView.vue';
 import MenuEditView from './views/MenuEditView.vue';
+import MenuPresetView from './views/MenuPresetView.vue';
 import StatsView from './views/StatsView.vue';
 import SettingView from './views/SettingView.vue';
 import { createPinia } from 'pinia';
@@ -32,6 +34,15 @@ const routes = [
     path: '/timer/:seconds/:setCount',
     name: 'timer',
     component: TimerView
+  },
+  {
+    path: '/menu',
+    name: 'menu',
+    component: MenuView,
+    children: [
+      { path: 'edit', component: MenuEditView },
+      { path: 'preset', component: MenuPresetView },
+    ],
   },
   {
     path: '/menu-edit',
