@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BottomNav from './components/BottomNav.vue';
 </script>
 
 <template>
@@ -10,28 +11,21 @@
         </Transition>
       </RouterView>
     </VMain>
-    <VBottomNavigation>
-      <VBtn to="/">
-        <VIcon>mdi-home</VIcon>
-      </VBtn>
-      <VBtn to="/timer/0/1">
-        <VIcon>mdi-timer</VIcon>
-      </VBtn>
-      <VBtn to="/menu-edit">
-        <!-- TODO: 仮アイコン -->
-        <VIcon>mdi-menu</VIcon>
-      </VBtn>
-      <VBtn to="/stats">
-        <VIcon>mdi-chart-bar</VIcon>
-      </VBtn>
-      <VBtn to="/setting">
-        <VIcon>mdi-cog</VIcon>
-      </VBtn>
-    </VBottomNavigation>
+    <BottomNav />
   </VApp>
 </template>
 
-<style scoped>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap');
+
+* {
+  font-family: "Noto Sans JP" !important;
+}
+
+html {
+  overflow-y: auto !important;
+}
+
 .v-enter-active,
 .v-leave-active {
   transition: .15s ease;
@@ -40,16 +34,5 @@
 .v-enter-from,
 .v-leave-to {
   opacity: 0;
-}
-</style>
-
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap');
-* {
-  font-family: "Noto Sans JP" !important;
-}
-
-html {
-  overflow-y: auto !important;
 }
 </style>
