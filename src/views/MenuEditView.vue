@@ -66,7 +66,6 @@ const updateEditingMenuId = (id: null | number) => {
           :menu="null"
           :editingMenuId
           @add-menu="addMenu"
-          @delete-menu="deleteMenu"
           @update-editing-menu-id="updateEditingMenuId"
         />
       </tbody>
