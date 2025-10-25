@@ -5,31 +5,36 @@ import type { Menu } from '../../common/types';
 import ViewHeading from '../components/ViewHeading.vue';
 
 const menuList = ref<Menu[]>([]);
-const editingMenuId = ref<null | number>(null);
+const editingMenuId = ref<null | number>(null); // 0の場合は新規追加
 
-// HACK: フロント側で表示だけ追加し、確定されたときにファイルに書き込んだほうがよい
-const addMenu = async () => {
-  const id = Date.now();
-  await window.menuList.addMenu({
-    id,
-    name: '',
-    multiplier: 1,
-    unit: '回',
-  });
-  editingMenuId.value = id;
-  updateMenu();
+const getMenuList = async () => {
+  const fetchedMenuList: Menu[] = await window.menuList.getMenuList();
+  fetchedMenuList.sort((menuA, menuB) => menuA.id - menuB.id);
+  menuList.value = fetchedMenuList;
 };
 
-const updateMenu = async () => {
-  menuList.value = await window.menuList.getMenuList();
+const addMenu = async (menu: Menu) => {
+  const id = Date.now(); // IDが0になっているので、ここで生成して設定
+  await window.menuList.addMenu({ ...menu, id });
+  getMenuList();
 };
 
-const updateEditingMenu = (id: null | number) => {
+const replaceMenu = async (menu: Menu) => {
+  await window.menuList.replaceMenu(menu.id, menu);
+  getMenuList();
+};
+
+const deleteMenu = async (id: number) => {
+  await window.menuList.deleteMenu(id);
+  getMenuList();
+};
+
+const updateEditingMenuId = (id: null | number) => {
   editingMenuId.value = id;
 };
 
 (async () => {
-  menuList.value = await window.menuList.getMenuList();
+  getMenuList();
 })();
 </script>
 
@@ -48,10 +53,20 @@ const updateEditingMenu = (id: null | number) => {
       <tbody>
         <MenuTableRow
           v-for="menu of menuList"
+          :key="menu.id"
           :menu
           :editingMenuId
-          @update-menu="updateMenu"
-          @update-editing-menu="updateEditingMenu"
+          @replace-menu="replaceMenu"
+          @delete-menu="deleteMenu"
+          @update-editing-menu-id="updateEditingMenuId"
+        />
+        <!-- 新規追加用の行 -->
+        <MenuTableRow
+          v-show="editingMenuId === 0"
+          :menu="null"
+          :editingMenuId
+          @add-menu="addMenu"
+          @update-editing-menu-id="updateEditingMenuId"
         />
       </tbody>
     </VTable>
@@ -60,7 +75,7 @@ const updateEditingMenu = (id: null | number) => {
       :disabled="editingMenuId !== null"
       rounded
       prepend-icon="mdi-plus"
-      @click="addMenu"
+      @click="editingMenuId = 0"
     >メニューを追加</VBtn>
   </VContainer>
 </template>

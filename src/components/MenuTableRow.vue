@@ -1,48 +1,69 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, toRaw } from 'vue';
 import type { Menu, MenuUnit } from '../../common/types';
+import ConfirmDialog from './ConfirmDialog.vue';
 
 const unitType: MenuUnit[] = ['回', '秒'];
+const menuDefaultValue: Menu = {
+  id: 0,
+  name: '',
+  multiplier: 0.5,
+  unit: '回',
+} as const;
 
 const props = defineProps<{
-  menu: Menu,
+  menu: Menu | null, // nullの場合は新規追加
   editingMenuId: null | number,
 }>();
 
 const emit = defineEmits<{
-  (e: 'update-menu'): void,
-  (e: 'update-editing-menu', id: null | number): void,
+  (e: 'add-menu', menu: Menu): void,
+  (e: 'replace-menu', menu: Menu): void,
+  (e: 'delete-menu', id: number): void,
+  (e: 'update-editing-menu-id', id: null | number): void,
 }>();
 
-const name = ref(props.menu.name);
-const multiplier = ref(props.menu.multiplier);
-const unit = ref(props.menu.unit);
+const menu = ref<Menu>(props.menu
+  ? { ...props.menu }
+  : { ...menuDefaultValue }
+);
+const isDeleteDialogVisible = ref(false);
 
-const canEdit = computed(() => props.editingMenuId === props.menu.id);
-const isLockBtn = computed(() => props.editingMenuId !== null && props.editingMenuId !== props.menu.id);
+const canEdit = computed(() => props.editingMenuId === menu.value.id);
+const isLockBtn = computed(() => props.editingMenuId !== null && props.editingMenuId !== menu.value.id);
 
 const editMenu = async () => {
   if (!canEdit.value) {
-    emit('update-editing-menu', props.menu.id);
+    // メニューを編集中にする
+    emit('update-editing-menu-id', menu.value.id);
     return;
   }
 
-  await window.menuList.replaceMenu(props.menu.id, {
-    id: props.menu.id,
-    name: name.value,
-    multiplier: multiplier.value,
-    unit: unit.value,
-  });
-  emit('update-menu');
-  emit('update-editing-menu', null);
+  if (props.menu === null) {
+    emit('add-menu', toRaw(menu.value));
+    menu.value = { ...menuDefaultValue };
+  }
+  else {
+    emit('replace-menu', toRaw(menu.value));
+  }
+  emit('update-editing-menu-id', null);
 };
 
-const deleteMenu = async (id: number) => {
-  await window.menuList.deleteMenu(id);
-  if (props.editingMenuId === props.menu.id) {
-    emit('update-editing-menu', null);
+const onDeleteMenu = async (id: number) => {
+  isDeleteDialogVisible.value = false;
+  emit('delete-menu', id);
+  if (props.editingMenuId === menu.value.id) {
+    emit('update-editing-menu-id', null);
   }
-  emit('update-menu');
+};
+
+const onClickDiscard = () => {
+  if (props.menu === null) {
+    // 追加用の行を非表示にする
+    emit('update-editing-menu-id', null);
+    return;
+  }
+  isDeleteDialogVisible.value = true;
 };
 </script>
 
@@ -50,22 +71,24 @@ const deleteMenu = async (id: number) => {
   <tr :class="{'active': canEdit}">
     <template v-if="canEdit">
       <td class="px-2">
+        <!-- HACK: rulesを未入力時の赤枠表示用に使用 -->
         <VTextField
           class="menu-input"
           label="メニュー名"
-          v-model="name"
+          v-model="menu.name"
           variant="outlined"
           single-line
           density="compact"
           center-affix
           hide-details
           autofocus
+          :rules="[v => v.length >= 1]"
         />
       </td>
       <td class="px-2">
         <VNumberInput
           class="menu-input"
-          v-model="multiplier"
+          v-model="menu.multiplier"
           inset
           variant="outlined"
           hide-details
@@ -80,7 +103,7 @@ const deleteMenu = async (id: number) => {
       <td class="px-2">
         <VSelect
           class="menu-input"
-          v-model="unit"
+          v-model="menu.unit"
           variant="outlined"
           density="compact"
           hide-details
@@ -89,14 +112,14 @@ const deleteMenu = async (id: number) => {
       </td>
     </template>
     <template v-else>
-      <td>{{ props.menu.name }}</td>
-      <td>{{ props.menu.multiplier }}</td>
-      <td>{{ props.menu.unit }}</td>
+      <td>{{ menu.name }}</td>
+      <td>{{ menu.multiplier }}</td>
+      <td>{{ menu.unit }}</td>
     </template>
     <td class="text-right">
       <VBtn
         :class="{'text-green': canEdit}"
-        :disabled="isLockBtn"
+        :disabled="isLockBtn || menu.name.length <= 0"
         size="small"
         elevation="0"
         :icon="canEdit ? 'mdi-check' : 'mdi-pencil'"
@@ -107,9 +130,20 @@ const deleteMenu = async (id: number) => {
         :disabled="isLockBtn"
         size="small"
         elevation="0"
-        icon="mdi-close"
-        @click="deleteMenu(props.menu.id)"
+        :icon="props.menu === null ? 'mdi-close' : 'mdi-trash-can'"
+        @click="onClickDiscard"
       />
+      <ConfirmDialog
+        v-model="isDeleteDialogVisible"
+        title="メニュー削除"
+        yesBtnColor="red"
+        reverseYesNoPosition
+        @click-yes="onDeleteMenu(menu.id)"
+        @click-no="isDeleteDialogVisible = false"
+      >
+        本当に {{ menu.name }} を削除する？<br />
+        <span class="text-red">※統計からも削除されます</span>
+      </ConfirmDialog>
     </td>
   </tr>
 </template>
