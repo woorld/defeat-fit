@@ -61,9 +61,8 @@ const updateEditingMenuId = (id: null | number) => {
           @update-editing-menu-id="updateEditingMenuId"
         />
         <!-- 新規追加用の行 -->
-        <!-- HACK: v-ifにしてメニュー追加ボタンを押すたびにDOMが生成させて入力欄が空になるようにする -->
         <MenuTableRow
-          v-if="editingMenuId === 0"
+          v-show="editingMenuId === 0"
           :menu="null"
           :editingMenuId
           @add-menu="addMenu"

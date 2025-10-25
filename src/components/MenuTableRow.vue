@@ -4,6 +4,12 @@ import type { Menu, MenuUnit } from '../../common/types';
 import ConfirmDialog from './ConfirmDialog.vue';
 
 const unitType: MenuUnit[] = ['回', '秒'];
+const menuDefaultValue: Menu = {
+  id: 0,
+  name: '',
+  multiplier: 0.5,
+  unit: '回',
+} as const;
 
 const props = defineProps<{
   menu: Menu | null, // nullの場合は新規追加
@@ -19,12 +25,7 @@ const emit = defineEmits<{
 
 const menu = ref<Menu>(props.menu
   ? { ...props.menu }
-  : {
-    id: 0,
-    name: '',
-    multiplier: 0.5,
-    unit: '回',
-  }
+  : { ...menuDefaultValue }
 );
 const isDeleteDialogVisible = ref(false);
 
@@ -40,6 +41,7 @@ const editMenu = async () => {
 
   if (props.menu === null) {
     emit('add-menu', toRaw(menu.value));
+    menu.value = { ...menuDefaultValue };
   }
   else {
     emit('replace-menu', toRaw(menu.value));
