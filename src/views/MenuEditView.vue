@@ -58,7 +58,7 @@ const updateEditingMenuId = (id: null | number) => {
           :editingMenuId
           @replace-menu="replaceMenu"
           @delete-menu="deleteMenu"
-          @update-editing-menu="updateEditingMenuId"
+          @update-editing-menu-id="updateEditingMenuId"
         />
         <!-- 新規追加用の行 -->
         <!-- HACK: v-ifにしてメニュー追加ボタンを押すたびにDOMが生成させて入力欄が空になるようにする -->
