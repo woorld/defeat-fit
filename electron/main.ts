@@ -35,13 +35,19 @@ let win: BrowserWindow | null;
 
 function createWindow() {
   win = new BrowserWindow({
+    width: VITE_DEV_SERVER_URL ? 1200 : undefined, // 開発者ツールでコンテンツが潰れないよう横幅を広げる
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
+      devTools: !!VITE_DEV_SERVER_URL,
     },
     autoHideMenuBar: true,
     show: false, // ページがロードされるまではウィンドウを非表示にする
   });
+
+  if (VITE_DEV_SERVER_URL) {
+    win.webContents.openDevTools();
+  }
 
   // Test active push message to Renderer-process.
   win.webContents.on('did-finish-load', () => {
