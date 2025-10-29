@@ -13,6 +13,7 @@
     "postinstall": "patch-package"
   },
   "dependencies": {
+    "@prisma/client": "^6.18.0",
     "node-osc": "^9.1.7",
     "pinia": "^3.0.3",
     "vue": "^3.4.21",
@@ -29,6 +30,7 @@
     "electron-store": "^10.1.0",
     "patch-package": "^8.0.0",
     "prettier": "^3.6.2",
+    "prisma": "^6.18.0",
     "sass": "^1.89.2",
     "typescript": "^5.2.2",
     "vite": "^6.3.5",
