@@ -2,7 +2,8 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import ConfirmDialog from './ConfirmDialog.vue';
-import type { Menu, StatsMenu } from '../../common/types';
+import type { StatsMenu } from '../../common/types';
+import type { Menu } from '../../prisma/generated/client';
 import { useDefeatCountStore } from '../stores/defeat-count';
 
 const router = useRouter();
@@ -15,6 +16,8 @@ const props = defineProps<{
 const isShowDialog = ref(false);
 
 const onDone = async () => {
+  // FIXME: 統計のPrisma移行時に対応
+  // @ts-ignore
   const newStats: StatsMenu[] = props.menuList.map(menu => ({
     id: menu.id,
     name: menu.name,

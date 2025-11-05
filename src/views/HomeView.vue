@@ -4,9 +4,10 @@ import { useDefeatCountStore } from '../stores/defeat-count';
 import DecrementBtn from '../components/DecrementBtn.vue';
 import OscControlBtn from '../components/OscControlBtn.vue';
 import DoMenuBtn from '../components/DoMenuBtn.vue';
-import type { Menu } from '../../common/types';
+import type { Menu } from '../../prisma/generated/client';
 import DoneBtn from '../components/DoneBtn.vue';
 import CautionDialog from '../components/CautionDialog.vue';
+import { menuUnitMap } from '../../common/util';
 
 const defeatCount = useDefeatCountStore();
 
@@ -29,11 +30,11 @@ const menuList = ref<Menu[]>([]);
       <tbody>
         <tr v-for="menu of menuList">
           <td>{{ menu.name }}</td>
-          <td>× {{ menu.multiplier }} {{ menu.unit }}</td>
+          <td>× {{ menu.multiplier }} {{ menuUnitMap[menu.unit] }}</td>
           <td class="text-right">
             <span
               class="pt-1 pb-1 pr-2 pl-2 rounded"
-            >{{ Math.ceil(menu.multiplier * defeatCount.count) }} {{ menu.unit }}</span>
+            >{{ Math.ceil(menu.multiplier * defeatCount.count) }} {{ menuUnitMap[menu.unit] }}</span>
           </td>
           <td class="text-right">
             <DoMenuBtn :menu />
