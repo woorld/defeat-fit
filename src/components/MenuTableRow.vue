@@ -1,14 +1,24 @@
 <script setup lang="ts">
 import { ref, computed, toRaw } from 'vue';
-import type { Menu, MenuUnit } from '../../common/types';
+import type { Menu, MenuUnit } from '../../prisma/generated/client';
 import ConfirmDialog from './ConfirmDialog.vue';
+import { menuUnitMap } from '../../common/util';
 
-const unitType: MenuUnit[] = ['回', '秒'];
+type UnitSelectItem = {
+  title: string,
+  value: MenuUnit,
+};
+
+const unitSelectItems: UnitSelectItem[] = [
+  { title: '回', value: 'COUNT' },
+  { title: '秒', value: 'SECOND' },
+];
+
 const menuDefaultValue: Menu = {
   id: 0,
   name: '',
   multiplier: 0.5,
-  unit: '回',
+  unit: 'COUNT',
 } as const;
 
 const props = defineProps<{
@@ -107,14 +117,14 @@ const onClickDiscard = () => {
           variant="outlined"
           density="compact"
           hide-details
-          :items="unitType"
+          :items="unitSelectItems"
         />
       </td>
     </template>
     <template v-else>
       <td>{{ menu.name }}</td>
       <td>{{ menu.multiplier }}</td>
-      <td>{{ menu.unit }}</td>
+      <td>{{ menuUnitMap[menu.unit] }}</td>
     </template>
     <td class="text-right">
       <VBtn

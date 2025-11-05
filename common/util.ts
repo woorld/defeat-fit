@@ -1,4 +1,5 @@
 import type { StatsMenu } from './types';
+import type { MenuUnit } from '../prisma/generated/client';
 
 export const mergeStatsMenu = (menuListA: StatsMenu[], menuListB: StatsMenu[]) => {
   // オブジェクトごとコピー
@@ -15,4 +16,9 @@ export const mergeStatsMenu = (menuListA: StatsMenu[], menuListB: StatsMenu[]) =
   }
 
   return mergedMenuList;
+};
+
+export const menuUnitMap: Record<MenuUnit, string> = {
+  COUNT: '回',
+  SECOND: '秒',
 };
