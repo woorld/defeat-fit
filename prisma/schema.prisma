@@ -35,4 +35,6 @@ model StatsMenu {
   menu    Menu  @relation(fields: [menuId], references: [id])
   menuId  Int
   count   Int
+
+  @@unique([statsId, menuId]) // upsertするときの存在確認に必要
 }
