@@ -1,35 +1,34 @@
-import Store from 'electron-store';
-import type { Menu } from '../../common/types';
+import { PrismaClient } from '../../prisma/generated/client';
+import type { Menu } from '../../prisma/generated/client';
 
-const store = new Store<Menu[]>();
-const storeKey = 'menuList';
-
-const setMenuList = (menuList: Menu[]) => store.set(storeKey, menuList);
+const prisma = new PrismaClient();
 
 export const menuListApi = {
-  async getMenuList(): Promise<Menu[]> {
-    return store.get(storeKey, []);
+  getMenuList() {
+    return prisma.menu.findMany();
   },
 
-  async addMenu(menu: Menu) {
-    const menuList = await menuListApi.getMenuList();
-    setMenuList([ ...menuList, menu ]);
+  addMenu(menu: Menu) {
+    return prisma.menu.create({
+      data: {
+        ...menu,
+        id: undefined, // idをオートインクリメントさせるためにundefinedにする
+      },
+    });
   },
 
   async deleteMenu(id: number) {
-    const menuList = await menuListApi.getMenuList();
-    setMenuList(menuList.filter(menu => menu.id !== id));
+    await prisma.statsMenu.deleteMany({ where: { menuId: id }});
+    return prisma.menu.delete({ where: { id }});
   },
 
-  async replaceMenu(id: number, newMenu: Menu) {
-    const menuList = await menuListApi.getMenuList();
-    if (menuList.find(menu => menu.id === id) == null) {
-      return;
-    }
-
-    setMenuList([
-      ...menuList.filter(menu => menu.id !== id),
-      newMenu,
-    ]);
+  replaceMenu(id: number, newMenu: Menu) {
+    return prisma.menu.update({
+      where: { id },
+      data: {
+        ...newMenu,
+        id: undefined, // 念のためID以外を更新させる
+      },
+    });
   },
 } as const;

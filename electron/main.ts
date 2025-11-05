@@ -7,7 +7,9 @@ import { oscApi } from './api/osc';
 import { menuListApi } from './api/menu-list';
 import { settingApi } from './api/setting';
 import { statsMapApi } from './api/stats-map';
-import type { Menu, Setting, StatsMenu } from '../common/types';
+import type { Setting, StatsMenu } from '../common/types';
+import type { Menu } from '../prisma/generated/client';
+import 'dotenv/config'; // エントリポイントでのみロードすればOK
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -136,9 +138,9 @@ ipcMain.handle('stop-listening', async () => {
 
 // メニューAPI
 ipcMain.handle('get-menu-list', () => menuListApi.getMenuList());
-ipcMain.on('add-menu', (_, menu: Menu) => menuListApi.addMenu(menu));
-ipcMain.on('delete-menu', (_, id: number) => menuListApi.deleteMenu(id));
-ipcMain.on('replace-menu', (_, id: number, newMenu: Menu) => menuListApi.replaceMenu(id, newMenu));
+ipcMain.handle('add-menu', (_, menu: Menu) => menuListApi.addMenu(menu));
+ipcMain.handle('delete-menu', (_, id: number) => menuListApi.deleteMenu(id));
+ipcMain.handle('replace-menu', (_, id: number, newMenu: Menu) => menuListApi.replaceMenu(id, newMenu));
 
 // 設定API
 ipcMain.handle('get-setting', (_, settingName: keyof Setting) => settingApi.getSetting(settingName));
