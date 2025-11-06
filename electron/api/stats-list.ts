@@ -1,4 +1,3 @@
-// TODO: Mapから配列になるのでファイル名を変える
 import { PrismaClient } from '../../prisma/generated/client';
 import type { Menu } from '../../prisma/generated/client';
 import type { TotalStats } from '../../common/types';

@@ -6,7 +6,7 @@ import { defeatCountApi } from './api/defeat-count';
 import { oscApi } from './api/osc';
 import { menuListApi } from './api/menu-list';
 import { settingApi } from './api/setting';
-import { statsListApi } from './api/stats-map';
+import { statsListApi } from './api/stats-list';
 import type { Setting } from '../common/types';
 import type { Menu } from '../prisma/generated/client';
 import 'dotenv/config'; // エントリポイントでのみロードすればOK
