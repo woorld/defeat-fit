@@ -165,4 +165,5 @@ ipcMain.on('reset-setting', () => settingApi.resetSetting());
 
 // 統計API
 ipcMain.handle('get-stats-map', () => statsMapApi.getStatsMap());
+ipcMain.handle('get-total-stats', () => statsMapApi.getTotalStats());
 ipcMain.handle('add-stats', (_, defeatCount: number, menuList: Menu[]) => statsMapApi.addStats(defeatCount, menuList));

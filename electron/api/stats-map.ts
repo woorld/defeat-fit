@@ -1,6 +1,7 @@
 // TODO: Mapから配列になるのでファイル名を変える
 import { PrismaClient } from '../../prisma/generated/client';
 import type { Menu } from '../../prisma/generated/client';
+import type { TotalStats } from '../../common/types';
 
 const prisma = new PrismaClient();
 
@@ -15,6 +16,38 @@ export const statsMapApi = {
         },
       },
     });
+  },
+
+  async getTotalStats(): Promise<TotalStats | undefined> {
+    const getTotalDefeatCount = () => prisma.stats.aggregate({
+      _sum: { defeatCount: true },
+    });
+    const getTotalMenuCountList = () => prisma.statsMenu.groupBy({
+      by: [ 'menuId' ],
+      _sum: { count: true },
+    });
+
+    const result = await Promise.all([
+      getTotalDefeatCount(),
+      getTotalMenuCountList(),
+    ]);
+
+    const totalDefeatCount = result[0];
+    const totalMenuCountList = result[1];
+
+    const relatedMenuList = await prisma.menu.findMany({
+      where: { id: { in: totalMenuCountList.map(stats => stats.menuId) } },
+    });
+
+    const totalStats = {
+      defeatCount: totalDefeatCount._sum.defeatCount ?? 0,
+      statsMenuList: totalMenuCountList.map(stats => ({
+        count: stats._sum.count ?? 0,
+        menu: relatedMenuList.find(menu => menu.id === stats.menuId),
+      })),
+    }
+
+    return totalStats;
   },
 
   async addStats(defeatCount: number, menuList: Menu[]) {

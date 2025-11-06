@@ -1,14 +1,7 @@
 // TODO: Prismaに移行して不要になった型の削除
-import type { Prisma } from '../prisma/generated/client';
+import type { Prisma, Menu } from '../prisma/generated/client';
 
 export type MenuUnit = '回' | '秒';
-
-export type Menu = {
-  id: number,
-  name: string,
-  multiplier: number,
-  unit: MenuUnit,
-};
 
 export type Setting = {
   targetOscMessage: string,
@@ -38,3 +31,11 @@ export type StatsWithMenus = Prisma.StatsGetPayload<{
     },
   },
 }>;
+
+export type TotalStats = {
+  defeatCount: number,
+  statsMenuList: {
+    count: number,
+    menu?: Menu,
+  }[],
+};

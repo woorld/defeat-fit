@@ -1,5 +1,5 @@
 import { ipcRenderer, contextBridge } from 'electron';
-import type { Setting, StatsWithMenus } from '../common/types';
+import type { Setting, StatsWithMenus, TotalStats } from '../common/types';
 import type { Menu, Stats } from '../prisma/generated/client';
 
 const defeatCountApi = {
@@ -49,6 +49,8 @@ const settingApi = {
 const statsMapApi = {
   getStatsMap: (): Promise<StatsWithMenus[]> =>
     ipcRenderer.invoke('get-stats-map'),
+  getTotalStats: (): Promise<TotalStats | undefined> =>
+    ipcRenderer.invoke('get-total-stats'),
   addStats: (defeatCount: number, menuList: Menu[]): Promise<Stats> =>
     ipcRenderer.invoke('add-stats', defeatCount, menuList),
 } as const;
