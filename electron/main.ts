@@ -7,7 +7,7 @@ import { oscApi } from './api/osc';
 import { menuListApi } from './api/menu-list';
 import { settingApi } from './api/setting';
 import { statsMapApi } from './api/stats-map';
-import type { Setting, StatsMenu } from '../common/types';
+import type { Setting } from '../common/types';
 import type { Menu } from '../prisma/generated/client';
 import 'dotenv/config'; // エントリポイントでのみロードすればOK
 
@@ -165,4 +165,4 @@ ipcMain.on('reset-setting', () => settingApi.resetSetting());
 
 // 統計API
 ipcMain.handle('get-stats-map', () => statsMapApi.getStatsMap());
-ipcMain.handle('add-stats', (_, defeatCount: number, menu: StatsMenu[]) => statsMapApi.addStats(defeatCount, menu));
+ipcMain.handle('add-stats', (_, defeatCount: number, menuList: Menu[]) => statsMapApi.addStats(defeatCount, menuList));

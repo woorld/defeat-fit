@@ -1,3 +1,6 @@
+// TODO: Prismaに移行して不要になった型の削除
+import type { Prisma } from '../prisma/generated/client';
+
 export type MenuUnit = '回' | '秒';
 
 export type Menu = {
@@ -25,3 +28,13 @@ export type Stats = {
 };
 
 export type StatsMap = Map<string, Stats>; // stringはYYYY-MM-DD
+
+export type StatsWithMenus = Prisma.StatsGetPayload<{
+  include: {
+    statsMenuList: {
+      include: {
+        menu: true,
+      },
+    },
+  },
+}>;

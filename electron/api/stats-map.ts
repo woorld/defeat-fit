@@ -1,20 +1,23 @@
-import Store from 'electron-store';
-import type { Stats, StatsMenu, StatsMap } from '../../common/types';
-import { mergeStatsMenu } from '../../common/util';
+// TODO: Mapから配列になるのでファイル名を変える
+import { PrismaClient } from '../../prisma/generated/client';
+import type { Menu } from '../../prisma/generated/client';
 
-const storeKey = 'stats-map';
-const store = new Store<(string | Stats)[]>({ name: storeKey });
-
-const setStatsMap = async (statsMap: StatsMap) => store.set(storeKey, Array.from(statsMap));
+const prisma = new PrismaClient();
 
 export const statsMapApi = {
-  // TODO: 期間指定して取得できる関数の追加
-  async getStatsMap(): Promise<StatsMap> {
-    const statsMap = store.get(storeKey, []);
-    return new Map(statsMap); // TODO: ファイルから取得した値のチェック入れなくて大丈夫？
+  getStatsMap() {
+    return prisma.stats.findMany({
+      include: {
+        statsMenuList: {
+          include: {
+            menu: true
+          },
+        },
+      },
+    });
   },
 
-  async addStats(defeatCount: number, menuList: StatsMenu[]) {
+  async addStats(defeatCount: number, menuList: Menu[]) {
     // 次の日の朝5時までを本日とする
     // TODO: いつまでが今日なのかを設定で変えられるようにする
     const nowDate = new Date();
@@ -22,29 +25,40 @@ export const statsMapApi = {
     // YYYY-MM-DD（sv-SE=スウェーデンの標準形式）で日付を取得
     const roundedNowDateString = nowDate.toLocaleDateString('sv-SE');
 
-    const statsMap = await statsMapApi.getStatsMap();
-    const todayStats = statsMap.get(roundedNowDateString);
-
-    if (todayStats == undefined) {
-      statsMap.set(roundedNowDateString, {
+    // 統計本体を追加・更新
+    const todayStats = await prisma.stats.upsert({
+      where: { date: roundedNowDateString },
+      update: {
+        defeatCount: { increment: defeatCount },
+      },
+      create: {
         date: roundedNowDateString,
         defeatCount,
-        menuList,
+      },
+    });
+
+    for (const menu of menuList) {
+      const menuCount = Math.ceil(menu.multiplier * defeatCount);
+
+      // 作成した統計に紐づく統計メニューを追加・更新
+      await prisma.statsMenu.upsert({
+        where: {
+          statsId_menuId: {
+            statsId: todayStats.id,
+            menuId: menu.id,
+          },
+        },
+        update: {
+          count: { increment: menuCount },
+        },
+        create: {
+          statsId: todayStats.id,
+          menuId: menu.id,
+          count: menuCount,
+        },
       });
-      return setStatsMap(statsMap);
     }
 
-    // 本日分がすでにある場合は負け回数、筋トレ回数をマージして格納
-    const mergedMenu = mergeStatsMenu(todayStats.menuList, menuList);
-
-    const newTodayStats = {
-      date: roundedNowDateString,
-      defeatCount: todayStats.defeatCount + defeatCount,
-      menuList: mergedMenu,
-    };
-
-    // もともとあった本日分の統計を置き換えて保存
-    statsMap.set(roundedNowDateString, newTodayStats);
-    return setStatsMap(statsMap);
+    return todayStats;
   },
 } as const;
