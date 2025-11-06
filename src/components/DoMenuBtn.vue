@@ -82,7 +82,7 @@ const restoreIntegerTotalReps = () => {
           />
         </div>
         <VBtn
-          v-show="props.menu.unit === 'COUNT'"
+          v-show="props.menu.unit === 'SECOND'"
           append-icon="mdi-chevron-right"
           color="green"
           :to="`/timer/${Math.ceil(secondsPerSet)}/${setCount}`"
