@@ -1,38 +1,37 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import type { Stats, StatsMap, StatsMenu } from '../../common/types';
 import ViewHeading from '../components/ViewHeading.vue';
-import { mergeStatsMenu } from '../../common/util';
 import StatsCard from '../components/StatsCard.vue';
+import type { StatsWithMenus } from '../../common/types';
 
-const statsMap = ref<StatsMap>(new Map());
+// TODO: 名前変更
+const statsMap = ref<StatsWithMenus[]>([]);
 
-const dateDescStatsList = computed<Stats[]>(() => {
-  const statsArr = Array.from(statsMap.value.values());
-
-  statsArr.sort((statsA, statsB) => {
-    const dateA = new Date(statsA.date || 0);
-    const dateB = new Date(statsB.date || 0);
+const dateDescStatsList = computed(() => {
+  const sortedStats = statsMap.value.toSorted((statsA, statsB) => {
+    const dateA = new Date(statsA.date);
+    const dateB = new Date(statsB.date);
     return dateB.getTime() - dateA.getTime(); // 直近の日付順でソート
   });
 
-  return statsArr;
+  return sortedStats;
 });
 
-const totalStats = computed<Stats>(() => {
-  let totalDefeatCount = 0;
-  let totalMenuList: StatsMenu[] = [];
+// TODO: Prismaの機能で何とかする
+// const totalStats = computed<Stats>(() => {
+//   let totalDefeatCount = 0;
+//   let totalMenuList: StatsMenu[] = [];
 
-  for (const stats of Array.from(statsMap.value.values())) {
-    totalDefeatCount += stats.defeatCount;
-    totalMenuList = mergeStatsMenu(totalMenuList, stats.menuList);
-  }
+//   for (const stats of statsMap.value) {
+//     totalDefeatCount += stats.defeatCount;
+//     totalMenuList = mergeStatsMenu(totalMenuList, stats.statsMenuList);
+//   }
 
-  return {
-    defeatCount: totalDefeatCount,
-    menuList: totalMenuList,
-  };
-});
+//   return {
+//     defeatCount: totalDefeatCount,
+//     menuList: totalMenuList,
+//   };
+// });
 
 (async () => {
   statsMap.value = await window.statsMap.getStatsMap();
@@ -42,7 +41,7 @@ const totalStats = computed<Stats>(() => {
 <template>
   <VContainer>
     <ViewHeading title="統計" />
-    <StatsCard :stats="totalStats" />
+    <!-- <StatsCard :stats="totalStats" /> -->
     <StatsCard v-for="stats in dateDescStatsList" :stats />
   </VContainer>
 </template>

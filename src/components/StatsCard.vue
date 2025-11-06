@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { Stats } from '../../common/types';
+import { StatsWithMenus } from '../../common/types';
+import { menuUnitMap } from '../../common/util';
 
 const props = defineProps<{
-  stats: Stats,
+  stats: StatsWithMenus,
 }>();
 
 // dateがない場合は合計表示とする
@@ -29,9 +30,9 @@ const title = computed(() => props.stats.date ? props.stats.date.replace(/\-/g, 
         />
         <VTable class="flex-1-1-0" density="compact">
           <tbody>
-            <tr v-for="menu of props.stats.menuList">
-              <td>{{ menu.name }}</td>
-              <td class="text-right">{{ menu.count }} {{ menu.unit }}</td>
+            <tr v-for="statsMenu of props.stats.statsMenuList">
+              <td>{{ statsMenu.menu.name }}</td>
+              <td class="text-right">{{ statsMenu.count }} {{ menuUnitMap[statsMenu.menu.unit] }}</td>
             </tr>
           </tbody>
         </VTable>
