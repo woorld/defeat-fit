@@ -19,17 +19,10 @@ export const statsMapApi = {
   },
 
   async getTotalStats(): Promise<TotalStats | undefined> {
-    const getTotalDefeatCount = () => prisma.stats.aggregate({
-      _sum: { defeatCount: true },
-    });
-    const getTotalMenuCountList = () => prisma.statsMenu.groupBy({
-      by: [ 'menuId' ],
-      _sum: { count: true },
-    });
-
+    // 負け回数と各メニューの合計回数を並列で取得
     const result = await Promise.all([
-      getTotalDefeatCount(),
-      getTotalMenuCountList(),
+      prisma.stats.aggregate({ _sum: { defeatCount: true } }),
+      prisma.statsMenu.groupBy({ by: [ 'menuId' ], _sum: { count: true } }),
     ]);
 
     const totalDefeatCount = result[0];
