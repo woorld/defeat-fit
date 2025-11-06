@@ -15,7 +15,7 @@ const props = defineProps<{
 const isShowDialog = ref(false);
 
 const onDone = async () => {
-  await window.statsMap.addStats(defeatCount.count, toRaw(props.menuList));
+  await window.statsList.addStats(defeatCount.count, toRaw(props.menuList));
   window.defeatCount.resetDefeatCount();
 
   // NOTE: ダイアログの非表示は画面遷移後も処理しようとしてコンソールに警告が出るため行わない

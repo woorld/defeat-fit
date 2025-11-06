@@ -5,8 +5,8 @@ import type { TotalStats } from '../../common/types';
 
 const prisma = new PrismaClient();
 
-export const statsMapApi = {
-  getStatsMap() {
+export const statsListApi = {
+  getStatsList() {
     return prisma.stats.findMany({
       include: {
         statsMenuList: {

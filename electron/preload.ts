@@ -46,9 +46,9 @@ const settingApi = {
     ipcRenderer.send('reset-setting'),
 } as const;
 
-const statsMapApi = {
-  getStatsMap: (): Promise<StatsWithMenus[]> =>
-    ipcRenderer.invoke('get-stats-map'),
+const statsListApi = {
+  getStatsList: (): Promise<StatsWithMenus[]> =>
+    ipcRenderer.invoke('get-stats-list'),
   getTotalStats: (): Promise<TotalStats | undefined> =>
     ipcRenderer.invoke('get-total-stats'),
   addStats: (defeatCount: number, menuList: Menu[]): Promise<Stats> =>
@@ -59,10 +59,10 @@ contextBridge.exposeInMainWorld('defeatCount', defeatCountApi);
 contextBridge.exposeInMainWorld('osc', oscApi);
 contextBridge.exposeInMainWorld('menuList', menuListApi);
 contextBridge.exposeInMainWorld('setting', settingApi);
-contextBridge.exposeInMainWorld('statsMap', statsMapApi);
+contextBridge.exposeInMainWorld('statsList', statsListApi);
 
 export type DefeatCountApi = typeof defeatCountApi;
 export type OscApi = typeof oscApi;
 export type MenuListApi = typeof menuListApi;
 export type SettingApi = typeof settingApi;
-export type StatsMapApi = typeof statsMapApi;
+export type StatsListApi = typeof statsListApi;

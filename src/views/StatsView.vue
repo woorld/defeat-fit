@@ -4,12 +4,11 @@ import ViewHeading from '../components/ViewHeading.vue';
 import StatsCard from '../components/StatsCard.vue';
 import type { StatsWithMenus, TotalStats } from '../../common/types';
 
-// TODO: 名前変更
-const statsMap = ref<StatsWithMenus[]>([]);
+const statsList = ref<StatsWithMenus[]>([]);
 const totalStats = ref<TotalStats | undefined>(undefined);
 
 const dateDescStatsList = computed(() => {
-  const sortedStats = statsMap.value.toSorted((statsA, statsB) => {
+  const sortedStats = statsList.value.toSorted((statsA, statsB) => {
     const dateA = new Date(statsA.date);
     const dateB = new Date(statsB.date);
     return dateB.getTime() - dateA.getTime(); // 直近の日付順でソート
@@ -19,8 +18,8 @@ const dateDescStatsList = computed(() => {
 });
 
 (async () => {
-  statsMap.value = await window.statsMap.getStatsMap();
-  totalStats.value = await window.statsMap.getTotalStats();
+  statsList.value = await window.statsList.getStatsList();
+  totalStats.value = await window.statsList.getTotalStats();
 })();
 </script>
 
