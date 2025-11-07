@@ -29,8 +29,8 @@ const dateDescStatsList = computed(() => {
     <template v-if="totalStats && totalStats.defeatCount >= 1">
       <StatsCard
         title="Total"
-        :defeatCount="totalStats!.defeatCount"
-        :statsMenuList="totalStats!.statsMenuList"
+        :defeatCount="totalStats.defeatCount"
+        :statsMenuList="totalStats.statsMenuList"
       />
       <VDivider class="mb-6" />
     </template>
