@@ -42,7 +42,6 @@ const updateEditingMenuId = (id: null | number) => {
       <thead>
         <tr class="font-weight-bold">
           <td>メニュー名</td>
-          <td>回・秒 / 死</td>
           <td>単位</td>
           <td />
         </tr>
