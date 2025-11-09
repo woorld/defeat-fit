@@ -161,3 +161,4 @@ ipcMain.on('reset-setting', () => settingApi.resetSetting());
 ipcMain.handle('get-stats-list', () => statsListApi.getStatsList());
 ipcMain.handle('get-total-stats', () => statsListApi.getTotalStats());
 ipcMain.handle('add-stats', (_, defeatCount: number, menuList: Menu[]) => statsListApi.addStats(defeatCount, menuList));
+ipcMain.handle('delete-stats', (_, id: number) => statsListApi.deleteStats(id));
