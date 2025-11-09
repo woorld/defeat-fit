@@ -6,9 +6,14 @@ const isListening = ref(false);
 const label = computed(() => isListening.value ? 'OSC受信中' : 'OSC受信停止中');
 
 const toggleListeningStatus = async () => {
-  isListening.value = isListening.value
-    ? await window.osc.stopListening()
-    : await window.osc.startListening();
+  if (isListening.value) {
+    await window.osc.stopListening();
+  }
+  else {
+    await window.osc.startListening();
+  }
+
+  isListening.value = await window.osc.getListeningStatus();
 };
 
 (async () => {

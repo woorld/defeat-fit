@@ -127,14 +127,8 @@ ipcMain.on('reset-defeat-count', () => {
 
 // OSCサーバAPI
 ipcMain.handle('get-listening-status', () => oscApi.isListening());
-ipcMain.handle('start-listening', async () => {
-  await oscApi.openServer(onListenOsc);
-  return oscApi.isListening();
-});
-ipcMain.handle('stop-listening', async () => {
-  await oscApi.closeServer();
-  return oscApi.isListening();
-});
+ipcMain.handle('start-listening', async () => oscApi.openServer(onListenOsc));
+ipcMain.handle('stop-listening', async () => oscApi.closeServer());
 
 // メニューAPI
 ipcMain.handle('get-menu-list', () => menuListApi.getMenuList());
