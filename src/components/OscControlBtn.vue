@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 const isListening = ref(false);
+
+const label = computed(() => isListening.value ? 'OSC受信中' : 'OSC受信停止中');
 
 const toggleListeningStatus = async () => {
   isListening.value = isListening.value
@@ -17,8 +19,8 @@ const toggleListeningStatus = async () => {
 <template>
   <VBtn
     class="position-fixed top-0 right-0 ma-4"
-    :color="isListening ? 'yellow' : 'green'"
-    :icon="isListening ? 'mdi-pause' : 'mdi-play'"
+    :color="isListening ? 'green' : 'yellow'"
+    :prepend-icon="isListening ? 'mdi-wifi' : 'mdi-wifi-strength-off'"
     @click="toggleListeningStatus"
-  />
+  >{{ label }}</VBtn>
 </template>
