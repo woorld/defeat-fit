@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client"
-  output = "./generated"
+  output   = "./generated"
 }
 
 datasource db {
@@ -14,11 +14,11 @@ enum MenuUnit {
 }
 
 model Menu {
-  id            Int         @id @default(autoincrement())
-  name          String
-  multiplier    Float
-  unit          MenuUnit
-  statsMenuList StatsMenu[]
+  id             Int          @id @default(autoincrement())
+  name           String
+  unit           MenuUnit
+  statsMenuList  StatsMenu[]
+  presetMenuList PresetMenu[]
 }
 
 model Stats {
@@ -37,4 +37,21 @@ model StatsMenu {
   count   Int
 
   @@unique([statsId, menuId]) // upsertするときの存在確認に必要
+}
+
+model Preset {
+  id             Int          @id @default(autoincrement())
+  name           String
+  presetMenuList PresetMenu[]
+}
+
+model PresetMenu {
+  id           Int         @id @default(autoincrement())
+  preset       Preset      @relation(fields: [presetId], references: [id])
+  presetId     Int
+  menu         Menu        @relation(fields: [menuId], references: [id])
+  menuId       Int
+  multiplier   Float
+
+  @@unique([presetId, menuId])
 }
