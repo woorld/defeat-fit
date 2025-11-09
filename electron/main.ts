@@ -127,8 +127,8 @@ ipcMain.on('reset-defeat-count', () => {
 
 // OSCサーバAPI
 ipcMain.handle('get-listening-status', () => oscApi.isListening());
-ipcMain.handle('start-listening', async () => oscApi.openServer(onListenOsc));
-ipcMain.handle('stop-listening', async () => oscApi.closeServer());
+ipcMain.handle('start-listening', () => oscApi.openServer(onListenOsc));
+ipcMain.handle('stop-listening', () => oscApi.closeServer());
 
 // メニューAPI
 ipcMain.handle('get-menu-list', () => menuListApi.getMenuList());
