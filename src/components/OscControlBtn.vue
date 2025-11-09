@@ -26,6 +26,7 @@ const toggleListeningStatus = async () => {
     class="position-fixed top-0 right-0 ma-4"
     :color="isListening ? 'green' : 'yellow'"
     :prepend-icon="isListening ? 'mdi-wifi' : 'mdi-wifi-strength-off'"
+    rounded
     @click="toggleListeningStatus"
   >{{ label }}</VBtn>
 </template>
