@@ -14,11 +14,11 @@ const defeatCountApi = {
 } as const;
 
 const oscApi = {
-  getListeningStatus: () =>
+  getListeningStatus: (): Promise<boolean> =>
     ipcRenderer.invoke('get-listening-status'),
-  startListening: () =>
+  startListening: (): Promise<void> =>
     ipcRenderer.invoke('start-listening'),
-  stopListening: () =>
+  stopListening: (): Promise<void> =>
     ipcRenderer.invoke('stop-listening'),
 } as const;
 
