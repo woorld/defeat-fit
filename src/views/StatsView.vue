@@ -1,48 +1,45 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import type { Stats, StatsMap, StatsMenu } from '../../common/types';
 import ViewHeading from '../components/ViewHeading.vue';
-import { mergeStatsMenu } from '../../common/util';
 import StatsCard from '../components/StatsCard.vue';
+import type { StatsWithMenus, TotalStats } from '../../common/types';
 
-const statsMap = ref<StatsMap>(new Map());
+const statsList = ref<StatsWithMenus[]>([]);
+const totalStats = ref<TotalStats | undefined>(undefined);
 
-const dateDescStatsList = computed<Stats[]>(() => {
-  const statsArr = Array.from(statsMap.value.values());
-
-  statsArr.sort((statsA, statsB) => {
-    const dateA = new Date(statsA.date || 0);
-    const dateB = new Date(statsB.date || 0);
+const dateDescStatsList = computed(() => {
+  const sortedStats = statsList.value.toSorted((statsA, statsB) => {
+    const dateA = new Date(statsA.date);
+    const dateB = new Date(statsB.date);
     return dateB.getTime() - dateA.getTime(); // 直近の日付順でソート
   });
 
-  return statsArr;
-});
-
-const totalStats = computed<Stats>(() => {
-  let totalDefeatCount = 0;
-  let totalMenuList: StatsMenu[] = [];
-
-  for (const stats of Array.from(statsMap.value.values())) {
-    totalDefeatCount += stats.defeatCount;
-    totalMenuList = mergeStatsMenu(totalMenuList, stats.menuList);
-  }
-
-  return {
-    defeatCount: totalDefeatCount,
-    menuList: totalMenuList,
-  };
+  return sortedStats;
 });
 
 (async () => {
-  statsMap.value = await window.statsMap.getStatsMap();
+  statsList.value = await window.statsList.getStatsList();
+  totalStats.value = await window.statsList.getTotalStats();
 })();
 </script>
 
 <template>
   <VContainer>
     <ViewHeading title="統計" />
-    <StatsCard :stats="totalStats" />
-    <StatsCard v-for="stats in dateDescStatsList" :stats />
+    <template v-if="totalStats && totalStats.defeatCount >= 1">
+      <StatsCard
+        title="Total"
+        :defeatCount="totalStats.defeatCount"
+        :statsMenuList="totalStats.statsMenuList"
+      />
+      <VDivider class="mb-6" />
+    </template>
+    <VCard v-else title="統計がありません" class="py-8 text-center" />
+    <StatsCard
+      v-for="stats in dateDescStatsList"
+      :title="stats.date"
+      :defeatCount="stats.defeatCount"
+      :statsMenuList="stats.statsMenuList"
+    />
   </VContainer>
 </template>

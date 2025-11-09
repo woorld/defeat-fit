@@ -26,3 +26,8 @@ dist-ssr
 # Generated files with electron-builder
 dist-electron
 release
+
+# Prisma / SQLite
+/prisma/generated
+.env
+*.db

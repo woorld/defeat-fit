@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client"
+  output = "./generated"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum MenuUnit {
+  COUNT
+  SECOND
+}
+
+model Menu {
+  id            Int         @id @default(autoincrement())
+  name          String
+  multiplier    Float
+  unit          MenuUnit
+  statsMenuList StatsMenu[]
+}
+
+model Stats {
+  id            Int         @id @default(autoincrement())
+  date          String      @unique // YYYY-MM-DD
+  defeatCount   Int
+  statsMenuList StatsMenu[]
+}
+
+model StatsMenu {
+  id      Int   @id @default(autoincrement())
+  stats   Stats @relation(fields: [statsId], references: [id])
+  statsId Int
+  menu    Menu  @relation(fields: [menuId], references: [id])
+  menuId  Int
+  count   Int
+
+  @@unique([statsId, menuId]) // upsertするときの存在確認に必要
+}

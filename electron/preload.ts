@@ -1,5 +1,6 @@
 import { ipcRenderer, contextBridge } from 'electron';
-import type { Menu, Setting, StatsMenu } from '../common/types';
+import type { Setting, StatsWithMenus, TotalStats } from '../common/types';
+import type { Menu, Stats } from '../prisma/generated/client';
 
 const defeatCountApi = {
   onUpdateDefeatCount: (callback: (defeatCount: number) => void) =>
@@ -22,14 +23,14 @@ const oscApi = {
 } as const;
 
 const menuListApi = {
-  getMenuList: () =>
+  getMenuList: (): Promise<Menu[]> =>
     ipcRenderer.invoke('get-menu-list'),
-  addMenu: (menu: Menu) =>
-    ipcRenderer.send('add-menu', menu),
-  deleteMenu: (id: number) =>
-    ipcRenderer.send('delete-menu', id),
-  replaceMenu: (id: number, newMenu: Menu) =>
-    ipcRenderer.send('replace-menu', id, newMenu),
+  addMenu: (menu: Menu): Promise<Menu> =>
+    ipcRenderer.invoke('add-menu', menu),
+  deleteMenu: (id: number): Promise<Menu> =>
+    ipcRenderer.invoke('delete-menu', id),
+  replaceMenu: (id: number, newMenu: Menu): Promise<Menu> =>
+    ipcRenderer.invoke('replace-menu', id, newMenu),
 } as const;
 
 const settingApi = {
@@ -45,21 +46,23 @@ const settingApi = {
     ipcRenderer.send('reset-setting'),
 } as const;
 
-const statsMapApi = {
-  getStatsMap: () =>
-    ipcRenderer.invoke('get-stats-map'),
-  addStats: (defeatCount: number, menu: StatsMenu[]) =>
-    ipcRenderer.invoke('add-stats', defeatCount, menu),
+const statsListApi = {
+  getStatsList: (): Promise<StatsWithMenus[]> =>
+    ipcRenderer.invoke('get-stats-list'),
+  getTotalStats: (): Promise<TotalStats | undefined> =>
+    ipcRenderer.invoke('get-total-stats'),
+  addStats: (defeatCount: number, menuList: Menu[]): Promise<Stats> =>
+    ipcRenderer.invoke('add-stats', defeatCount, menuList),
 } as const;
 
 contextBridge.exposeInMainWorld('defeatCount', defeatCountApi);
 contextBridge.exposeInMainWorld('osc', oscApi);
 contextBridge.exposeInMainWorld('menuList', menuListApi);
 contextBridge.exposeInMainWorld('setting', settingApi);
-contextBridge.exposeInMainWorld('statsMap', statsMapApi);
+contextBridge.exposeInMainWorld('statsList', statsListApi);
 
 export type DefeatCountApi = typeof defeatCountApi;
 export type OscApi = typeof oscApi;
 export type MenuListApi = typeof menuListApi;
 export type SettingApi = typeof settingApi;
-export type StatsMapApi = typeof statsMapApi;
+export type StatsListApi = typeof statsListApi;

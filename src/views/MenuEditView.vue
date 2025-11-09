@@ -1,20 +1,19 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import MenuTableRow from '../components/MenuTableRow.vue';
-import type { Menu } from '../../common/types';
+import type { Menu } from '../../prisma/generated/client';
 
 const menuList = ref<Menu[]>([]);
 const editingMenuId = ref<null | number>(null); // 0の場合は新規追加
 
 const getMenuList = async () => {
-  const fetchedMenuList: Menu[] = await window.menuList.getMenuList();
+  const fetchedMenuList = await window.menuList.getMenuList();
   fetchedMenuList.sort((menuA, menuB) => menuA.id - menuB.id);
   menuList.value = fetchedMenuList;
 };
 
 const addMenu = async (menu: Menu) => {
-  const id = Date.now(); // IDが0になっているので、ここで生成して設定
-  await window.menuList.addMenu({ ...menu, id });
+  await window.menuList.addMenu(menu);
   getMenuList();
 };
 

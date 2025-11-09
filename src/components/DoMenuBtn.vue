@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import BaseDialog from './BaseDialog.vue';
-import type { Menu } from '../../common/types';
+import type { Menu } from '../../prisma/generated/client';
 import { useDefeatCountStore } from '../stores/defeat-count';
+import { menuUnitMap } from '../../common/util';
 
 const defeatCount = useDefeatCountStore();
 
@@ -69,9 +70,9 @@ const restoreIntegerTotalReps = () => {
           </div>
           <VIcon size="32">mdi-chevron-down</VIcon>
           <div class="d-flex justify-center align-baseline ga-2">
-            <span class="text-body">{{ totalReps }} {{ props.menu.unit }} ÷ {{ setCount }} セット =</span>
+            <span class="text-body">{{ totalReps }} {{ menuUnitMap[props.menu.unit] }} ÷ {{ setCount }} セット =</span>
             <span class="text-h4 text-green">{{ secondsPerSet }}</span>
-            <span class="text-body">{{ props.menu.unit }} / セット</span>
+            <span class="text-body">{{ menuUnitMap[props.menu.unit] }} / セット</span>
           </div>
           <VCheckbox
             v-model="isDecimalVisible"
@@ -81,7 +82,7 @@ const restoreIntegerTotalReps = () => {
           />
         </div>
         <VBtn
-          v-show="props.menu.unit === '秒'"
+          v-show="props.menu.unit === 'SECOND'"
           append-icon="mdi-chevron-right"
           color="green"
           :to="`/timer/${Math.ceil(secondsPerSet)}/${setCount}`"

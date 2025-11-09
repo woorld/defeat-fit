@@ -1,11 +1,4 @@
-export type MenuUnit = '回' | '秒';
-
-export type Menu = {
-  id: number,
-  name: string,
-  multiplier: number,
-  unit: MenuUnit,
-};
+import type { Prisma, Menu } from '../prisma/generated/client';
 
 export type Setting = {
   targetOscMessage: string,
@@ -14,14 +7,22 @@ export type Setting = {
   showCautionDialog: boolean,
 };
 
-export type StatsMenu = Omit<Menu, 'multiplier'> & {
+export type StatsWithMenus = Prisma.StatsGetPayload<{
+  include: {
+    statsMenuList: {
+      include: {
+        menu: true,
+      },
+    },
+  },
+}>;
+
+export type TotalStatsMenu = {
   count: number,
+  menu?: Menu,
 };
 
-export type Stats = {
-  date?: string, // YYYY-MM-DD、任意なのは合計を算出する場合にdateが不要なため
+export type TotalStats = {
   defeatCount: number,
-  menuList: StatsMenu[],
+  statsMenuList: TotalStatsMenu[],
 };
-
-export type StatsMap = Map<string, Stats>; // stringはYYYY-MM-DD
