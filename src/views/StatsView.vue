@@ -43,20 +43,14 @@ getStats();
 <template>
   <VContainer>
     <ViewHeading title="統計" />
-    <template v-if="totalStats && totalStats.defeatCount >= 1">
-      <StatsCard
-        title="Total"
-        :defeatCount="totalStats.defeatCount"
-        :statsMenuList="totalStats.statsMenuList"
-      />
+    <template v-if="totalStats !== undefined && totalStats.defeatCount >= 1">
+      <StatsCard :stats="totalStats" />
       <VDivider class="mb-6" />
     </template>
     <VCard v-else title="統計がありません" class="py-8 text-center" />
     <StatsCard
       v-for="stats in dateDescStatsList"
-      :title="stats.date"
-      :defeatCount="stats.defeatCount"
-      :statsMenuList="stats.statsMenuList"
+      :stats
       @delete-stats="deleteStats"
     />
   </VContainer>
