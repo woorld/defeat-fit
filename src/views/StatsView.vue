@@ -27,13 +27,8 @@ const getStats = async () => {
   totalStats.value = result[1];
 };
 
-const deleteStats = async (date: string) => {
-  const targetStats = statsList.value.find(stats => stats.date === date);
-  if (!targetStats) {
-    return;
-  }
-
-  await window.statsList.deleteStats(targetStats.id);
+const deleteStats = async (id: number) => {
+  await window.statsList.deleteStats(id);
   getStats();
 };
 

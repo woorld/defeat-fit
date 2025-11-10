@@ -13,7 +13,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'delete-stats', date: string): void,
+  (e: 'delete-stats', id: number): void,
 }>();
 
 const isDeleteDialogVisible = ref(false);
@@ -24,7 +24,7 @@ const onDeleteStats = () => {
   if (!isStatsWithMenus(props.stats)) {
     return;
   }
-  emit('delete-stats', props.stats.date);
+  emit('delete-stats', props.stats.id);
   isDeleteDialogVisible.value = false;
 };
 </script>
