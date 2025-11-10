@@ -53,6 +53,8 @@ const statsListApi = {
     ipcRenderer.invoke('get-total-stats'),
   addStats: (defeatCount: number, menuList: Menu[]): Promise<Stats> =>
     ipcRenderer.invoke('add-stats', defeatCount, menuList),
+  deleteStats: (id: number): Promise<Stats> =>
+    ipcRenderer.invoke('delete-stats', id),
 } as const;
 
 contextBridge.exposeInMainWorld('defeatCount', defeatCountApi);
