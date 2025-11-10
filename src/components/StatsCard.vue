@@ -1,17 +1,33 @@
 <script setup lang="ts">
+import { ref, computed } from 'vue';
 import { TotalStatsMenu } from '../../common/types';
 import { menuUnitMap } from '../../common/util';
+import ConfirmDialog from './ConfirmDialog.vue';
 
 const props = defineProps<{
   title: string,
   defeatCount: number,
   // NOTE: { count: number, menu: Menu }を持つオブジェクトを許容する
-  statsMenuList: TotalStatsMenu[],
+  statsMenuList: TotalStatsMenu[], // FIXME: stats: Stats | TotalStatsとかにできない？
 }>();
+
+const emit = defineEmits<{
+  (e: 'delete-stats', date: string): void,
+}>();
+
+const isDeleteDialogVisible = ref(false);
+
+// HACK: 現状総統計か否かの判定材料がこれしかない
+const isTotalStats = computed(() => props.title === 'Total');
+
+const onDeleteStats = () => {
+  emit('delete-stats', props.title); // NOTE: titleはdate(YYYY-MM-DD)
+  isDeleteDialogVisible.value = false;
+};
 </script>
 
 <template>
-  <VCard class="mb-6">
+  <VCard class="mb-6 py-2">
     <template #text>
       <div class="d-flex justify-space-between align-center ga-4">
         <div class="w-25 text-center">
@@ -35,7 +51,25 @@ const props = defineProps<{
             </tr>
           </tbody>
         </VTable>
+        <VBtn
+          v-if="!isTotalStats"
+          class="text-red flex-0-1-1"
+          icon="mdi-trash-can"
+          elevation="0"
+          :rounded="false"
+          @click="isDeleteDialogVisible = true"
+        />
       </div>
     </template>
   </VCard>
+  <ConfirmDialog
+    v-model="isDeleteDialogVisible"
+    title="統計の削除"
+    yesBtnColor="red"
+    reverseYesNoPosition
+    @click-yes="onDeleteStats"
+    @click-no="isDeleteDialogVisible = false"
+  >
+    本当に {{ props.title }} の統計を削除する？
+  </ConfirmDialog>
 </template>

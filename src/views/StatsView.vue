@@ -17,10 +17,27 @@ const dateDescStatsList = computed(() => {
   return sortedStats;
 });
 
-(async () => {
-  statsList.value = await window.statsList.getStatsList();
-  totalStats.value = await window.statsList.getTotalStats();
-})();
+const getStats = async () => {
+  const result = await Promise.all([
+    window.statsList.getStatsList(),
+    window.statsList.getTotalStats(),
+  ]);
+
+  statsList.value = result[0];
+  totalStats.value = result[1];
+};
+
+const deleteStats = async (date: string) => {
+  const targetStats = statsList.value.find(stats => stats.date === date);
+  if (!targetStats) {
+    return;
+  }
+
+  await window.statsList.deleteStats(targetStats.id);
+  getStats();
+};
+
+getStats();
 </script>
 
 <template>
@@ -40,6 +57,7 @@ const dateDescStatsList = computed(() => {
       :title="stats.date"
       :defeatCount="stats.defeatCount"
       :statsMenuList="stats.statsMenuList"
+      @delete-stats="deleteStats"
     />
   </VContainer>
 </template>
