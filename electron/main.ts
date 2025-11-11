@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import type { IpcMainInvokeEvent } from 'electron';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import fs from 'node:fs';
 import { defeatCountApi } from './api/defeat-count';
 import { oscApi } from './api/osc';
 import { menuListApi } from './api/menu-list';
@@ -32,6 +33,24 @@ export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist');
 process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
   ? path.join(process.env.APP_ROOT, 'public')
   : RENDERER_DIST;
+
+// DB設定
+if (!VITE_DEV_SERVER_URL) {
+  const dbName = 'app.db'; // TODO: できれば共通化
+  const dbPath = path.join(app.getPath('userData'), dbName);
+
+  process.env.DATABASE_URL = `file:${dbPath}`;
+
+  if (!fs.existsSync(dbPath)) {
+    const sourceDb = path.join(process.resourcesPath, dbName);
+    try {
+      fs.copyFileSync(sourceDb, dbPath);
+    }
+    catch (e) {
+      console.error(e);
+    }
+  }
+}
 
 let win: BrowserWindow | null;
 
