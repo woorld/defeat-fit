@@ -4,12 +4,12 @@ appId: YourAppID
 asar: true
 productName: YourAppName
 directories:
-  output: release/${version}
+  output: dist/release/${version}
 files:
-  - dist
-  - dist-electron
+  - dist/vite
+  - dist/electron
 extraResources:
-  - from: prisma/app.db
+  - from: dist/app.db
     to: .
 mac:
   target:
