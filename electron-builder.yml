@@ -1,8 +1,7 @@
-$schema: >-
-  https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json
-appId: YourAppID
+$schema: https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json
+appId: com.github.woorld.defeatfit
 asar: true
-productName: YourAppName
+productName: DefeatFit
 directories:
   output: dist/release/${version}
 files:
