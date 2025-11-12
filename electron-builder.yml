@@ -8,6 +8,7 @@ directories:
 files:
   - dist/main
   - dist/renderer
+  - "!node_modules"
 extraResources:
   - from: dist/app.db
     to: .
@@ -30,3 +31,6 @@ linux:
   target:
     - AppImage
   artifactName: ${productName}-Linux-${version}.${ext}
+electronLanguages:
+  - ja
+  - en-US
