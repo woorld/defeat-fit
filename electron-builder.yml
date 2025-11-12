@@ -6,8 +6,8 @@ productName: YourAppName
 directories:
   output: dist/release/${version}
 files:
-  - dist/vite
-  - dist/electron
+  - dist/main
+  - dist/renderer
 extraResources:
   - from: dist/app.db
     to: .
