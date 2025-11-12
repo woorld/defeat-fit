@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc && vite build && electron-builder",
+    "build": "cross-env DATABASE_URL=file:../dist/app.db prisma db push --skip-generate --force-reset && vue-tsc && vite build && electron-builder",
     "preview": "vite preview",
     "format": "prettier -w .",
     "osc:send": "node tools/osc-sender.mjs",
@@ -25,6 +25,7 @@
     "@mdi/font": "^7.4.47",
     "@types/node-osc": "^9.1.0",
     "@vitejs/plugin-vue": "^5.0.4",
+    "cross-env": "^10.1.0",
     "electron": "^30.0.1",
     "electron-builder": "^26.0.12",
     "electron-store": "^10.1.0",
@@ -39,5 +40,5 @@
     "vite-plugin-vuetify": "^2.1.1",
     "vue-tsc": "^2.0.26"
   },
-  "main": "dist-electron/main.js"
+  "main": "dist/main/main.js"
 }
