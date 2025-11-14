@@ -29,4 +29,5 @@ interface Window {
   menuList: import('./preload').MenuListApi;
   setting: import('./preload').SettingApi;
   statsList: import('./preload').StatsListApi;
+  preset: import('./preload').PresetApi;
 }
