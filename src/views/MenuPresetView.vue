@@ -105,9 +105,9 @@ const onSave = async () => {
       <VBtn icon="mdi-trash-can" color="red" />
     </div>
     <PresetMenuEditor
-      :menuList
-      :menuListInPreset
-      :menuMultiplierList
+      v-model:menuList="menuList"
+      v-model:menuListInPreset="menuListInPreset"
+      v-model:menuMultiplierList="menuMultiplierList"
     />
   </div>
 </template>
