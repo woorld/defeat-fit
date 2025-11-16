@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import type { Menu, MenuUnit } from '../../prisma/generated/client';
+import type { Menu } from '../../prisma/generated/client';
 import type { SortableEvent } from 'sortablejs';
-import Draggable from 'vuedraggable';
-import { menuUnitMap } from '../../common/util';
+import PresetMenuEditorCol from './PresetMenuEditorCol.vue';
 
 const menuList = defineModel<Menu[]>('menuList', { required: true });
 const menuListInPreset = defineModel<Menu[]>('menuListInPreset', { required: true });
@@ -34,71 +33,17 @@ const onRemoveMenu = (event: SortableEvent) => {
 
 <template>
   <VRow>
-    <!-- TODO: 共通化できる部分をコンポーネントに抽出 -->
-    <VCol cols="6">
-      <p class="text-h6 mb-2">メニュー一覧</p>
-      <VSheet class="h-100 rounded" border>
-        <Draggable
-          v-model="menuList"
-          item-key="key"
-          animation="300"
-          group="menu"
-          class="h-100 overflow-hidden"
-        >
-          <template #item="{ element: menu }">
-            <VCard
-              border
-              :title="menu.name"
-              class="ma-2"
-              prepend-icon="mdi-drag"
-              density="compact"
-            />
-          </template>
-        </Draggable>
-      </VSheet>
-    </VCol>
-    <VCol cols="6">
-      <p class="text-h6 mb-2">プリセット内のメニュー</p>
-      <VSheet class="h-100 rounded" border>
-        <draggable
-          v-model="menuListInPreset"
-          item-key="id"
-          animation="300"
-          group="menu"
-          class="h-100 overflow-hidden"
-          @add="onAddMenu"
-          @update="onUpdateMenuOrder"
-          @remove="onRemoveMenu"
-        >
-          <template #item="{ element: menu, index }">
-            <VCard
-              border
-              :title="menu.name"
-              class="ma-2"
-              prepend-icon="mdi-drag"
-              density="compact"
-            >
-              <template #text>
-                <div class="d-flex justify-center align-center">
-                  <VNumberInput
-                    v-model="menuMultiplierList[index]"
-                    class="mr-4"
-                    hide-details
-                    variant="outlined"
-                    density="compact"
-                    control-variant="stacked"
-                    :precision="1"
-                    :step="0.5"
-                    :min="0.5"
-                  />
-                  <!-- NOTE: menu: Menu & { multiplier?: number } なので型アサーションしてOK -->
-                  {{ menuUnitMap[menu.unit as MenuUnit] }}
-                </div>
-              </template>
-            </VCard>
-          </template>
-        </draggable>
-      </VSheet>
-    </VCol>
+    <PresetMenuEditorCol
+      v-model:menuList="menuList"
+      title="メニュー一覧"
+    />
+    <PresetMenuEditorCol
+      v-model:menuList="menuListInPreset"
+      v-model:menuMultiplierList="menuMultiplierList"
+      title="プリセット内のメニュー"
+      @add-menu="onAddMenu"
+      @update-menu-order="onUpdateMenuOrder"
+      @remove-menu="onRemoveMenu"
+    />
   </VRow>
 </template>
