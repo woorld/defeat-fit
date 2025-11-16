@@ -180,6 +180,7 @@ ipcMain.on('reset-setting', () => settingApi.resetSetting());
 ipcMain.handle('get-stats-list', () => statsListApi.getStatsList());
 ipcMain.handle('get-total-stats', () => statsListApi.getTotalStats());
 ipcMain.handle('add-stats', (_, defeatCount: number, menuIdWithMultiplierList: MenuIdWithMultiplier[]) => statsListApi.addStats(defeatCount, menuIdWithMultiplierList));
+ipcMain.handle('delete-stats', (_, id: number) => statsListApi.deleteStats(id));
 
 // プリセットAPI
 ipcMain.handle('get-preset-list', () => presetApi.getPresetList());
