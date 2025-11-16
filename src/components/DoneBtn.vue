@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import { ref, toRaw } from 'vue';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import ConfirmDialog from './ConfirmDialog.vue';
-import type { Menu } from '../../prisma/generated/client';
 import { useDefeatCountStore } from '../stores/defeat-count';
+import { MenuIdWithMultiplier } from '../../common/types';
 
 const router = useRouter();
 const defeatCount = useDefeatCountStore();
 
 const props = defineProps<{
-  menuList: Menu[],
+  menuIdWithMultiplierList: MenuIdWithMultiplier[],
 }>();
 
 const isShowDialog = ref(false);
 
 const onDone = async () => {
-  await window.statsList.addStats(defeatCount.count, toRaw(props.menuList));
+  await window.statsList.addStats(defeatCount.count, props.menuIdWithMultiplierList);
   window.defeatCount.resetDefeatCount();
 
   // NOTE: ダイアログの非表示は画面遷移後も処理しようとしてコンソールに警告が出るため行わない

@@ -1,6 +1,6 @@
+// TODO: 複数（list）だけじゃなく単体も操作するし、ファイル名にlistいらなくね？
 import { PrismaClient } from '../../prisma/generated/client';
-import type { Menu } from '../../prisma/generated/client';
-import type { TotalStats } from '../../common/types';
+import type { MenuIdWithMultiplier, TotalStats } from '../../common/types';
 
 const prisma = new PrismaClient();
 
@@ -42,7 +42,8 @@ export const statsListApi = {
     return totalStats;
   },
 
-  async addStats(defeatCount: number, menuList: Menu[]) {
+  async addStats(defeatCount: number, menuIdWithMultiplierList: MenuIdWithMultiplier[]) {
+    console.dir(menuIdWithMultiplierList);
     // 次の日の朝5時までを本日とする
     // TODO: いつまでが今日なのかを設定で変えられるようにする
     const nowDate = new Date();
@@ -62,15 +63,16 @@ export const statsListApi = {
       },
     });
 
-    for (const menu of menuList) {
-      const menuCount = Math.ceil(menu.multiplier * defeatCount);
+    // TODO: forでupsertを回さずにstatsMenu: create{}でワンライナー的にできる？
+    for (const menuIdWithMultiplier of menuIdWithMultiplierList) {
+      const menuCount = Math.ceil(menuIdWithMultiplier.multiplier * defeatCount);
 
       // 作成した統計に紐づく統計メニューを追加・更新
       await prisma.statsMenu.upsert({
         where: {
           statsId_menuId: {
             statsId: todayStats.id,
-            menuId: menu.id,
+            menuId: menuIdWithMultiplier.menuId,
           },
         },
         update: {
@@ -78,7 +80,7 @@ export const statsListApi = {
         },
         create: {
           statsId: todayStats.id,
-          menuId: menu.id,
+          menuId: menuIdWithMultiplier.menuId,
           count: menuCount,
         },
       });

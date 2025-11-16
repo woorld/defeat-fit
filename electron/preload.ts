@@ -52,8 +52,8 @@ const statsListApi = {
     ipcRenderer.invoke('get-stats-list'),
   getTotalStats: (): Promise<TotalStats | undefined> =>
     ipcRenderer.invoke('get-total-stats'),
-  addStats: (defeatCount: number, menuList: Menu[]): Promise<Stats> =>
-    ipcRenderer.invoke('add-stats', defeatCount, menuList),
+  addStats: (defeatCount: number, menuIdWithMultiplierList: MenuIdWithMultiplier[]): Promise<Stats> =>
+    ipcRenderer.invoke('add-stats', defeatCount, menuIdWithMultiplierList),
 } as const;
 
 const presetApi = {

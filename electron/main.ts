@@ -167,7 +167,7 @@ ipcMain.on('reset-setting', () => settingApi.resetSetting());
 // 統計API
 ipcMain.handle('get-stats-list', () => statsListApi.getStatsList());
 ipcMain.handle('get-total-stats', () => statsListApi.getTotalStats());
-ipcMain.handle('add-stats', (_, defeatCount: number, menuList: Menu[]) => statsListApi.addStats(defeatCount, menuList));
+ipcMain.handle('add-stats', (_, defeatCount: number, menuIdWithMultiplierList: MenuIdWithMultiplier[]) => statsListApi.addStats(defeatCount, menuIdWithMultiplierList));
 
 // プリセットAPI
 ipcMain.handle('get-preset-list', () => presetApi.getPresetList());

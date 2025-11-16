@@ -1,21 +1,21 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import BaseDialog from './BaseDialog.vue';
-import type { Menu } from '../../prisma/generated/client';
+import type { Prisma } from '../../prisma/generated/client';
 import { useDefeatCountStore } from '../stores/defeat-count';
 import { menuUnitMap } from '../../common/util';
 
 const defeatCount = useDefeatCountStore();
 
 const props = defineProps<{
-  menu: Menu,
+  presetMenuWithMenu: Prisma.PresetMenuGetPayload<{ include: { menu: true }}>,
 }>();
 
 const isDialogVisible = ref(false);
 const isDecimalVisible = ref(false);
 const setCount = ref(1);
 
-const totalReps = computed(() => Math.ceil(props.menu.multiplier * defeatCount.count));
+const totalReps = computed(() => Math.ceil(props.presetMenuWithMenu.multiplier * defeatCount.count));
 const secondsPerSet = computed(
   () => Math.floor(totalReps.value / setCount.value * 1000) / 1000 // 表示用に小数第4位以下を切り捨て
 );
@@ -70,9 +70,9 @@ const restoreIntegerTotalReps = () => {
           </div>
           <VIcon size="32">mdi-chevron-down</VIcon>
           <div class="d-flex justify-center align-baseline ga-2">
-            <span class="text-body">{{ totalReps }} {{ menuUnitMap[props.menu.unit] }} ÷ {{ setCount }} セット =</span>
+            <span class="text-body">{{ totalReps }} {{ menuUnitMap[props.presetMenuWithMenu.menu.unit] }} ÷ {{ setCount }} セット =</span>
             <span class="text-h4 text-green">{{ secondsPerSet }}</span>
-            <span class="text-body">{{ menuUnitMap[props.menu.unit] }} / セット</span>
+            <span class="text-body">{{ menuUnitMap[props.presetMenuWithMenu.menu.unit] }} / セット</span>
           </div>
           <VCheckbox
             v-model="isDecimalVisible"
@@ -82,7 +82,7 @@ const restoreIntegerTotalReps = () => {
           />
         </div>
         <VBtn
-          v-show="props.menu.unit === 'SECOND'"
+          v-show="props.presetMenuWithMenu.menu.unit === 'SECOND'"
           append-icon="mdi-chevron-right"
           color="green"
           :to="`/timer/${Math.ceil(secondsPerSet)}/${setCount}`"
