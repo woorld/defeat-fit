@@ -17,14 +17,12 @@ export type StatsWithMenus = Prisma.StatsGetPayload<{
   },
 }>;
 
-export type TotalStatsMenu = {
-  count: number,
-  menu?: Menu,
-};
-
 export type TotalStats = {
   defeatCount: number,
-  statsMenuList: TotalStatsMenu[],
+  statsMenuList: {
+    count: number,
+    menu?: Menu,
+  }[],
 };
 
 export type PresetWithMenus = Prisma.PresetGetPayload<{

@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import type { IpcMainInvokeEvent } from 'electron';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import fs from 'node:fs';
 import { defeatCountApi } from './api/defeat-count';
 import { oscApi } from './api/osc';
 import { menuListApi } from './api/menu-list';
@@ -15,24 +16,41 @@ import 'dotenv/config'; // エントリポイントでのみロードすればOK
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // The built directory structure
-//
-// ├─┬─┬ dist
-// │ │ └── index.html
-// │ │
-// │ ├─┬ dist-electron
-// │ │ ├── main.js
-// │ │ └── preload.mjs
+// dist
+// ├─┬ main
+// │ ├── main.js
+// │ └── preload.mjs
 // │
-process.env.APP_ROOT = path.join(__dirname, '..');
+// ├─┬ renderer
+// │ └── index.html
+process.env.APP_ROOT = path.join(__dirname, '../..');
 
 // 🚧 Use ['ENV_NAME'] avoid vite:define plugin - Vite@2.x
 export const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL'];
-export const MAIN_DIST = path.join(process.env.APP_ROOT, 'dist-electron');
-export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist');
+export const MAIN_DIST = path.join(process.env.APP_ROOT, 'dist', 'main');
+export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist', 'renderer');
 
 process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
   ? path.join(process.env.APP_ROOT, 'public')
   : RENDERER_DIST;
+
+// DB設定
+if (!VITE_DEV_SERVER_URL) {
+  const dbName = 'app.db'; // TODO: できれば共通化
+  const dbPath = path.join(app.getPath('userData'), dbName);
+
+  process.env.DATABASE_URL = `file:${dbPath}`;
+
+  if (!fs.existsSync(dbPath)) {
+    const sourceDb = path.join(process.resourcesPath, dbName);
+    try {
+      fs.copyFileSync(sourceDb, dbPath);
+    }
+    catch (e) {
+      console.error(e);
+    }
+  }
+}
 
 let win: BrowserWindow | null;
 
@@ -128,14 +146,8 @@ ipcMain.on('reset-defeat-count', () => {
 
 // OSCサーバAPI
 ipcMain.handle('get-listening-status', () => oscApi.isListening());
-ipcMain.handle('start-listening', async () => {
-  await oscApi.openServer(onListenOsc);
-  return oscApi.isListening();
-});
-ipcMain.handle('stop-listening', async () => {
-  await oscApi.closeServer();
-  return oscApi.isListening();
-});
+ipcMain.handle('start-listening', () => oscApi.openServer(onListenOsc));
+ipcMain.handle('stop-listening', () => oscApi.closeServer());
 
 // メニューAPI
 ipcMain.handle('get-menu-list', () => menuListApi.getMenuList());

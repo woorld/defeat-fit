@@ -17,29 +17,36 @@ const dateDescStatsList = computed(() => {
   return sortedStats;
 });
 
-(async () => {
-  statsList.value = await window.statsList.getStatsList();
-  totalStats.value = await window.statsList.getTotalStats();
-})();
+const getStats = async () => {
+  const result = await Promise.all([
+    window.statsList.getStatsList(),
+    window.statsList.getTotalStats(),
+  ]);
+
+  statsList.value = result[0];
+  totalStats.value = result[1];
+};
+
+const deleteStats = async (id: number) => {
+  await window.statsList.deleteStats(id);
+  getStats();
+};
+
+getStats();
 </script>
 
 <template>
   <VContainer>
     <ViewHeading title="統計" />
-    <template v-if="totalStats && totalStats.defeatCount >= 1">
-      <StatsCard
-        title="Total"
-        :defeatCount="totalStats.defeatCount"
-        :statsMenuList="totalStats.statsMenuList"
-      />
+    <template v-if="totalStats !== undefined && totalStats.defeatCount >= 1">
+      <StatsCard :stats="totalStats" />
       <VDivider class="mb-6" />
     </template>
     <VCard v-else title="統計がありません" class="py-8 text-center" />
     <StatsCard
       v-for="stats in dateDescStatsList"
-      :title="stats.date"
-      :defeatCount="stats.defeatCount"
-      :statsMenuList="stats.statsMenuList"
+      :stats
+      @delete-stats="deleteStats"
     />
   </VContainer>
 </template>

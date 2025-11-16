@@ -12,7 +12,7 @@ type UnitSelectItem = {
 const unitSelectItems: UnitSelectItem[] = [
   { title: '回', value: 'COUNT' },
   { title: '秒', value: 'SECOND' },
-];
+] as const;
 
 const menuDefaultValue: Menu = {
   id: 0,

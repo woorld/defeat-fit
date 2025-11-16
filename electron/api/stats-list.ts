@@ -88,4 +88,9 @@ export const statsListApi = {
 
     return todayStats;
   },
+
+  async deleteStats(id: number) {
+    await prisma.statsMenu.deleteMany({ where: { statsId: id } });
+    return prisma.stats.delete({ where: { id } });
+  },
 } as const;
