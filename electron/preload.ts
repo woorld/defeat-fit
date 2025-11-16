@@ -63,6 +63,8 @@ const presetApi = {
     ipcRenderer.invoke('add-preset', name, presetMenuList),
   updatePreset: (preset: Preset, menuIdWithMultiplierList: MenuIdWithMultiplier[]): UpdatePreset =>
     ipcRenderer.invoke('update-preset', preset, menuIdWithMultiplierList),
+  deletePreset: (id: number): Promise<Preset> =>
+    ipcRenderer.invoke('delete-preset', id),
 } as const;
 
 contextBridge.exposeInMainWorld('defeatCount', defeatCountApi);

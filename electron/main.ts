@@ -179,3 +179,4 @@ ipcMain.handle(
     menuIdWithMultiplierList: MenuIdWithMultiplier[]
   ) => presetApi.updatePreset(preset, menuIdWithMultiplierList)
 );
+ipcMain.handle('delete-preset', (_, id: number) => presetApi.deletePreset(id));

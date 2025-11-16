@@ -72,6 +72,13 @@ export const presetApi = {
       }),
     ]);
   },
+
+  async deletePreset(id: number) {
+    return prisma.$transaction([
+      prisma.presetMenu.deleteMany({ where: { presetId: id }}),
+      prisma.preset.delete({ where: { id } }),
+    ]);
+  },
 };
 
 export type UpdatePreset = ReturnType<typeof presetApi.updatePreset>;
