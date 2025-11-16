@@ -33,57 +33,72 @@ const onRemoveMenu = (event: SortableEvent) => {
 </script>
 
 <template>
-    <VRow>
-      <VCol cols="6">
-        <VSheet class="h-100 rounded">
-          <Draggable
-            v-model="menuList"
-            item-key="key"
-            animation="300"
-            group="menu"
-            class="h-100 overflow-hidden"
-          >
-            <template #item="{ element: menu }">
-              <VCard :title="menu.name" class="ma-2" elevation="4" prepend-icon="mdi-drag" density="compact" />
-            </template>
-          </Draggable>
-        </VSheet>
-      </VCol>
-      <VCol cols="6">
-        <VSheet class="h-100 rounded">
-          <draggable
-            v-model="menuListInPreset"
-            item-key="id"
-            animation="300"
-            group="menu"
-            class="h-100 overflow-hidden"
-            @add="onAddMenu"
-            @update="onUpdateMenuOrder"
-            @remove="onRemoveMenu"
-          >
-            <template #item="{ element: menu, index }">
-              <VCard :title="menu.name" class="ma-2" color="green" prepend-icon="mdi-drag" density="compact">
-                <template #text>
-                  <div class="d-flex justify-center align-center">
-                    <VNumberInput
-                      v-model="menuMultiplierList[index]"
-                      class="mr-4"
-                      hide-details
-                      variant="outlined"
-                      density="compact"
-                      control-variant="stacked"
-                      :precision="1"
-                      :step="0.5"
-                      :min="0.5"
-                    />
-                    <!-- NOTE: menu: Menu & { multiplier?: number } なので型アサーションしてOK -->
-                    {{ menuUnitMap[menu.unit as MenuUnit] }}
-                  </div>
-                </template>
-              </VCard>
-            </template>
-          </draggable>
-        </VSheet>
-      </VCol>
-    </VRow>
+  <VRow>
+    <!-- TODO: 共通化できる部分をコンポーネントに抽出 -->
+    <VCol cols="6">
+      <p class="text-h6 mb-2">メニュー一覧</p>
+      <VSheet class="h-100 rounded" border>
+        <Draggable
+          v-model="menuList"
+          item-key="key"
+          animation="300"
+          group="menu"
+          class="h-100 overflow-hidden"
+        >
+          <template #item="{ element: menu }">
+            <VCard
+              border
+              :title="menu.name"
+              class="ma-2"
+              prepend-icon="mdi-drag"
+              density="compact"
+            />
+          </template>
+        </Draggable>
+      </VSheet>
+    </VCol>
+    <VCol cols="6">
+      <p class="text-h6 mb-2">プリセット内のメニュー</p>
+      <VSheet class="h-100 rounded" border>
+        <draggable
+          v-model="menuListInPreset"
+          item-key="id"
+          animation="300"
+          group="menu"
+          class="h-100 overflow-hidden"
+          @add="onAddMenu"
+          @update="onUpdateMenuOrder"
+          @remove="onRemoveMenu"
+        >
+          <template #item="{ element: menu, index }">
+            <VCard
+              border
+              :title="menu.name"
+              class="ma-2"
+              prepend-icon="mdi-drag"
+              density="compact"
+            >
+              <template #text>
+                <div class="d-flex justify-center align-center">
+                  <VNumberInput
+                    v-model="menuMultiplierList[index]"
+                    class="mr-4"
+                    hide-details
+                    variant="outlined"
+                    density="compact"
+                    control-variant="stacked"
+                    :precision="1"
+                    :step="0.5"
+                    :min="0.5"
+                  />
+                  <!-- NOTE: menu: Menu & { multiplier?: number } なので型アサーションしてOK -->
+                  {{ menuUnitMap[menu.unit as MenuUnit] }}
+                </div>
+              </template>
+            </VCard>
+          </template>
+        </draggable>
+      </VSheet>
+    </VCol>
+  </VRow>
 </template>

@@ -140,10 +140,13 @@ const deletePreset = async () => {
     </div>
     <template v-if="canEditPreset">
       <div class="d-flex justify-center align-center ga-2 mb-4">
+        <!-- HACK: rulesを未入力時の赤枠表示用に使用 -->
         <VTextField
           v-model="presetName"
           hide-details
-          placeholder="プリセット名"
+          label="プリセット名"
+          variant="outlined"
+          :rules="[v => v.length >= 1]"
         />
         <VBtn
           icon="mdi-floppy"
