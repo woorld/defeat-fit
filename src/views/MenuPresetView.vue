@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// TODO: プリセット編集がメインの画面なので、他と重複しなければ変数・関数のPresetというプレフィクスは不要そう
 import { ref, computed } from 'vue';
 import { PresetWithMenus } from '../../common/types';
 import type { Menu } from '../../prisma/generated/client';
@@ -85,6 +86,16 @@ const onClickSavePreset = async () => {
   getPresetList();
 };
 
+const onClickDiscardPreset = async () => {
+  if (editingPresetId.value === 0) {
+    if (presetList.value.length <= 0) {
+      editingPresetId.value = null;
+      return;
+    }
+    setEditingPreset(presetList.value[0]);
+  }
+};
+
 (async () => {
   await getPresetList();
   if (presetList.value.length >= 1) {
@@ -136,7 +147,11 @@ const onClickSavePreset = async () => {
           @click="onClickSavePreset"
         />
         <!-- TODO: 削除処理実装 -->
-        <VBtn icon="mdi-trash-can" color="red" />
+        <VBtn
+          :icon="`mdi-${editingPresetId === 0 ? 'close' : 'trash-can'}`"
+          color="red"
+          @click="onClickDiscardPreset"
+        />
       </div>
       <PresetMenuEditor
         v-model:menuList="menuList"
