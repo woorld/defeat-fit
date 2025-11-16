@@ -25,6 +25,7 @@ const presetSelect = computed(() => presetList.value.map(preset => ({
   value: preset.id,
 })));
 
+const hasPreset = computed(() => presetList.value.length >= 1);
 const canEditPreset = computed(() => editingPresetId.value !== null);
 const canSavePreset = computed(() => presetName.value.length >= 1 && menuListInPreset.value.length >= 1);
 
@@ -32,30 +33,28 @@ const getPresetList = async () => {
   presetList.value = await window.preset.getPresetList();
 };
 
-const setEditingPreset = async (preset: PresetWithMenus) => {
-  // TODO: presetIdをとるようにする
-  presetName.value = preset.name;
-  editingPresetId.value = preset.id;
-  menuListInPreset.value = preset.presetMenuList.map(presetMenu => presetMenu.menu);
-  menuMultiplierList.value = preset.presetMenuList.map(presetMenu => presetMenu.multiplier);
+const setEditingPresetById = async (id: number | null) => {
   const fetchedMenuList = await window.menuList.getMenuList();
-  menuList.value = fetchedMenuList.filter(menu => !menuListInPreset.value.map(menu => menu.id).includes(menu.id));
-};
 
-const onSelectPreset = async (id: number) => {
+  if (id === null || id === 0) {
+    presetName.value = '';
+    editingPresetId.value = id;
+    menuListInPreset.value = [];
+    menuMultiplierList.value = [];
+    menuList.value = fetchedMenuList;
+    return;
+  }
+
   const preset = presetList.value.find(preset => preset.id === id);
   if (preset === undefined) {
     return;
   }
-  setEditingPreset(preset);
-};
 
-const onClickAddPreset = () => {
-  setEditingPreset({
-    id: 0,
-    name: '',
-    presetMenuList: [],
-  });
+  presetName.value = preset.name;
+  editingPresetId.value = preset.id;
+  menuListInPreset.value = preset.presetMenuList.map(presetMenu => presetMenu.menu);
+  menuMultiplierList.value = preset.presetMenuList.map(presetMenu => presetMenu.multiplier);
+  menuList.value = fetchedMenuList.filter(menu => !menuListInPreset.value.map(menu => menu.id).includes(menu.id));
 };
 
 const onClickSavePreset = async () => {
@@ -88,16 +87,9 @@ const onClickSavePreset = async () => {
   getPresetList();
 };
 
-// TODO: editingPresetId.value = nullとしているところをsetEditingPreset(null)とする
-// TODO: presetList.value.length >= 1を汎用化
-
 const onClickDiscardPreset = () => {
   if (editingPresetId.value === 0) {
-    if (presetList.value.length <= 0) {
-      editingPresetId.value = null;
-      return;
-    }
-    setEditingPreset(presetList.value[0]);
+    setEditingPresetById(hasPreset.value ? presetList.value[0].id : null);
     return;
   }
   isDeleteDialogVisible.value = true;
@@ -112,20 +104,12 @@ const deletePreset = async () => {
   await window.preset.deletePreset(editingPresetId.value);
   await getPresetList();
 
-  if (presetList.value.length >= 1) {
-    setEditingPreset(presetList.value[0]);
-    return;
-  }
-  editingPresetId.value = null;
+  setEditingPresetById(hasPreset.value ? presetList.value[0].id : null);
 };
 
 (async () => {
   await getPresetList();
-  if (presetList.value.length >= 1) {
-    setEditingPreset(presetList.value[0]);
-    return;
-  }
-  menuList.value = await window.menuList.getMenuList();
+  setEditingPresetById(hasPreset.value ? presetList.value[0].id : null);
 })();
 </script>
 
@@ -147,13 +131,13 @@ const deletePreset = async () => {
         density="compact"
         rounded
         :items="presetSelect"
-        @update:modelValue="v => onSelectPreset(v)"
+        @update:modelValue="setEditingPresetById"
       />
       <VBtn
         rounded
         prepend-icon="mdi-plus"
         :disabled="editingPresetId === 0"
-        @click="onClickAddPreset"
+        @click="setEditingPresetById(0)"
       >プリセットを追加</VBtn>
     </div>
     <template v-if="canEditPreset">
