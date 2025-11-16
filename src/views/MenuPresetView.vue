@@ -4,6 +4,7 @@ import { ref, computed } from 'vue';
 import { PresetWithMenus } from '../../common/types';
 import type { Menu } from '../../prisma/generated/client';
 import PresetMenuEditor from '../components/PresetMenuEditor.vue';
+import ConfirmDialog from '../components/ConfirmDialog.vue';
 
 const presetName = ref('');
 const presetList = ref<PresetWithMenus[]>([]);
@@ -14,10 +15,10 @@ const presetList = ref<PresetWithMenus[]>([]);
  * 1~:   既存プリセットの編集
  */
 const editingPresetId = ref<number | null>(null);
-
 const menuList = ref<Menu[]>([]);
 const menuListInPreset = ref<Menu[]>([]);
 const menuMultiplierList = ref<number[]>([]);
+const isDeleteDialogVisible = ref(false);
 
 const presetSelect = computed(() => presetList.value.map(preset => ({
   title: preset.name,
@@ -32,6 +33,7 @@ const getPresetList = async () => {
 };
 
 const setEditingPreset = async (preset: PresetWithMenus) => {
+  // TODO: presetIdをとるようにする
   presetName.value = preset.name;
   editingPresetId.value = preset.id;
   menuListInPreset.value = preset.presetMenuList.map(presetMenu => presetMenu.menu);
@@ -86,14 +88,35 @@ const onClickSavePreset = async () => {
   getPresetList();
 };
 
-const onClickDiscardPreset = async () => {
+// TODO: editingPresetId.value = nullとしているところをsetEditingPreset(null)とする
+// TODO: presetList.value.length >= 1を汎用化
+
+const onClickDiscardPreset = () => {
   if (editingPresetId.value === 0) {
     if (presetList.value.length <= 0) {
       editingPresetId.value = null;
       return;
     }
     setEditingPreset(presetList.value[0]);
+    return;
   }
+  isDeleteDialogVisible.value = true;
+};
+
+const deletePreset = async () => {
+  isDeleteDialogVisible.value = false;
+  if (editingPresetId.value === null) {
+    return;
+  }
+
+  await window.preset.deletePreset(editingPresetId.value);
+  await getPresetList();
+
+  if (presetList.value.length >= 1) {
+    setEditingPreset(presetList.value[0]);
+    return;
+  }
+  editingPresetId.value = null;
 };
 
 (async () => {
@@ -146,7 +169,6 @@ const onClickDiscardPreset = async () => {
           :disabled="!canSavePreset"
           @click="onClickSavePreset"
         />
-        <!-- TODO: 削除処理実装 -->
         <VBtn
           :icon="`mdi-${editingPresetId === 0 ? 'close' : 'trash-can'}`"
           color="red"
@@ -158,6 +180,16 @@ const onClickDiscardPreset = async () => {
         v-model:menuListInPreset="menuListInPreset"
         v-model:menuMultiplierList="menuMultiplierList"
       />
+      <ConfirmDialog
+        v-model="isDeleteDialogVisible"
+        title="プリセット削除"
+        yesBtnColor="red"
+        reverseYesNoPosition
+        @click-yes="deletePreset"
+        @click-no="isDeleteDialogVisible = false"
+      >
+        本当に {{ presetName }} を削除する？<br />
+      </ConfirmDialog>
     </template>
   </div>
 </template>
