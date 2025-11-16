@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// TODO: プリセット編集がメインの画面なので、他と重複しなければ変数・関数のPresetというプレフィクスは不要そう
 import { ref, computed } from 'vue';
 import { PresetWithMenus } from '../../common/types';
 import type { Menu } from '../../prisma/generated/client';
@@ -24,7 +23,6 @@ const presetSelect = computed(() => presetList.value.map(preset => ({
   title: preset.name,
   value: preset.id,
 })));
-
 const hasPreset = computed(() => presetList.value.length >= 1);
 const canEditPreset = computed(() => editingPresetId.value !== null);
 const canSavePreset = computed(() => presetName.value.length >= 1 && menuListInPreset.value.length >= 1);
@@ -57,7 +55,7 @@ const setEditingPresetById = async (id: number | null) => {
   menuList.value = fetchedMenuList.filter(menu => !menuListInPreset.value.map(menu => menu.id).includes(menu.id));
 };
 
-const onClickSavePreset = async () => {
+const onClickSave = async () => {
   if (editingPresetId.value === null) {
     return;
   }
@@ -87,7 +85,7 @@ const onClickSavePreset = async () => {
   getPresetList();
 };
 
-const onClickDiscardPreset = () => {
+const onClickDiscard = () => {
   if (editingPresetId.value === 0) {
     setEditingPresetById(hasPreset.value ? presetList.value[0].id : null);
     return;
@@ -151,12 +149,12 @@ const deletePreset = async () => {
           icon="mdi-floppy"
           color="green"
           :disabled="!canSavePreset"
-          @click="onClickSavePreset"
+          @click="onClickSave"
         />
         <VBtn
           :icon="`mdi-${editingPresetId === 0 ? 'close' : 'trash-can'}`"
           color="red"
-          @click="onClickDiscardPreset"
+          @click="onClickDiscard"
         />
       </div>
       <PresetMenuEditor
