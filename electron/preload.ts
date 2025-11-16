@@ -1,6 +1,7 @@
 import { ipcRenderer, contextBridge } from 'electron';
-import type { Setting, StatsWithMenus, TotalStats } from '../common/types';
-import type { Menu, Stats } from '../prisma/generated/client';
+import type { MenuIdWithMultiplier, PresetWithMenus, Setting, StatsWithMenus, TotalStats } from '../common/types';
+import type { Menu, Stats, Preset } from '../prisma/generated/client';
+import type { UpdatePreset } from './api/preset';
 
 const defeatCountApi = {
   onUpdateDefeatCount: (callback: (defeatCount: number) => void) =>
@@ -51,10 +52,21 @@ const statsListApi = {
     ipcRenderer.invoke('get-stats-list'),
   getTotalStats: (): Promise<TotalStats | undefined> =>
     ipcRenderer.invoke('get-total-stats'),
-  addStats: (defeatCount: number, menuList: Menu[]): Promise<Stats> =>
-    ipcRenderer.invoke('add-stats', defeatCount, menuList),
+  addStats: (defeatCount: number, menuIdWithMultiplierList: MenuIdWithMultiplier[]): Promise<Stats> =>
+    ipcRenderer.invoke('add-stats', defeatCount, menuIdWithMultiplierList),
   deleteStats: (id: number): Promise<Stats> =>
     ipcRenderer.invoke('delete-stats', id),
+} as const;
+
+const presetApi = {
+  getPresetList: (): Promise<PresetWithMenus[]> =>
+    ipcRenderer.invoke('get-preset-list'),
+  addPreset: (name: string, presetMenuList: MenuIdWithMultiplier[]): Promise<Preset> =>
+    ipcRenderer.invoke('add-preset', name, presetMenuList),
+  updatePreset: (preset: Preset, menuIdWithMultiplierList: MenuIdWithMultiplier[]): UpdatePreset =>
+    ipcRenderer.invoke('update-preset', preset, menuIdWithMultiplierList),
+  deletePreset: (id: number): Promise<Preset> =>
+    ipcRenderer.invoke('delete-preset', id),
 } as const;
 
 contextBridge.exposeInMainWorld('defeatCount', defeatCountApi);
@@ -62,9 +74,11 @@ contextBridge.exposeInMainWorld('osc', oscApi);
 contextBridge.exposeInMainWorld('menuList', menuListApi);
 contextBridge.exposeInMainWorld('setting', settingApi);
 contextBridge.exposeInMainWorld('statsList', statsListApi);
+contextBridge.exposeInMainWorld('preset', presetApi);
 
 export type DefeatCountApi = typeof defeatCountApi;
 export type OscApi = typeof oscApi;
 export type MenuListApi = typeof menuListApi;
 export type SettingApi = typeof settingApi;
 export type StatsListApi = typeof statsListApi;
+export type PresetApi = typeof presetApi;

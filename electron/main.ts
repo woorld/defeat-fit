@@ -8,8 +8,9 @@ import { oscApi } from './api/osc';
 import { menuListApi } from './api/menu-list';
 import { settingApi } from './api/setting';
 import { statsListApi } from './api/stats-list';
-import type { Setting } from '../common/types';
-import type { Menu } from '../prisma/generated/client';
+import { presetApi } from './api/preset';
+import type { Setting, MenuIdWithMultiplier } from '../common/types';
+import type { Menu, Preset } from '../prisma/generated/client';
 import 'dotenv/config'; // エントリポイントでのみロードすればOK
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -178,5 +179,17 @@ ipcMain.on('reset-setting', () => settingApi.resetSetting());
 // 統計API
 ipcMain.handle('get-stats-list', () => statsListApi.getStatsList());
 ipcMain.handle('get-total-stats', () => statsListApi.getTotalStats());
-ipcMain.handle('add-stats', (_, defeatCount: number, menuList: Menu[]) => statsListApi.addStats(defeatCount, menuList));
+ipcMain.handle('add-stats', (_, defeatCount: number, menuIdWithMultiplierList: MenuIdWithMultiplier[]) => statsListApi.addStats(defeatCount, menuIdWithMultiplierList));
 ipcMain.handle('delete-stats', (_, id: number) => statsListApi.deleteStats(id));
+
+// プリセットAPI
+ipcMain.handle('get-preset-list', () => presetApi.getPresetList());
+ipcMain.handle('add-preset', (_, name: string, presetMenuList: MenuIdWithMultiplier[]) => presetApi.addPreset(name, presetMenuList));
+ipcMain.handle(
+  'update-preset', (
+    _,
+    preset: Preset,
+    menuIdWithMultiplierList: MenuIdWithMultiplier[]
+  ) => presetApi.updatePreset(preset, menuIdWithMultiplierList)
+);
+ipcMain.handle('delete-preset', (_, id: number) => presetApi.deletePreset(id));

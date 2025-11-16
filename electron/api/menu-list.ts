@@ -1,3 +1,4 @@
+// TODO: 複数（list）だけじゃなく単体も操作するし、ファイル名にlistいらなくね？
 import { PrismaClient } from '../../prisma/generated/client';
 import type { Menu } from '../../prisma/generated/client';
 
@@ -18,8 +19,11 @@ export const menuListApi = {
   },
 
   async deleteMenu(id: number) {
-    await prisma.statsMenu.deleteMany({ where: { menuId: id }});
-    return prisma.menu.delete({ where: { id }});
+    return prisma.$transaction([
+      prisma.statsMenu.deleteMany({ where: { menuId: id }}),
+      prisma.presetMenu.deleteMany({ where: { menuId: id }}),
+      prisma.menu.delete({ where: { id }}),
+    ]);
   },
 
   replaceMenu(id: number, newMenu: Menu) {

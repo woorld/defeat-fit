@@ -17,7 +17,6 @@ const unitSelectItems: UnitSelectItem[] = [
 const menuDefaultValue: Menu = {
   id: 0,
   name: '',
-  multiplier: 0.5,
   unit: 'COUNT',
 } as const;
 
@@ -96,21 +95,6 @@ const onClickDiscard = () => {
         />
       </td>
       <td class="px-2">
-        <VNumberInput
-          class="menu-input"
-          v-model="menu.multiplier"
-          inset
-          variant="outlined"
-          hide-details
-          density="compact"
-          max-width="100"
-          control-variant="stacked"
-          :step="0.5"
-          :precision="1"
-          :min="0.5"
-        />
-      </td>
-      <td class="px-2">
         <VSelect
           class="menu-input"
           v-model="menu.unit"
@@ -123,7 +107,6 @@ const onClickDiscard = () => {
     </template>
     <template v-else>
       <td>{{ menu.name }}</td>
-      <td>{{ menu.multiplier }}</td>
       <td>{{ menuUnitMap[menu.unit] }}</td>
     </template>
     <td class="text-right">

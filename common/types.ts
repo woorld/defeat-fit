@@ -1,4 +1,4 @@
-import type { Prisma, Menu } from '../prisma/generated/client';
+import type { Prisma, Menu, PresetMenu } from '../prisma/generated/client';
 
 export type Setting = {
   targetOscMessage: string,
@@ -23,4 +23,19 @@ export type TotalStats = {
     count: number,
     menu?: Menu,
   }[],
+};
+
+export type PresetWithMenus = Prisma.PresetGetPayload<{
+  include: {
+    presetMenuList: {
+      include: {
+        menu: true,
+      },
+    },
+  },
+}>;
+
+export type MenuIdWithMultiplier = {
+  menuId: Menu['id'],
+  multiplier: PresetMenu['multiplier'],
 };

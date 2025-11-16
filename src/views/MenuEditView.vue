@@ -2,7 +2,6 @@
 import { ref } from 'vue';
 import MenuTableRow from '../components/MenuTableRow.vue';
 import type { Menu } from '../../prisma/generated/client';
-import ViewHeading from '../components/ViewHeading.vue';
 
 const menuList = ref<Menu[]>([]);
 const editingMenuId = ref<null | number>(null); // 0の場合は新規追加
@@ -38,13 +37,11 @@ const updateEditingMenuId = (id: null | number) => {
 </script>
 
 <template>
-  <VContainer class="d-flex justify-center flex-column">
-    <ViewHeading title="メニュー編集" />
+  <div class="d-flex justify-center flex-column">
     <VTable hover :items="menuList">
       <thead>
         <tr class="font-weight-bold">
           <td>メニュー名</td>
-          <td>回・秒 / 死</td>
           <td>単位</td>
           <td />
         </tr>
@@ -76,5 +73,5 @@ const updateEditingMenuId = (id: null | number) => {
       prepend-icon="mdi-plus"
       @click="editingMenuId = 0"
     >メニューを追加</VBtn>
-  </VContainer>
+  </div>
 </template>
