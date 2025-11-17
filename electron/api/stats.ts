@@ -1,4 +1,3 @@
-// TODO: 複数（list）だけじゃなく単体も操作するし、ファイル名にlistいらなくね？
 import { PrismaClient } from '../../prisma/generated/client';
 import type { MenuIdWithMultiplier, TotalStats } from '../../common/types';
 
