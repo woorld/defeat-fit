@@ -7,23 +7,23 @@ const menuList = ref<Menu[]>([]);
 const editingMenuId = ref<null | number>(null); // 0の場合は新規追加
 
 const getMenuList = async () => {
-  const fetchedMenuList = await window.menuList.getMenuList();
+  const fetchedMenuList = await window.menu.getMenuList();
   fetchedMenuList.sort((menuA, menuB) => menuA.id - menuB.id);
   menuList.value = fetchedMenuList;
 };
 
 const addMenu = async (menu: Menu) => {
-  await window.menuList.addMenu(menu);
+  await window.menu.addMenu(menu);
   getMenuList();
 };
 
 const replaceMenu = async (menu: Menu) => {
-  await window.menuList.replaceMenu(menu.id, menu);
+  await window.menu.replaceMenu(menu.id, menu);
   getMenuList();
 };
 
 const deleteMenu = async (id: number) => {
-  await window.menuList.deleteMenu(id);
+  await window.menu.deleteMenu(id);
   getMenuList();
 };
 

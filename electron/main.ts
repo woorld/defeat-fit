@@ -5,9 +5,9 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { defeatCountApi } from './api/defeat-count';
 import { oscApi } from './api/osc';
-import { menuListApi } from './api/menu-list';
+import { menuApi } from './api/menu-list';
 import { settingApi } from './api/setting';
-import { statsListApi } from './api/stats-list';
+import { statsApi } from './api/stats-list';
 import { presetApi } from './api/preset';
 import type { Setting, MenuIdWithMultiplier } from '../common/types';
 import type { Menu, Preset } from '../prisma/generated/client';
@@ -150,10 +150,10 @@ ipcMain.handle('start-listening', () => oscApi.openServer(onListenOsc));
 ipcMain.handle('stop-listening', () => oscApi.closeServer());
 
 // メニューAPI
-ipcMain.handle('get-menu-list', () => menuListApi.getMenuList());
-ipcMain.handle('add-menu', (_, menu: Menu) => menuListApi.addMenu(menu));
-ipcMain.handle('delete-menu', (_, id: number) => menuListApi.deleteMenu(id));
-ipcMain.handle('replace-menu', (_, id: number, newMenu: Menu) => menuListApi.replaceMenu(id, newMenu));
+ipcMain.handle('get-menu-list', () => menuApi.getMenuList());
+ipcMain.handle('add-menu', (_, menu: Menu) => menuApi.addMenu(menu));
+ipcMain.handle('delete-menu', (_, id: number) => menuApi.deleteMenu(id));
+ipcMain.handle('replace-menu', (_, id: number, newMenu: Menu) => menuApi.replaceMenu(id, newMenu));
 
 // 設定API
 ipcMain.handle('get-setting', (_, settingName: keyof Setting) => settingApi.getSetting(settingName));
@@ -177,10 +177,10 @@ ipcMain.on('set-all-setting', async (_, setting: Setting) => {
 ipcMain.on('reset-setting', () => settingApi.resetSetting());
 
 // 統計API
-ipcMain.handle('get-stats-list', () => statsListApi.getStatsList());
-ipcMain.handle('get-total-stats', () => statsListApi.getTotalStats());
-ipcMain.handle('add-stats', (_, defeatCount: number, menuIdWithMultiplierList: MenuIdWithMultiplier[]) => statsListApi.addStats(defeatCount, menuIdWithMultiplierList));
-ipcMain.handle('delete-stats', (_, id: number) => statsListApi.deleteStats(id));
+ipcMain.handle('get-stats-list', () => statsApi.getStatsList());
+ipcMain.handle('get-total-stats', () => statsApi.getTotalStats());
+ipcMain.handle('add-stats', (_, defeatCount: number, menuIdWithMultiplierList: MenuIdWithMultiplier[]) => statsApi.addStats(defeatCount, menuIdWithMultiplierList));
+ipcMain.handle('delete-stats', (_, id: number) => statsApi.deleteStats(id));
 
 // プリセットAPI
 ipcMain.handle('get-preset-list', () => presetApi.getPresetList());

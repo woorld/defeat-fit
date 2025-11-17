@@ -32,7 +32,7 @@ const getPresetList = async () => {
 };
 
 const setEditingPresetById = async (id: number | null) => {
-  const fetchedMenuList = await window.menuList.getMenuList();
+  const fetchedMenuList = await window.menu.getMenuList();
 
   if (id === null || id === 0) {
     presetName.value = '';

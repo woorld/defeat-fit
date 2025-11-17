@@ -23,7 +23,7 @@ const oscApi = {
     ipcRenderer.invoke('stop-listening'),
 } as const;
 
-const menuListApi = {
+const menuApi = {
   getMenuList: (): Promise<Menu[]> =>
     ipcRenderer.invoke('get-menu-list'),
   addMenu: (menu: Menu): Promise<Menu> =>
@@ -47,7 +47,7 @@ const settingApi = {
     ipcRenderer.send('reset-setting'),
 } as const;
 
-const statsListApi = {
+const statsApi = {
   getStatsList: (): Promise<StatsWithMenus[]> =>
     ipcRenderer.invoke('get-stats-list'),
   getTotalStats: (): Promise<TotalStats | undefined> =>
@@ -71,14 +71,14 @@ const presetApi = {
 
 contextBridge.exposeInMainWorld('defeatCount', defeatCountApi);
 contextBridge.exposeInMainWorld('osc', oscApi);
-contextBridge.exposeInMainWorld('menuList', menuListApi);
+contextBridge.exposeInMainWorld('menu', menuApi);
 contextBridge.exposeInMainWorld('setting', settingApi);
-contextBridge.exposeInMainWorld('statsList', statsListApi);
+contextBridge.exposeInMainWorld('stats', statsApi);
 contextBridge.exposeInMainWorld('preset', presetApi);
 
 export type DefeatCountApi = typeof defeatCountApi;
 export type OscApi = typeof oscApi;
-export type MenuListApi = typeof menuListApi;
+export type MenuApi = typeof menuApi;
 export type SettingApi = typeof settingApi;
-export type StatsListApi = typeof statsListApi;
+export type StatsApi = typeof statsApi;
 export type PresetApi = typeof presetApi;
