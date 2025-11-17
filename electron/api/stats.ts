@@ -1,10 +1,9 @@
-// TODO: 複数（list）だけじゃなく単体も操作するし、ファイル名にlistいらなくね？
 import { PrismaClient } from '../../prisma/generated/client';
 import type { MenuIdWithMultiplier, TotalStats } from '../../common/types';
 
 const prisma = new PrismaClient();
 
-export const statsListApi = {
+export const statsApi = {
   getStatsList() {
     return prisma.stats.findMany({
       include: {
@@ -43,7 +42,6 @@ export const statsListApi = {
   },
 
   async addStats(defeatCount: number, menuIdWithMultiplierList: MenuIdWithMultiplier[]) {
-    console.dir(menuIdWithMultiplierList);
     // 次の日の朝5時までを本日とする
     // TODO: いつまでが今日なのかを設定で変えられるようにする
     const nowDate = new Date();

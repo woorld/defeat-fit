@@ -19,8 +19,8 @@ const dateDescStatsList = computed(() => {
 
 const getStats = async () => {
   const result = await Promise.all([
-    window.statsList.getStatsList(),
-    window.statsList.getTotalStats(),
+    window.stats.getStatsList(),
+    window.stats.getTotalStats(),
   ]);
 
   statsList.value = result[0];
@@ -28,7 +28,7 @@ const getStats = async () => {
 };
 
 const deleteStats = async (id: number) => {
-  await window.statsList.deleteStats(id);
+  await window.stats.deleteStats(id);
   getStats();
 };
 

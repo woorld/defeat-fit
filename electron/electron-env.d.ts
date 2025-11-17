@@ -13,8 +13,8 @@ declare namespace NodeJS {
 interface Window {
   defeatCount: import('./preload').DefeatCountApi;
   osc: import('./preload').OscApi;
-  menuList: import('./preload').MenuListApi;
+  menu: import('./preload').MenuApi;
   setting: import('./preload').SettingApi;
-  statsList: import('./preload').StatsListApi;
+  stats: import('./preload').StatsApi;
   preset: import('./preload').PresetApi;
 }
