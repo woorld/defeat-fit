@@ -19,15 +19,16 @@ const menuMultiplierList = defineModel<number[]>('menuMultiplierList');
 </script>
 
 <template>
-  <VCol cols="6">
+  <!-- NOTE: 縦方向のflexはメニュー領域の伸縮と左右で高さを揃えるのに必要 -->
+  <VCol cols="6" class="d-flex flex-column">
     <p class="text-h6 mb-2">{{ props.title }}</p>
-    <VSheet class="h-100 rounded" border>
+    <VSheet class="fill-height rounded" border>
       <Draggable
         v-model="menuList"
         item-key="id"
         animation="300"
         group="menu"
-        class="h-100 overflow-hidden"
+        class="fill-height overflow-hidden"
         @add="(event: SortableEvent) => emit('add-menu', event)"
         @update="(event: SortableEvent) => emit('update-menu-order', event)"
         @remove="(event: SortableEvent) => emit('remove-menu', event)"
