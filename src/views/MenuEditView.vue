@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import MenuTableRow from '../components/MenuTableRow.vue';
 import type { Menu } from '../../prisma/generated/client';
+import ItemEmptyCard from '../components/ItemEmptyCard.vue';
 
 const menuList = ref<Menu[]>([]);
 const editingMenuId = ref<null | number>(null); // 0の場合は新規追加
@@ -38,7 +39,8 @@ const updateEditingMenuId = (id: null | number) => {
 
 <template>
   <div class="d-flex justify-center flex-column">
-    <VTable hover :items="menuList">
+    <ItemEmptyCard v-if="menuList.length <= 0 && editingMenuId === null" itemName="メニュー" />
+    <VTable v-else hover :items="menuList">
       <thead>
         <tr class="font-weight-bold">
           <td>メニュー名</td>
@@ -67,7 +69,7 @@ const updateEditingMenuId = (id: null | number) => {
       </tbody>
     </VTable>
     <VBtn
-      class="mt-4 mx-auto"
+      class="mt-6 mx-auto"
       :disabled="editingMenuId !== null"
       rounded
       prepend-icon="mdi-plus"
