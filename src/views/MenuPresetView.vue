@@ -4,6 +4,7 @@ import { PresetWithMenus } from '../../common/types';
 import type { Menu } from '../../prisma/generated/client';
 import PresetMenuEditor from '../components/PresetMenuEditor.vue';
 import ConfirmDialog from '../components/ConfirmDialog.vue';
+import ItemEmptyCard from '../components/ItemEmptyCard.vue';
 
 const presetName = ref('');
 const presetList = ref<PresetWithMenus[]>([]);
@@ -113,10 +114,10 @@ const deletePreset = async () => {
 
 <template>
   <div>
-    <VCard
+    <ItemEmptyCard
       v-if="!canEditPreset"
-      class="mb-6 py-8 text-center"
-      title="プリセットがありません"
+      class="mb-6"
+      itemName="プリセット"
     />
     <!-- HACK: 他の要素より表示・非表示が多くなるのでv-showにしたいが、display: noneがd-flexで上書きされるため使えない -->
     <div v-if="editingPresetId !== 0" class="d-flex justify-center align-center mb-8">

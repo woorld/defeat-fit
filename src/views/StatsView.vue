@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import ViewHeading from '../components/ViewHeading.vue';
 import StatsCard from '../components/StatsCard.vue';
 import type { StatsWithMenus, TotalStats } from '../../common/types';
+import ItemEmptyCard from '../components/ItemEmptyCard.vue';
 
 const statsList = ref<StatsWithMenus[]>([]);
 const totalStats = ref<TotalStats | undefined>(undefined);
@@ -42,7 +43,7 @@ getStats();
       <StatsCard :stats="totalStats" />
       <VDivider class="mb-6" />
     </template>
-    <VCard v-else title="統計がありません" class="py-8 text-center" />
+    <ItemEmptyCard v-else itemName="統計" />
     <StatsCard
       v-for="stats in dateDescStatsList"
       :stats
