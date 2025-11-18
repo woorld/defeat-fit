@@ -48,35 +48,68 @@ const selectedPresetMenuIdWithMultiplierList = computed<MenuIdWithMultiplier[]>(
       <span class="text-h5">×</span>
       <span class="ml-3 text-h3 mb-2">{{ defeatCount.count }}</span>
     </div>
-    <VSelect
-      v-model="selectedPresetId"
-      class="mb-6"
-      label="プリセット"
-      rounded
-      variant="outlined"
-      hide-details
-      :items="presetSelect"
-    />
-    <VTable hover v-if="selectedPresetId !== null">
-      <tbody>
-        <tr v-for="presetMenu of selectedPresetMenuList">
-          <td>{{ presetMenu.menu.name }}</td>
-          <td>× {{ presetMenu.multiplier }} {{ menuUnitMap[presetMenu.menu.unit] }}</td>
-          <td class="text-right">
-            <span
-              class="pt-1 pb-1 pr-2 pl-2 rounded"
-            >{{ Math.ceil(presetMenu.multiplier * defeatCount.count) }} {{ menuUnitMap[presetMenu.menu.unit] }}</span>
-          </td>
-          <td class="text-right">
-            <DoMenuBtn :presetMenuWithMenu="presetMenu" />
-          </td>
-        </tr>
-      </tbody>
-    </VTable>
-    <div class="w-100 mt-8 d-flex justify-center align-center ga-4">
-      <DecrementBtn class="flex-1-1-0" />
-      <DoneBtn class="flex-1-1-0" :menuIdWithMultiplierList="selectedPresetMenuIdWithMultiplierList" />
-    </div>
+    <VCard v-if="presetList.length <= 0">
+      <div class="text-center py-2">
+        <VCardTitle>プリセットがありません</VCardTitle>
+        <VCardText>負けカウントから筋トレ回数を算出するには、メニューとプリセットが必要です</VCardText>
+      </div>
+      <VDivider />
+      <VList lines="two">
+        <VListItem>
+          <template #title>メニュー</template>
+          <template #subtitle>行う種目（腕立て伏せ、プランクなど）</template>
+          <template #append>
+            <VBtn
+              to="/menu/edit"
+              append-icon="mdi-chevron-right"
+              color="green"
+            >メニューを編集</VBtn>
+          </template>
+        </VListItem>
+        <VListItem>
+          <template #title>プリセット</template>
+          <template #subtitle>どのメニューを行うか、一敗あたり何回行うかの設定</template>
+          <template #append>
+            <VBtn
+              to="/menu/preset"
+              append-icon="mdi-chevron-right"
+              color="green"
+            >プリセットを追加</VBtn>
+          </template>
+        </VListItem>
+      </VList>
+    </VCard>
+    <template v-else>
+      <VSelect
+        v-model="selectedPresetId"
+        class="mb-6"
+        label="プリセット"
+        rounded
+        variant="outlined"
+        hide-details
+        :items="presetSelect"
+      />
+      <VTable hover v-if="selectedPresetId !== null">
+        <tbody>
+          <tr v-for="presetMenu of selectedPresetMenuList">
+            <td>{{ presetMenu.menu.name }}</td>
+            <td>× {{ presetMenu.multiplier }} {{ menuUnitMap[presetMenu.menu.unit] }}</td>
+            <td class="text-right">
+              <span
+                class="pt-1 pb-1 pr-2 pl-2 rounded"
+              >{{ Math.ceil(presetMenu.multiplier * defeatCount.count) }} {{ menuUnitMap[presetMenu.menu.unit] }}</span>
+            </td>
+            <td class="text-right">
+              <DoMenuBtn :presetMenuWithMenu="presetMenu" />
+            </td>
+          </tr>
+        </tbody>
+      </VTable>
+      <div class="w-100 mt-8 d-flex justify-center align-center ga-4">
+        <DecrementBtn class="flex-1-1-0" />
+        <DoneBtn class="flex-1-1-0" :menuIdWithMultiplierList="selectedPresetMenuIdWithMultiplierList" />
+      </div>
+    </template>
     <OscControlBtn />
     <CautionDialog />
   </VContainer>
