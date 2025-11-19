@@ -18,11 +18,27 @@ export const menuApi = {
   },
 
   async deleteMenu(id: number) {
-    return prisma.$transaction([
-      prisma.statsMenu.deleteMany({ where: { menuId: id }}),
-      prisma.presetMenu.deleteMany({ where: { menuId: id }}),
-      prisma.menu.delete({ where: { id }}),
-    ]);
+    return prisma.$transaction(async (tx) => {
+      // 削除対象メニューに関連する項目の削除
+      await Promise.all([
+        tx.statsMenu.deleteMany({ where: { menuId: id } }),
+        tx.presetMenu.deleteMany({ where: { menuId: id } }),
+      ]);
+
+      // プリセットメニュー削除で空になったプリセットの取得・削除
+      const emptyPresets = await tx.preset.findMany({
+        where: { presetMenuList: { none: {} } },
+      });
+
+      await tx.preset.deleteMany({
+        where: { id: { in: emptyPresets.map(preset => preset.id) } },
+      });
+
+      // NOTE: 統計は負け回数を残すために削除しない
+
+      // メニュー本体の削除
+      await tx.menu.delete({ where: { id } });
+    });
   },
 
   replaceMenu(id: number, newMenu: Menu) {
