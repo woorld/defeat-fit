@@ -46,14 +46,17 @@ const onDeleteStats = () => {
           vertical
           inset
         />
-        <VTable class="flex-1-1-0" density="compact">
-          <tbody>
-            <tr v-for="statsMenu of props.stats.statsMenuList">
-              <td>{{ statsMenu.menu?.name }}</td>
-              <td class="text-right">{{ statsMenu.count }} {{ menuUnitMap[statsMenu.menu?.unit || 'COUNT'] }}</td>
-            </tr>
-          </tbody>
-        </VTable>
+        <div class="flex-1-1-0">
+          <template v-if="props.stats.statsMenuList.length <= 0">メニューはありません</template>
+          <VTable v-else density="compact">
+            <tbody>
+              <tr v-for="statsMenu of props.stats.statsMenuList">
+                <td>{{ statsMenu.menu?.name }}</td>
+                <td class="text-right">{{ statsMenu.count }} {{ menuUnitMap[statsMenu.menu?.unit || 'COUNT'] }}</td>
+              </tr>
+            </tbody>
+          </VTable>
+        </div>
         <VBtn
           v-if="isStatsWithMenus(props.stats)"
           class="text-red flex-0-1-1"
