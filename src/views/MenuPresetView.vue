@@ -5,6 +5,7 @@ import type { Menu } from '../../prisma/generated/client';
 import PresetMenuEditor from '../components/PresetMenuEditor.vue';
 import ConfirmDialog from '../components/ConfirmDialog.vue';
 import ItemEmptyCard from '../components/ItemEmptyCard.vue';
+import ItemEmptyCardWithNav from '../components/ItemEmptyCardWithNav.vue';
 
 const presetName = ref('');
 const presetList = ref<PresetWithMenus[]>([]);
@@ -15,7 +16,8 @@ const presetList = ref<PresetWithMenus[]>([]);
  * 1~:   既存プリセットの編集
  */
 const editingPresetId = ref<number | null>(null);
-const menuList = ref<Menu[]>([]);
+const allMenuList = ref<Menu[]>([]); // NOTE: <template>から読まれないが、Computedで使用するためRefで定義
+const menuListInLeftPane = ref<Menu[]>([]);
 const menuListInPreset = ref<Menu[]>([]);
 const menuMultiplierList = ref<number[]>([]);
 const isDeleteDialogVisible = ref(false);
@@ -25,6 +27,7 @@ const presetSelect = computed(() => presetList.value.map(preset => ({
   value: preset.id,
 })));
 const hasPreset = computed(() => presetList.value.length >= 1);
+const canAddPreset = computed(() =>  allMenuList.value.length >= 1);
 const canEditPreset = computed(() => editingPresetId.value !== null);
 const canSavePreset = computed(() => presetName.value.length >= 1 && menuListInPreset.value.length >= 1);
 
@@ -33,14 +36,12 @@ const getPresetList = async () => {
 };
 
 const setEditingPresetById = async (id: number | null) => {
-  const fetchedMenuList = await window.menu.getMenuList();
-
   if (id === null || id === 0) {
     presetName.value = '';
     editingPresetId.value = id;
     menuListInPreset.value = [];
     menuMultiplierList.value = [];
-    menuList.value = fetchedMenuList;
+    menuListInLeftPane.value = [ ...allMenuList.value ];
     return;
   }
 
@@ -53,7 +54,7 @@ const setEditingPresetById = async (id: number | null) => {
   editingPresetId.value = preset.id;
   menuListInPreset.value = preset.presetMenuList.map(presetMenu => presetMenu.menu);
   menuMultiplierList.value = preset.presetMenuList.map(presetMenu => presetMenu.multiplier);
-  menuList.value = fetchedMenuList.filter(menu => !menuListInPreset.value.map(menu => menu.id).includes(menu.id));
+  menuListInLeftPane.value = allMenuList.value.filter(menu => !menuListInPreset.value.map(menu => menu.id).includes(menu.id));
 };
 
 const onClickSave = async () => {
@@ -107,18 +108,25 @@ const deletePreset = async () => {
 };
 
 (async () => {
-  await getPresetList();
+  const result = await Promise.all([
+    window.menu.getMenuList(),
+    getPresetList(),
+  ]);
+  allMenuList.value = result[0];
   setEditingPresetById(hasPreset.value ? presetList.value[0].id : null);
 })();
 </script>
 
 <template>
   <div>
-    <ItemEmptyCard
-      v-if="!canEditPreset"
-      class="mb-6"
-      itemName="プリセット"
-    />
+    <div class="mb-6">
+      <ItemEmptyCardWithNav
+        v-if="!canAddPreset"
+        title="プリセットに設定できるメニューがありません"
+        text="プリセットの作成にはメニューが必要です"
+      />
+      <ItemEmptyCard v-else-if="!canEditPreset" itemName="プリセット" />
+    </div>
     <!-- HACK: 他の要素より表示・非表示が多くなるのでv-showにしたいが、display: noneがd-flexで上書きされるため使えない -->
     <div v-if="editingPresetId !== 0" class="d-flex justify-center align-center mb-8">
       <VSelect
@@ -133,6 +141,7 @@ const deletePreset = async () => {
         @update:modelValue="setEditingPresetById"
       />
       <VBtn
+        v-if="canAddPreset"
         rounded
         prepend-icon="mdi-plus"
         :disabled="editingPresetId === 0"
@@ -162,7 +171,7 @@ const deletePreset = async () => {
         />
       </div>
       <PresetMenuEditor
-        v-model:menuList="menuList"
+        v-model:menuList="menuListInLeftPane"
         v-model:menuListInPreset="menuListInPreset"
         v-model:menuMultiplierList="menuMultiplierList"
       />

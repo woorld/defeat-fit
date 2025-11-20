@@ -8,6 +8,7 @@ import DoneBtn from '../components/DoneBtn.vue';
 import CautionDialog from '../components/CautionDialog.vue';
 import { menuUnitMap } from '../../common/util';
 import { MenuIdWithMultiplier, PresetWithMenus } from '../../common/types';
+import ItemEmptyCardWithNav from '../components/ItemEmptyCardWithNav.vue';
 
 const defeatCount = useDefeatCountStore();
 
@@ -48,37 +49,12 @@ const selectedPresetMenuIdWithMultiplierList = computed<MenuIdWithMultiplier[]>(
       <span class="text-h5">×</span>
       <span class="ml-3 text-h3 mb-2">{{ defeatCount.count }}</span>
     </div>
-    <VCard v-if="presetList.length <= 0">
-      <div class="text-center py-2">
-        <VCardTitle>プリセットがありません</VCardTitle>
-        <VCardText>負けカウントから筋トレ回数を算出するには、メニューとプリセットが必要です</VCardText>
-      </div>
-      <VDivider />
-      <VList lines="two">
-        <VListItem>
-          <template #title>メニュー</template>
-          <template #subtitle>行う種目（腕立て伏せ、プランクなど）</template>
-          <template #append>
-            <VBtn
-              to="/menu/edit"
-              append-icon="mdi-chevron-right"
-              color="green"
-            >メニューを編集</VBtn>
-          </template>
-        </VListItem>
-        <VListItem>
-          <template #title>プリセット</template>
-          <template #subtitle>どのメニューを行うか、一敗あたり何回行うかの設定</template>
-          <template #append>
-            <VBtn
-              to="/menu/preset"
-              append-icon="mdi-chevron-right"
-              color="green"
-            >プリセットを追加</VBtn>
-          </template>
-        </VListItem>
-      </VList>
-    </VCard>
+    <ItemEmptyCardWithNav
+      v-if="presetList.length <= 0"
+      title="プリセットがありません"
+      text="負けカウントから筋トレ回数を算出するには、メニューとプリセットが必要です"
+      showPresetNav
+    />
     <template v-else>
       <VSelect
         v-model="selectedPresetId"
