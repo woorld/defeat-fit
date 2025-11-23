@@ -67,6 +67,14 @@ getSetting();
           hide-details
         />
       </div>
+      <SettingSlider
+        setting-name="dayBoundaryOffsetHours"
+        label="統計の保存時、翌日何時までを本日とするか"
+        v-model="setting.dayBoundaryOffsetHours"
+        :step="1"
+        :min="0"
+        :max="9"
+      />
       <div class="d-flex justify-space-around align-center ga-4">
         <VBtn class="flex-1-1-0" color="yellow">
           設定をリセット
