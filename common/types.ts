@@ -5,6 +5,7 @@ export type Setting = {
   soundVolume: number,
   breakTimeSecBetweenSets: number,
   showCautionDialog: boolean,
+  dayBoundaryOffsetHours: number,
 };
 
 export type StatsWithMenus = Prisma.StatsGetPayload<{
