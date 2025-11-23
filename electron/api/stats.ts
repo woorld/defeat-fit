@@ -43,7 +43,7 @@ export const statsApi = {
   },
 
   async addStats(defeatCount: number, menuIdWithMultiplierList: MenuIdWithMultiplier[]) {
-    const nowDate = new Date('2025-11-23 01:00');
+    const nowDate = new Date();
     const hourOffset = await settingApi.getSetting('dayBoundaryOffsetHours');
 
     // 設定画面で設定した時間分引いて日付判定を変更
