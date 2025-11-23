@@ -1,5 +1,6 @@
 import { PrismaClient } from '../../prisma/generated/client';
 import type { MenuIdWithMultiplier, TotalStats } from '../../common/types';
+import { settingApi } from './setting';
 
 const prisma = new PrismaClient();
 
@@ -42,10 +43,11 @@ export const statsApi = {
   },
 
   async addStats(defeatCount: number, menuIdWithMultiplierList: MenuIdWithMultiplier[]) {
-    // 次の日の朝5時までを本日とする
-    // TODO: いつまでが今日なのかを設定で変えられるようにする
     const nowDate = new Date();
-    nowDate.setHours(nowDate.getHours() - 5);
+    const hourOffset = await settingApi.getSetting('dayBoundaryOffsetHours');
+
+    // 設定画面で設定した時間分引いて日付判定を変更
+    nowDate.setHours(nowDate.getHours() - hourOffset);
     // YYYY-MM-DD（sv-SE=スウェーデンの標準形式）で日付を取得
     const roundedNowDateString = nowDate.toLocaleDateString('sv-SE');
 
