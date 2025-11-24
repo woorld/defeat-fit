@@ -44,11 +44,11 @@ const onSelectPreset = (presetId: number) => {
     return;
   }
 
-  // 以前選択したプリセットの復元処理
+  // 以前選択したプリセットの復元処理（IDがnullのプリセットの存在は考慮しない）
   const lastSelectedPresetId = await window.setting.getSetting('lastSelectedPresetId');
   const targetPreset = presetList.value.find(preset => preset.id === lastSelectedPresetId);
 
-  if (lastSelectedPresetId !== null && targetPreset !== undefined) {
+  if (targetPreset !== undefined) {
     selectedPresetId.value = lastSelectedPresetId;
     return;
   }
