@@ -6,6 +6,7 @@ export type Setting = {
   breakTimeSecBetweenSets: number,
   showCautionDialog: boolean,
   dayBoundaryOffsetHours: number,
+  lastSelectedPresetId: number | null,
 };
 
 export type StatsWithMenus = Prisma.StatsGetPayload<{

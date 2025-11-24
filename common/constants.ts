@@ -6,4 +6,5 @@ export const SETTING_DEFAULT_VALUE: Setting = {
   breakTimeSecBetweenSets: 60,
   showCautionDialog: true,
   dayBoundaryOffsetHours: 0,
+  lastSelectedPresetId: null,
 } as const;
