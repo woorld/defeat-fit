@@ -34,11 +34,29 @@ const selectedPresetMenuIdWithMultiplierList = computed<MenuIdWithMultiplier[]>(
   }))
 );
 
+const onSelectPreset = (presetId: number) => {
+  window.setting.setSetting('lastSelectedPresetId', presetId);
+}
+
 (async () => {
   presetList.value = await window.preset.getPresetList();
-  if (presetList.value.length >= 1) {
-    selectedPresetId.value = presetList.value[0].id;
+  if (presetList.value.length <= 0) {
+    return;
   }
+
+  // 以前選択したプリセットの復元処理
+  const lastSelectedPresetId = await window.setting.getSetting('lastSelectedPresetId');
+  const targetPreset = presetList.value.find(preset => preset.id === lastSelectedPresetId);
+
+  if (lastSelectedPresetId !== null && targetPreset !== undefined) {
+    selectedPresetId.value = lastSelectedPresetId;
+    return;
+  }
+
+  // 以前選択していたプリセットが存在しない場合、配列の先頭のプリセットを選択・保存
+  const headPresetId = presetList.value[0].id;
+  selectedPresetId.value = headPresetId;
+  window.setting.setSetting('lastSelectedPresetId', headPresetId);
 })();
 </script>
 
@@ -64,6 +82,7 @@ const selectedPresetMenuIdWithMultiplierList = computed<MenuIdWithMultiplier[]>(
         variant="outlined"
         hide-details
         :items="presetSelect"
+        @update:model-value="onSelectPreset"
       />
       <VTable hover v-if="selectedPresetId !== null">
         <tbody>
