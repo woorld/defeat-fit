@@ -1,32 +1,22 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
+import { useOscStore } from '../stores/osc';
 
-const isListening = ref(false);
+const oscStore = useOscStore();
 
-const label = computed(() => isListening.value ? 'OSC受信中' : 'OSC受信停止中');
-
-const toggleListeningStatus = async () => {
-  if (isListening.value) {
-    await window.osc.stopListening();
-  }
-  else {
-    await window.osc.startListening();
-  }
-
-  isListening.value = await window.osc.getListeningStatus();
-};
-
-(async () => {
-  isListening.value = await window.osc.getListeningStatus();
-})();
+const label = computed(() => oscStore.isListening ? 'OSC受信中' : 'OSC受信停止中');
+const color = computed(() => oscStore.isListening ? 'green' : 'yellow');
+const icon = computed(() => oscStore.isListening ? 'mdi-wifi' : 'mdi-wifi-strength-off');
 </script>
 
 <template>
   <VBtn
     class="position-fixed top-0 right-0 ma-4"
-    :color="isListening ? 'green' : 'yellow'"
-    :prepend-icon="isListening ? 'mdi-wifi' : 'mdi-wifi-strength-off'"
+    :color
+    :prepend-icon="icon"
+    :loading="oscStore.loading"
+    :disabled="oscStore.loading"
     rounded
-    @click="toggleListeningStatus"
+    @click="oscStore.toggleListeningStatus"
   >{{ label }}</VBtn>
 </template>

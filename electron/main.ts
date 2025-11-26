@@ -102,8 +102,6 @@ function createWindow() {
     // win.loadFile('dist/index.html')
     win.loadFile(path.join(RENDERER_DIST, 'index.html'));
   }
-
-  oscApi.openServer(onListenOsc);
 }
 
 // Quit when all windows are closed, except on macOS. There, it's common
