@@ -6,7 +6,7 @@ import { setTimeout } from 'node:timers/promises';
 const basePort = 11337;
 const minDiscoveryWaitMs = 3000;
 
-let oscQueryDiscovery: OSCQueryDiscovery | null = null;
+const oscQueryDiscovery = new OSCQueryDiscovery;
 let discoveryStartAt = 0;
 
 let oscQueryServer: OSCQueryServer | null = null;
@@ -22,9 +22,6 @@ export const oscApi = {
     }
 
     this.startDiscovery();
-    if (oscQueryDiscovery === null) {
-      return;
-    }
 
     // OSCサービスの検索開始から一定時間が経っていなければ、足りない分待つ
     const discoveryElapsed = Date.now() - discoveryStartAt;
@@ -113,22 +110,12 @@ export const oscApi = {
   // NOTE: Discoveryの操作メソッドは現状フロント側に公開する必要はなさそう
 
   startDiscovery() {
-    if (oscQueryDiscovery !== null) {
-      return;
-    }
-
-    oscQueryDiscovery = new OSCQueryDiscovery();
     oscQueryDiscovery.start();
     discoveryStartAt = Date.now();
   },
 
   stopDiscovery() {
-    if (oscQueryDiscovery === null) {
-      return;
-    }
-
     oscQueryDiscovery.stop();
-    oscQueryDiscovery = null;
     discoveryStartAt = 0;
   },
 } as const;
