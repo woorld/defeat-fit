@@ -3,7 +3,6 @@ import { settingApi } from './setting';
 import { OSCQAccess, OSCQueryDiscovery, OSCQueryServer } from 'oscquery';
 import { setTimeout } from 'node:timers/promises';
 
-// TODO: 固定値の外だし
 const basePort = 11337;
 const minDiscoveryWaitMs = 3000;
 
