@@ -113,6 +113,7 @@ app.on('window-all-closed', () => {
     win = null;
   }
 
+  oscApi.stopDiscovery();
   oscApi.closeServer();
 });
 

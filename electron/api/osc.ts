@@ -7,9 +7,8 @@ import { setTimeout } from 'node:timers/promises';
 const basePort = 11337;
 const minDiscoveryWaitMs = 3000;
 
-const oscQueryDiscovery = new OSCQueryDiscovery();
-oscQueryDiscovery.start(); // TODO: アプリ終了時にstop()
-const discoveryStartAt = Date.now();
+let oscQueryDiscovery: OSCQueryDiscovery | null = null;
+let discoveryStartAt = 0;
 
 let oscQueryServer: OSCQueryServer | null = null;
 let oscServer: Server | null = null;
@@ -20,6 +19,11 @@ export const oscApi = {
     const targetMessage = await settingApi.getSetting('targetOscMessage');
     if (!targetMessage || oscQueryServer !== null || oscServer !== null) {
       // 対象のOSCメッセージが空文字列か、OSCサーバのどちらかが開始中か開始済の場合
+      return;
+    }
+
+    this.startDiscovery();
+    if (oscQueryDiscovery === null) {
       return;
     }
 
@@ -37,16 +41,16 @@ export const oscApi = {
         .map(service => service.hostInfo.oscPort as number) // 手前でundefinedを弾いているので型アサーションしてOK
     ];
 
-    let usingPort = basePort;
-
-    while (notAvailablePorts.includes(usingPort)) {
-      if (usingPort >= 65536) {
-        throw Error('Could not set OSC port');
-      }
-      usingPort++;
-    }
-
     try {
+      let usingPort = basePort;
+
+      while (notAvailablePorts.includes(usingPort)) {
+        if (usingPort >= 65536) {
+          throw Error('Could not set OSC port');
+        }
+        usingPort++;
+      }
+
       oscQueryServer = new OSCQueryServer({
         serviceName: 'DefeatFit',
         oscQueryHostName: 'DefeatFit',
@@ -104,7 +108,28 @@ export const oscApi = {
   },
 
   isListening() {
-    // TODO: oscServer, oscQueryServerの開始・停止処理中の場合は、それらを待ってから状態を返却
     return oscServer !== null && oscQueryServer !== null;
+  },
+
+  // NOTE: Discoveryの操作メソッドは現状フロント側に公開する必要はなさそう
+
+  startDiscovery() {
+    if (oscQueryDiscovery !== null) {
+      return;
+    }
+
+    oscQueryDiscovery = new OSCQueryDiscovery();
+    oscQueryDiscovery.start();
+    discoveryStartAt = Date.now();
+  },
+
+  stopDiscovery() {
+    if (oscQueryDiscovery === null) {
+      return;
+    }
+
+    oscQueryDiscovery.stop();
+    oscQueryDiscovery = null;
+    discoveryStartAt = 0;
   },
 } as const;
