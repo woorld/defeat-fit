@@ -9,8 +9,8 @@ import ViewHeading from '../components/ViewHeading.vue';
 
 const setting = ref<Setting>({ ...SETTING_DEFAULT_VALUE });
 const prevSetting = ref<Setting>({ ...SETTING_DEFAULT_VALUE });
-const isShowResetDialog = ref(false);
-const isShowSavedSnackbar = ref(false);
+const isResetDialogVisible = ref(false);
+const isSavedSnackbarVisible = ref(false);
 const snackbarLifetime = ref(2500);
 
 const getSetting = async () => {
@@ -22,7 +22,7 @@ const getSetting = async () => {
 const resetSetting = async () => {
   await window.setting.resetSetting();
   await getSetting();
-  isShowResetDialog.value = false;
+  isResetDialogVisible.value = false;
 };
 
 const saveSetting = async () => {
@@ -79,13 +79,13 @@ getSetting();
         <VBtn class="flex-1-1-0" color="yellow">
           設定をリセット
           <ConfirmDialog
-            v-model="isShowResetDialog"
+            v-model="isResetDialogVisible"
             explanation="ほんとに設定をリセットする？"
             yesBtnColor="yellow"
             reverseYesNoPosition
             activateByParent
             @click-yes="resetSetting"
-            @click-no="isShowResetDialog = false"
+            @click-no="isResetDialogVisible = false"
           />
         </VBtn>
         <VBtn
@@ -96,14 +96,14 @@ getSetting();
       </div>
     </div>
     <VSnackbar
-      v-model="isShowSavedSnackbar"
+      v-model="isSavedSnackbarVisible"
       color="green"
       location="bottom left"
       :timeout="snackbarLifetime"
     >
       設定を保存しました
       <template #actions>
-        <VBtn icon="mdi-close" @click="isShowSavedSnackbar = false" />
+        <VBtn icon="mdi-close" @click="isSavedSnackbarVisible = false" />
       </template>
     </VSnackbar>
     <SettingNotSavedDialog
