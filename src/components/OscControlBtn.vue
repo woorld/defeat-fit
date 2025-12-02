@@ -10,6 +10,7 @@ const isTargetOscMessageEmpty = ref(false);
 const label = computed(() => oscStore.isListening ? 'OSC受信中' : 'OSC受信停止中');
 const color = computed(() => oscStore.isListening ? 'green' : 'yellow');
 const icon = computed(() => oscStore.isListening ? 'mdi-wifi' : 'mdi-wifi-strength-off');
+const isTooltipVisible = computed(() => isTargetOscMessageEmpty.value && !oscStore.isListening);
 
 (async () => {
   const targetOscMessage = await window.setting.getSetting('targetOscMessage');
@@ -26,7 +27,7 @@ const icon = computed(() => oscStore.isListening ? 'mdi-wifi' : 'mdi-wifi-streng
     :color
     :prepend-icon="icon"
     :loading="oscStore.loading"
-    :disabled="oscStore.loading || isTargetOscMessageEmpty"
+    :disabled="oscStore.loading || isTooltipVisible"
     rounded
     @click="oscStore.toggleListeningStatus"
   >
@@ -36,7 +37,7 @@ const icon = computed(() => oscStore.isListening ? 'mdi-wifi' : 'mdi-wifi-streng
       location="left"
       no-click-animation
       interactive
-      :model-value="isTargetOscMessageEmpty"
+      :model-value="isTooltipVisible"
       :open-on-click="false"
       :open-on-focus="false"
       :open-on-hover="false"
