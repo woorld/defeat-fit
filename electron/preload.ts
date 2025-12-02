@@ -15,6 +15,8 @@ const defeatCountApi = {
 } as const;
 
 const oscApi = {
+  onUpdateOscStatus: (callback: (isListening: boolean) => void) =>
+    ipcRenderer.on('update-osc-status', (_, isListening: boolean) => callback(isListening)),
   getListeningStatus: (): Promise<boolean> =>
     ipcRenderer.invoke('get-listening-status'),
   startListening: (): Promise<void> =>

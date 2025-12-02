@@ -70,11 +70,6 @@ function createWindow() {
     win.webContents.openDevTools();
   }
 
-  // Test active push message to Renderer-process.
-  win.webContents.on('did-finish-load', () => {
-    win?.webContents.send('main-process-message', new Date().toLocaleString());
-  });
-
   win.on('ready-to-show', () => {
     win?.show();
   });
@@ -114,7 +109,7 @@ app.on('window-all-closed', () => {
   }
 
   oscApi.stopDiscovery();
-  oscApi.closeServer();
+  closeOscServer();
 });
 
 app.on('activate', () => {
@@ -135,6 +130,13 @@ const onListenOsc = () => {
   win?.webContents.send('update-defeat-count', newCount);
 };
 
+const onUpdateOscStatus = () => {
+  win?.webContents.send('update-osc-status', oscApi.isListening());
+};
+
+const openOscServer = () => oscApi.openServer(onListenOsc, onUpdateOscStatus);
+const closeOscServer = () => oscApi.closeServer(onUpdateOscStatus);
+
 // 負けカウントAPI
 ipcMain.handle('get-defeat-count', () => defeatCountApi.getDefeatCount());
 ipcMain.handle('decrement-defeat-count', () => defeatCountApi.decrementDefeatCount());
@@ -145,8 +147,8 @@ ipcMain.on('reset-defeat-count', () => {
 
 // OSCサーバAPI
 ipcMain.handle('get-listening-status', () => oscApi.isListening());
-ipcMain.handle('start-listening', () => oscApi.openServer(onListenOsc));
-ipcMain.handle('stop-listening', () => oscApi.closeServer());
+ipcMain.handle('start-listening', () => openOscServer());
+ipcMain.handle('stop-listening', () => closeOscServer());
 
 // メニューAPI
 ipcMain.handle('get-menu-list', () => menuApi.getMenuList());
@@ -169,8 +171,8 @@ ipcMain.on('set-all-setting', async (_, setting: Setting) => {
   settingApi.setAllSetting(setting);
   if (oscApi.isListening()) {
     // OSCサーバを開きなおさないと変更が反映されない
-    await oscApi.closeServer();
-    return oscApi.openServer(onListenOsc);
+    await closeOscServer();
+    return openOscServer();
   }
 });
 ipcMain.on('reset-setting', () => settingApi.resetSetting());

@@ -20,6 +20,10 @@ export const useOscStore = defineStore('osc', () => {
   };
 
   (async () => {
+    window.osc.onUpdateOscStatus((currentOscStatus) => {
+      isListening.value = currentOscStatus;
+    });
+
     await window.osc.startListening();
     isListening.value = await window.osc.getListeningStatus();
     loading.value = false;
