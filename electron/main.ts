@@ -131,7 +131,7 @@ const onListenOsc = () => {
 };
 
 const onUpdateOscStatus = () => {
-  win?.webContents.send('update-osc-status', oscApi.isListening())
+  win?.webContents.send('update-osc-status', oscApi.isListening());
 };
 
 const openOscServer = () => oscApi.openServer(onListenOsc, onUpdateOscStatus);
