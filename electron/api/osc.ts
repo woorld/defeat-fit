@@ -14,7 +14,7 @@ let oscServer: Server | null = null;
 let lastListenedAt = 0;
 
 export const oscApi = {
-  async openServer(onListen: Function) {
+  async openServer(onListen: Function, onOpen?: Function) {
     const targetMessage = await settingApi.getSetting('targetOscMessage');
     if (!targetMessage || oscQueryServer !== null || oscServer !== null) {
       // 対象のOSCメッセージが空文字列か、OSCサーバのどちらかが開始中か開始済の場合
@@ -60,6 +60,9 @@ export const oscApi = {
 
       oscServer = new Server(usingPort, '0.0.0.0', () => {
         console.log('DefeatFit: Start listening');
+        if (onOpen !== undefined) {
+          onOpen();
+        }
       });
     }
     catch (e) {
@@ -89,7 +92,7 @@ export const oscApi = {
     });
   },
 
-  async closeServer() {
+  async closeServer(onClose?: Function) {
     if (oscServer === null || oscQueryServer === null) {
       return;
     }
@@ -100,6 +103,10 @@ export const oscApi = {
     oscServer.close(() => {
       console.log('DefeatFit: closed');
       oscServer = null;
+
+      if (onClose !== undefined) {
+        onClose();
+      }
     });
   },
 
