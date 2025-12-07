@@ -12,10 +12,14 @@ let discoveryStartAt = 0;
 let oscQueryServer: OSCQueryServer | null = null;
 let oscServer: Server | null = null;
 let lastListenedAt = 0;
+let lastListenedMessage = '';
 
 export const oscApi = {
-  async openServer(onListen: Function) {
-    const targetMessage = await settingApi.getSetting('targetOscMessage');
+  async openServer(onListen: (listenedMessage: string) => void, listenAllMessage = false) {
+    const targetMessage = listenAllMessage
+      ? 'message' // oscServer.on()に渡すイベント名
+      : await settingApi.getSetting('targetOscMessage');
+
     if (!targetMessage || oscQueryServer !== null || oscServer !== null) {
       // 対象のOSCメッセージが空文字列か、OSCサーバのどちらかが開始中か開始済の場合
       return;
@@ -53,9 +57,13 @@ export const oscApi = {
         oscPort: usingPort,
         httpPort: usingPort,
       });
-      oscQueryServer.addMethod(targetMessage, {
-        access: OSCQAccess.WRITEONLY,
-      });
+
+      if (!listenAllMessage) {
+        oscQueryServer.addMethod(targetMessage, {
+          access: OSCQAccess.WRITEONLY,
+        });
+      }
+
       await oscQueryServer.start(); // 念のためOSCサーバ開始前に開始させる
 
       oscServer = new Server(usingPort, '0.0.0.0', () => {
@@ -69,9 +77,11 @@ export const oscApi = {
     }
 
     oscServer.on(targetMessage, value => {
+      // TODO: 対象メッセージだけでなく対象の値も設定できるようにする
       if (!value[1]) {
         return;
       }
+      const listenedMessage = value[0];
 
       /* HACK:
        * ネットワーク環境によってはOSCサービスが2つ以上登録され、同じメッセージが同タイミングで複数受信されることがある
@@ -79,13 +89,15 @@ export const oscApi = {
        */
       const nowDate = Date.now();
       const elapsedSinceLastListen = nowDate - lastListenedAt;
-      lastListenedAt = nowDate;
 
-      if (elapsedSinceLastListen <= 10) {
+      if (listenedMessage === lastListenedMessage && elapsedSinceLastListen <= 10) {
         return;
       }
 
-      onListen();
+      lastListenedAt = nowDate;
+      lastListenedMessage = listenedMessage;
+
+      onListen(listenedMessage);
     });
   },
 
@@ -99,7 +111,10 @@ export const oscApi = {
 
     oscServer.close(() => {
       console.log('DefeatFit: closed');
+
       oscServer = null;
+      lastListenedAt = 0;
+      lastListenedMessage = '';
     });
   },
 

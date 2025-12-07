@@ -19,8 +19,12 @@ const oscApi = {
     ipcRenderer.invoke('get-listening-status'),
   startListening: (): Promise<void> =>
     ipcRenderer.invoke('start-listening'),
+  startListeningAll: (): Promise<void> =>
+    ipcRenderer.invoke('start-listening-all'),
   stopListening: (): Promise<void> =>
     ipcRenderer.invoke('stop-listening'),
+  onListenAnyMessage: (callback: (listenedMessage: string) => void) =>
+    ipcRenderer.on('listen-any-message', (_, listenedMessage: string) => callback(listenedMessage)),
 } as const;
 
 const menuApi = {

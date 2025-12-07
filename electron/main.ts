@@ -129,10 +129,14 @@ app.whenReady().then(createWindow);
 
 // -------- ↑ウィンドウ設定 API関連処理↓ --------
 
-const onListenOsc = () => {
+const onListenTargetOscMessage = () => {
   const newCount = defeatCountApi.incrementDefeatCount();
   console.log('DefeatFit: listened! count: ' + newCount);
   win?.webContents.send('update-defeat-count', newCount);
+};
+
+const onListenAllOscMessage = (listenedMessage: string) => {
+  win?.webContents.send('listen-any-message', listenedMessage);
 };
 
 // 負けカウントAPI
@@ -145,7 +149,8 @@ ipcMain.on('reset-defeat-count', () => {
 
 // OSCサーバAPI
 ipcMain.handle('get-listening-status', () => oscApi.isListening());
-ipcMain.handle('start-listening', () => oscApi.openServer(onListenOsc));
+ipcMain.handle('start-listening', () => oscApi.openServer(onListenTargetOscMessage));
+ipcMain.handle('start-listening-all', () => oscApi.openServer(onListenAllOscMessage, true));
 ipcMain.handle('stop-listening', () => oscApi.closeServer());
 
 // メニューAPI
@@ -170,7 +175,7 @@ ipcMain.on('set-all-setting', async (_, setting: Setting) => {
   if (oscApi.isListening()) {
     // OSCサーバを開きなおさないと変更が反映されない
     await oscApi.closeServer();
-    return oscApi.openServer(onListenOsc);
+    return oscApi.openServer(onListenTargetOscMessage);
   }
 });
 ipcMain.on('reset-setting', () => settingApi.resetSetting());
