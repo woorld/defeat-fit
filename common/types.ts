@@ -41,3 +41,5 @@ export type MenuIdWithMultiplier = {
   menuId: Menu['id'],
   multiplier: PresetMenu['multiplier'],
 };
+
+export type OscStatus = 'OPEN'| 'OPEN_ALL' | 'CLOSE' | 'PENDING';

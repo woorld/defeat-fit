@@ -14,8 +14,8 @@ const icon = computed(() => oscStore.isListening ? 'mdi-wifi' : 'mdi-wifi-streng
     class="position-fixed top-0 right-0 ma-4"
     :color
     :prepend-icon="icon"
-    :loading="oscStore.loading"
-    :disabled="oscStore.loading"
+    :loading="oscStore.pending"
+    :disabled="oscStore.pending"
     rounded
     @click="oscStore.toggleListeningStatus"
   >{{ label }}</VBtn>

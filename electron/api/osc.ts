@@ -2,6 +2,7 @@ import { Server } from 'node-osc';
 import { settingApi } from './setting';
 import { OSCQAccess, OSCQueryDiscovery, OSCQueryServer } from 'oscquery';
 import { setTimeout } from 'node:timers/promises';
+import type { OscStatus } from '../../common/types';
 
 const basePort = 11337;
 const minDiscoveryWaitMs = 3000;
@@ -14,8 +15,15 @@ let oscServer: Server | null = null;
 let lastListenedAt = 0;
 let lastListenedMessage = '';
 
+// TODO: openServer, closeServerの更新関数を共通化する
+let oscStatus: OscStatus = 'CLOSE';
+
 export const oscApi = {
-  async openServer(onListen: (listenedMessage: string) => void, listenAllMessage = false) {
+  async openServer(
+    onChangeOscStatus: (oscStatus: OscStatus) => void,
+    onListen: (listenedMessage: string) => void,
+    listenAllMessage = false
+  ) {
     const targetMessage = listenAllMessage
       ? 'message' // oscServer.on()に渡すイベント名
       : await settingApi.getSetting('targetOscMessage');
@@ -24,6 +32,14 @@ export const oscApi = {
       // 対象のOSCメッセージが空文字列か、OSCサーバのどちらかが開始中か開始済の場合
       return;
     }
+
+    const changeOscStatus = (newOscStatus: OscStatus) => {
+      oscStatus = newOscStatus;
+      onChangeOscStatus(newOscStatus);
+    }
+
+    const prevOscStatus = oscStatus;
+    changeOscStatus('PENDING');
 
     this.startDiscovery();
 
@@ -67,12 +83,13 @@ export const oscApi = {
       await oscQueryServer.start(); // 念のためOSCサーバ開始前に開始させる
 
       oscServer = new Server(usingPort, '0.0.0.0', () => {
+        changeOscStatus(listenAllMessage ? 'OPEN_ALL' : 'OPEN');
         console.log('DefeatFit: Start listening');
       });
     }
     catch (e) {
-      // TODO: 画面へのエラー表示
-      console.error(e);
+      changeOscStatus(prevOscStatus);
+      console.error(e); // TODO: 画面へのエラー表示
       return;
     }
 
@@ -101,15 +118,24 @@ export const oscApi = {
     });
   },
 
-  async closeServer() {
+  async closeServer(onChangeOscStatus: (oscStatus: OscStatus) => void) {
     if (oscServer === null || oscQueryServer === null) {
       return;
     }
+
+    const changeOscStatus = (newOscStatus: OscStatus) => {
+      oscStatus = newOscStatus;
+      onChangeOscStatus(newOscStatus);
+    };
+
+    changeOscStatus('PENDING');
 
     await oscQueryServer.stop();
     oscQueryServer = null;
 
     oscServer.close(() => {
+      changeOscStatus('CLOSE');
+
       console.log('DefeatFit: closed');
 
       oscServer = null;
@@ -118,8 +144,8 @@ export const oscApi = {
     });
   },
 
-  isListening() {
-    return oscServer !== null && oscQueryServer !== null;
+  getOscStatus() {
+    return oscStatus;
   },
 
   // NOTE: Discoveryの操作メソッドは現状フロント側に公開する必要はなさそう
