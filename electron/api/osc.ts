@@ -15,8 +15,14 @@ let oscServer: Server | null = null;
 let lastListenedAt = 0;
 let lastListenedMessage = '';
 
-// TODO: openServer, closeServerの更新関数を共通化する
 let oscStatus: OscStatus = 'CLOSE';
+
+// ローカルのステータスを更新してハンドラを実行する関数を返却
+const useChangeOscStatus = (onChangeOscStatus: (oscStatus: OscStatus) => void) =>
+  (newOscStatus: OscStatus) => {
+    oscStatus = newOscStatus;
+    onChangeOscStatus(newOscStatus);
+  };
 
 export const oscApi = {
   async openServer(
@@ -33,10 +39,7 @@ export const oscApi = {
       return;
     }
 
-    const changeOscStatus = (newOscStatus: OscStatus) => {
-      oscStatus = newOscStatus;
-      onChangeOscStatus(newOscStatus);
-    }
+    const changeOscStatus = useChangeOscStatus(onChangeOscStatus);
 
     const prevOscStatus = oscStatus;
     changeOscStatus('PENDING');
@@ -123,10 +126,7 @@ export const oscApi = {
       return;
     }
 
-    const changeOscStatus = (newOscStatus: OscStatus) => {
-      oscStatus = newOscStatus;
-      onChangeOscStatus(newOscStatus);
-    };
+    const changeOscStatus = useChangeOscStatus(onChangeOscStatus);
 
     changeOscStatus('PENDING');
 
