@@ -34,7 +34,7 @@ export const oscApi = {
       ? 'message' // oscServer.on()に渡すイベント名
       : await settingApi.getSetting('targetOscMessage');
 
-    if (!targetMessage || oscQueryServer !== null || oscServer !== null) {
+    if (!targetMessage || oscQueryServer !== null || oscServer !== null || oscStatus === 'PENDING') {
       // 対象のOSCメッセージが空文字列か、OSCサーバのどちらかが開始中か開始済の場合
       return;
     }
@@ -122,7 +122,7 @@ export const oscApi = {
   },
 
   async closeServer(onChangeOscStatus: (oscStatus: OscStatus) => void) {
-    if (oscServer === null || oscQueryServer === null) {
+    if (oscServer === null || oscQueryServer === null || oscStatus === 'PENDING') {
       return;
     }
 
