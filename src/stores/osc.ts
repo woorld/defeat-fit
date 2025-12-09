@@ -6,7 +6,7 @@ export const useOscStore = defineStore('osc', () => {
   const oscStatus = ref<OscStatus>('CLOSE');
   const listenedMessageList = ref(new Set<string>());
 
-  const isListening = computed(() => oscStatus.value === 'OPEN');
+  const isListening = computed(() => ['OPEN', 'OPEN_ALL'].includes(oscStatus.value));
   const pending = computed(() => oscStatus.value === 'PENDING');
 
   const toggleListeningStatus = async () => {
