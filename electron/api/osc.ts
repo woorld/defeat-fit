@@ -87,7 +87,7 @@ export const oscApi = {
 
       oscServer = new Server(usingPort, '0.0.0.0', () => {
         changeOscStatus(listenAllMessage ? 'OPEN_ALL' : 'OPEN');
-        console.log('DefeatFit: Start listening');
+        console.log('DefeatFit: Start listening: ' + targetMessage);
       });
     }
     catch (e) {

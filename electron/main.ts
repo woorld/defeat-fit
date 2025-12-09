@@ -129,13 +129,14 @@ app.whenReady().then(createWindow);
 
 // -------- ↑ウィンドウ設定 API関連処理↓ --------
 
-const onListenTargetOscMessage = () => {
+const onListenTargetOscMessage = (listenedMessage: string) => {
   const newCount = defeatCountApi.incrementDefeatCount();
-  console.log('DefeatFit: listened! count: ' + newCount);
+  console.log('DefeatFit: listened: ' + listenedMessage);
   win?.webContents.send('update-defeat-count', newCount);
 };
 
 const onListenAllOscMessage = (listenedMessage: string) => {
+  console.log('DefeatFit: listened: ' + listenedMessage);
   win?.webContents.send('listen-any-message', listenedMessage);
 };
 
