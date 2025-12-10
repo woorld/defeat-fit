@@ -55,7 +55,11 @@ const onSelectOscMessage = (prefixedTargetOscMessage: unknown) => {
       <h3 class="text-h5 mb-2">OSCメッセージ選択</h3>
       <p>受信したOSCメッセージを選択・設定できます</p>
     </div>
-    <VProgressCircular v-if="oscStore.pending" indeterminate />
+    <VBtn
+      v-if="['CLOSE', 'OPEN'].includes(oscStore.oscStatus)"
+      @click="oscStore.startListeningAll"
+    >メッセージ受信開始</VBtn>
+    <VProgressCircular v-else-if="oscStore.pending" indeterminate />
     <p v-else-if="oscStore.listenedMessageList.size <= 0" class="text-grey">
       メッセージを受信しています…<br />
       負けとしてカウントしたいことをやってみましょう<br />

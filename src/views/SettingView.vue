@@ -37,10 +37,6 @@ const saveSetting = async () => {
   getSetting();
 };
 
-const onClickSelectOscMessage = () => {
-  oscStore.startListeningAll();
-};
-
 getSetting();
 
 onBeforeRouteLeave(async () => {
@@ -60,7 +56,7 @@ onBeforeRouteLeave(async () => {
           v-model="setting.targetOscMessage"
           hide-details
         />
-        <VBtn @click="onClickSelectOscMessage">
+        <VBtn>
           一覧から選ぶ
           <OscMessageSelectDialog
             activateByParent
