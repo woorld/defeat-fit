@@ -13,19 +13,33 @@ const emit = defineEmits<{
 const isVisible = ref(false);
 
 const listenedOscMessagesByNewest = computed(
-  () => Array.from(oscStore.listenedMessageList).reverse()
+  () => Array.from(oscStore.listenedMessageList)
+    .reverse()
+    .map((message, index) => ({
+      title: message,
+      // NOTE: そのままだと一瞬だけ重複してコンソールに警告が出るため、プレフィクスをつけて重複を回避
+      value: `${index}_${message}`,
+    }))
 );
 
 const onCloseDialog = () => {
   window.osc.stopListening();
 };
 
-const onSelectOscMessage = (targetOscMessage: unknown) => {
-  if (!(typeof targetOscMessage === 'string')) {
+const onSelectOscMessage = (prefixedTargetOscMessage: unknown) => {
+  if (!(typeof prefixedTargetOscMessage === 'string')) {
     return;
   }
 
+  let sliceAt = prefixedTargetOscMessage.indexOf('_');
+  if (sliceAt <= -1) {
+    return;
+  }
+
+  sliceAt++; // そのままsliceに使うと_がメッセージに含まれてしまう
+  const targetOscMessage = prefixedTargetOscMessage.slice(sliceAt);
   emit('select-message', targetOscMessage);
+
   isVisible.value = false;
   onCloseDialog();
 };
