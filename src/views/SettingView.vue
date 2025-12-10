@@ -6,6 +6,13 @@ import SettingSlider from '../components/SettingSlider.vue';
 import SettingNotSavedDialog from '../components/SettingNotSavedDialog.vue';
 import ConfirmDialog from '../components/ConfirmDialog.vue';
 import ViewHeading from '../components/ViewHeading.vue';
+import { useOscStore } from '../stores/osc';
+import { onBeforeRouteLeave } from 'vue-router';
+import OscMessageSelectDialog from '../components/OscMessageSelectDialog.vue';
+
+// TODO: 遷移してきたときにOSCの状態を保持しつつサーバーを閉じて、別画面に行くときに復元したほうが使用感よさそう
+
+const oscStore = useOscStore();
 
 const setting = ref<Setting>({ ...SETTING_DEFAULT_VALUE });
 const prevSetting = ref<Setting>({ ...SETTING_DEFAULT_VALUE });
@@ -30,18 +37,37 @@ const saveSetting = async () => {
   getSetting();
 };
 
+const onClickSelectOscMessage = () => {
+  oscStore.startListeningAll();
+};
+
 getSetting();
+
+onBeforeRouteLeave(async () => {
+  if (oscStore.oscStatus === 'OPEN_ALL') {
+    await window.osc.stopListening();
+  }
+});
 </script>
 
 <template>
   <VContainer>
     <ViewHeading title="設定" />
     <div class="d-flex flex-column ga-10">
-      <VTextField
-        label="対象のOSCメッセージ"
-        v-model="setting.targetOscMessage"
-        hide-details
-      />
+      <div class="d-flex justify-center align-center ga-4">
+        <VTextField
+          label="対象のOSCメッセージ"
+          v-model="setting.targetOscMessage"
+          hide-details
+        />
+        <VBtn @click="onClickSelectOscMessage">
+          一覧から選ぶ
+          <OscMessageSelectDialog
+            activateByParent
+            @select-message="message => setting.targetOscMessage = message"
+          />
+        </VBtn>
+      </div>
       <SettingSlider
         setting-name="soundVolume"
         label="SE音量"

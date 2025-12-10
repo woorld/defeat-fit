@@ -39,9 +39,10 @@ export const useOscStore = defineStore('osc', () => {
   })();
 
   return {
+    oscStatus,
+    listenedMessageList,
     isListening,
     pending,
-    listenedMessageList,
     toggleListeningStatus,
     startListeningAll,
   };
