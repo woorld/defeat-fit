@@ -11,18 +11,24 @@ const emit = defineEmits<{
 }>();
 
 const isVisible = ref(false);
+const showOnlyAvatarParameters = ref(true);
 
-const listenedOscMessagesByNewest = computed(
-  () => Array.from(oscStore.listenedMessageList)
+const listenedOscMessagesByNewest = computed(() => {
+  const reversed = Array.from(oscStore.listenedMessageList)
     .reverse()
     .map((message, index) => ({
       title: message,
       // NOTE: そのままだと一瞬だけ重複してコンソールに警告が出るため、プレフィクスをつけて重複を回避
       value: `${index}_${message}`,
-    }))
-);
+    }));
+
+  return showOnlyAvatarParameters.value
+    ? reversed.filter(item => item.title.startsWith('/avatar/parameters'))
+    : reversed;
+});
 
 const onCloseDialog = () => {
+  // NOTE: @clickに直接指定するとwindowオブジェクトが存在しない
   window.osc.stopListening();
 };
 
@@ -41,7 +47,6 @@ const onSelectOscMessage = (prefixedTargetOscMessage: unknown) => {
   emit('select-message', targetOscMessage);
 
   isVisible.value = false;
-  onCloseDialog();
 };
 </script>
 
@@ -51,7 +56,7 @@ const onSelectOscMessage = (prefixedTargetOscMessage: unknown) => {
     :canClose="!oscStore.pending"
     @close="onCloseDialog"
   >
-    <div class="mb-6">
+    <div class="mb-8">
       <h3 class="text-h5 mb-2">OSCメッセージ選択</h3>
       <p>受信したOSCメッセージを選択・設定できます</p>
     </div>
@@ -64,7 +69,7 @@ const onSelectOscMessage = (prefixedTargetOscMessage: unknown) => {
     <template v-else>
       <div class="border-e border-b border-s rounded overflow-hidden">
         <VProgressLinear indeterminate height="1" />
-        <p v-if="oscStore.listenedMessageList.size <= 0" class="text-grey py-6">
+        <p v-if="listenedOscMessagesByNewest.length <= 0" class="text-grey py-6">
           カウントしたいことを実際にやってみましょう<br />
           （例: 対戦ギミックで負ける）
         </p>
@@ -77,6 +82,13 @@ const onSelectOscMessage = (prefixedTargetOscMessage: unknown) => {
           @click:select="event => onSelectOscMessage(event.id)"
         />
       </div>
+      <VCheckbox
+        class="d-flex justify-center align-center mt-6"
+        v-model="showOnlyAvatarParameters"
+        label="アバターのパラメーターのみ表示する"
+        density="compact"
+        hide-details
+      />
     </template>
   </BaseDialog>
 </template>
