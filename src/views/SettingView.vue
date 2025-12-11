@@ -10,9 +10,8 @@ import { useOscStore } from '../stores/osc';
 import { onBeforeRouteLeave } from 'vue-router';
 import OscMessageSelectDialog from '../components/OscMessageSelectDialog.vue';
 
-// TODO: 遷移してきたときにOSCの状態を保持しつつサーバーを閉じて、別画面に行くときに復元したほうが使用感よさそう
-
 const oscStore = useOscStore();
+const oscStatusWhenEnter = oscStore.oscStatus;
 
 const setting = ref<Setting>({ ...SETTING_DEFAULT_VALUE });
 const prevSetting = ref<Setting>({ ...SETTING_DEFAULT_VALUE });
@@ -42,6 +41,11 @@ getSetting();
 onBeforeRouteLeave(async () => {
   if (oscStore.oscStatus === 'OPEN_ALL') {
     await window.osc.stopListening();
+  }
+
+  // 画面突入時にOSCがオンだった場合は起動しなおす
+  if (oscStore.oscStatus === 'CLOSE' && oscStatusWhenEnter === 'OPEN') {
+    window.osc.startListening();
   }
 });
 </script>
