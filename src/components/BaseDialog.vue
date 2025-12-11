@@ -1,8 +1,11 @@
 <script setup lang="ts">
-const props = defineProps<{
-  activateByParent?: boolean,
-  canClose?: boolean,
-}>();
+const props = withDefaults(
+  defineProps<{
+    activateByParent?: boolean,
+    canClose?: boolean,
+  }>(),
+  { canClose: true }
+);
 
 const emit = defineEmits<{
   (e: 'close'): void,
