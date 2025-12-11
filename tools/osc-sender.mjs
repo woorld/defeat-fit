@@ -1,12 +1,16 @@
 import { Client } from 'node-osc';
 import readline from 'readline';
 import { oscSetting } from './constants.mjs';
+import process from 'process';
 
+const sendMultipleType = process.argv[2] === 'multiple';
 const log = (str) => console.log('osc-sender: ' + str);
 
 const oscAddress = '/avatar/parameters/BJK/IsDead';
 const oscValue = 'true';
 const client = new Client(oscSetting.host, oscSetting.port);
+
+let count = 0;
 
 const onKeyPress = (_str, key) => {
   if (!key) {
@@ -21,8 +25,13 @@ const onKeyPress = (_str, key) => {
   }
 
   if (key.name === 'return') {
-    client.send(oscAddress, oscValue, () => {
-      log(`Message Sent - ${oscAddress},${oscValue}`);
+    count++;
+    const sendOscAddress = sendMultipleType
+      ? `${oscAddress}/${count}`
+      : oscAddress;
+
+    client.send(sendOscAddress, oscValue, () => {
+      log(`Message Sent - ${sendOscAddress},${oscValue}`);
     });
   }
 };

@@ -26,8 +26,8 @@ const isTooltipVisible = computed(() => isTargetOscMessageEmpty.value && !oscSto
     class="position-fixed top-0 right-0 ma-4"
     :color
     :prepend-icon="icon"
-    :loading="oscStore.loading"
-    :disabled="oscStore.loading || isTooltipVisible"
+    :loading="oscStore.pending"
+    :disabled="oscStore.pending || isTooltipVisible"
     rounded
     @click="oscStore.toggleListeningStatus"
   >

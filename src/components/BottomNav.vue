@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
+import { useOscStore } from '../stores/osc';
 
 const route = useRoute();
+const oscStore = useOscStore();
 
 const isInMenuView = computed(() => route.path.startsWith('/menu'));
 </script>
@@ -21,7 +23,7 @@ const isInMenuView = computed(() => route.path.startsWith('/menu'));
   <VBtn to="/stats">
     <VIcon>mdi-chart-bar</VIcon>
   </VBtn>
-  <VBtn to="/setting">
+  <VBtn to="/setting" :disabled="oscStore.oscStatus === 'PENDING'">
     <VIcon>mdi-cog</VIcon>
   </VBtn>
 </VBottomNavigation>

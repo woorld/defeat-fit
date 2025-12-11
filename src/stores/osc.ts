@@ -1,37 +1,49 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+import type { OscStatus } from '../../common/types';
 
 export const useOscStore = defineStore('osc', () => {
-  const isListening = ref(false);
-  const loading = ref(true);
+  const oscStatus = ref<OscStatus>('CLOSE');
+  const listenedMessageList = ref(new Set<string>());
+
+  const isListening = computed(() => ['OPEN', 'OPEN_ALL'].includes(oscStatus.value));
+  const pending = computed(() => oscStatus.value === 'PENDING');
 
   const toggleListeningStatus = async () => {
-    loading.value = true;
-
-    if (isListening.value) {
-      await window.osc.stopListening();
-    }
-    else {
-      await window.osc.startListening();
+    if (pending.value) {
+      return;
     }
 
-    isListening.value = await window.osc.getListeningStatus();
-    loading.value = false;
+    isListening.value
+      ? window.osc.stopListening()
+      : window.osc.startListening();
+  };
+
+  const startListeningAll = async () => {
+    listenedMessageList.value.clear();
+    await window.osc.stopListening();
+    return window.osc.startListeningAll();
   };
 
   (async () => {
-    window.osc.onUpdateOscStatus((currentOscStatus) => {
-      isListening.value = currentOscStatus;
+    oscStatus.value = await window.osc.getOscStatus();
+
+    window.osc.onChangeOscStatus((newOscStatus) => {
+      oscStatus.value = newOscStatus;
+    });
+    window.osc.onListenAnyMessage((listenedMessage) => {
+      listenedMessageList.value.add(listenedMessage);
     });
 
-    await window.osc.startListening();
-    isListening.value = await window.osc.getListeningStatus();
-    loading.value = false;
+    window.osc.startListening();
   })();
 
   return {
+    oscStatus,
+    listenedMessageList,
     isListening,
-    loading,
+    pending,
     toggleListeningStatus,
+    startListeningAll,
   };
 });

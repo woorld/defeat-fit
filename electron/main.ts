@@ -9,7 +9,7 @@ import { menuApi } from './api/menu';
 import { settingApi } from './api/setting';
 import { statsApi } from './api/stats';
 import { presetApi } from './api/preset';
-import type { Setting, MenuIdWithMultiplier } from '../common/types';
+import type { Setting, MenuIdWithMultiplier, OscStatus } from '../common/types';
 import type { Menu, Preset } from '../prisma/generated/client';
 import 'dotenv/config'; // エントリポイントでのみロードすればOK
 
@@ -124,18 +124,23 @@ app.whenReady().then(createWindow);
 
 // -------- ↑ウィンドウ設定 API関連処理↓ --------
 
-const onListenOsc = () => {
+const onListenTargetOscMessage = (listenedMessage: string) => {
   const newCount = defeatCountApi.incrementDefeatCount();
-  console.log('DefeatFit: listened! count: ' + newCount);
+  console.log('DefeatFit: listened: ' + listenedMessage);
   win?.webContents.send('update-defeat-count', newCount);
 };
 
-const onUpdateOscStatus = () => {
-  win?.webContents.send('update-osc-status', oscApi.isListening());
+const onListenAllOscMessage = (listenedMessage: string) => {
+  console.log('DefeatFit: listened: ' + listenedMessage);
+  win?.webContents.send('listen-any-message', listenedMessage);
 };
 
-const openOscServer = () => oscApi.openServer(onListenOsc, onUpdateOscStatus);
-const closeOscServer = () => oscApi.closeServer(onUpdateOscStatus);
+const onChangeOscStatus = (oscStatus: OscStatus) => {
+  win?.webContents.send('change-osc-status', oscStatus);
+};
+
+const openOscServer = () => oscApi.openServer(onChangeOscStatus, onListenTargetOscMessage);
+const closeOscServer = () => oscApi.closeServer(onChangeOscStatus);
 
 // 負けカウントAPI
 ipcMain.handle('get-defeat-count', () => defeatCountApi.getDefeatCount());
@@ -146,9 +151,10 @@ ipcMain.on('reset-defeat-count', () => {
 });
 
 // OSCサーバAPI
-ipcMain.handle('get-listening-status', () => oscApi.isListening());
-ipcMain.handle('start-listening', () => openOscServer());
-ipcMain.handle('stop-listening', () => closeOscServer());
+ipcMain.handle('get-osc-status', () => oscApi.getOscStatus());
+ipcMain.handle('start-listening', openOscServer);
+ipcMain.handle('start-listening-all', () => oscApi.openServer(onChangeOscStatus, onListenAllOscMessage, true));
+ipcMain.handle('stop-listening', closeOscServer);
 
 // メニューAPI
 ipcMain.handle('get-menu-list', () => menuApi.getMenuList());
@@ -169,7 +175,7 @@ ipcMain.handle(
 );
 ipcMain.on('set-all-setting', async (_, setting: Setting) => {
   settingApi.setAllSetting(setting);
-  if (oscApi.isListening()) {
+  if (oscApi.getOscStatus() === 'OPEN') {
     // OSCサーバを開きなおさないと変更が反映されない
     await closeOscServer();
     return openOscServer();

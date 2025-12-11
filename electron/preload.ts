@@ -1,5 +1,5 @@
 import { ipcRenderer, contextBridge } from 'electron';
-import type { MenuIdWithMultiplier, PresetWithMenus, Setting, StatsWithMenus, TotalStats } from '../common/types';
+import type { MenuIdWithMultiplier, OscStatus, PresetWithMenus, Setting, StatsWithMenus, TotalStats } from '../common/types';
 import type { Menu, Stats, Preset } from '../prisma/generated/client';
 import type { UpdatePreset } from './api/preset';
 
@@ -15,14 +15,18 @@ const defeatCountApi = {
 } as const;
 
 const oscApi = {
-  onUpdateOscStatus: (callback: (isListening: boolean) => void) =>
-    ipcRenderer.on('update-osc-status', (_, isListening: boolean) => callback(isListening)),
-  getListeningStatus: (): Promise<boolean> =>
-    ipcRenderer.invoke('get-listening-status'),
+  getOscStatus: (): Promise<OscStatus> =>
+    ipcRenderer.invoke('get-osc-status'),
   startListening: (): Promise<void> =>
     ipcRenderer.invoke('start-listening'),
+  startListeningAll: (): Promise<void> =>
+    ipcRenderer.invoke('start-listening-all'),
   stopListening: (): Promise<void> =>
     ipcRenderer.invoke('stop-listening'),
+  onListenAnyMessage: (callback: (listenedMessage: string) => void) =>
+    ipcRenderer.on('listen-any-message', (_, listenedMessage: string) => callback(listenedMessage)),
+  onChangeOscStatus: (callback: (oscStatus: OscStatus) => void) =>
+    ipcRenderer.on('change-osc-status', (_, oscStatus: OscStatus) => callback(oscStatus)),
 } as const;
 
 const menuApi = {

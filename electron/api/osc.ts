@@ -2,6 +2,7 @@ import { Server } from 'node-osc';
 import { settingApi } from './setting';
 import { OSCQAccess, OSCQueryDiscovery, OSCQueryServer } from 'oscquery';
 import { setTimeout } from 'node:timers/promises';
+import type { OscStatus } from '../../common/types';
 
 const basePort = 11337;
 const minDiscoveryWaitMs = 3000;
@@ -12,14 +13,36 @@ let discoveryStartAt = 0;
 let oscQueryServer: OSCQueryServer | null = null;
 let oscServer: Server | null = null;
 let lastListenedAt = 0;
+let lastListenedMessage = '';
+
+let oscStatus: OscStatus = 'CLOSE';
+
+// ローカルのステータスを更新してハンドラを実行する関数を返却
+const useChangeOscStatus = (onChangeOscStatus: (oscStatus: OscStatus) => void) =>
+  (newOscStatus: OscStatus) => {
+    oscStatus = newOscStatus;
+    onChangeOscStatus(newOscStatus);
+  };
 
 export const oscApi = {
-  async openServer(onListen: Function, onOpen?: Function) {
-    const targetMessage = await settingApi.getSetting('targetOscMessage');
-    if (!targetMessage || oscQueryServer !== null || oscServer !== null) {
+  async openServer(
+    onChangeOscStatus: (oscStatus: OscStatus) => void,
+    onListen: (listenedMessage: string) => void,
+    listenAllMessage = false
+  ) {
+    const targetMessage = listenAllMessage
+      ? 'message' // oscServer.on()に渡すイベント名
+      : await settingApi.getSetting('targetOscMessage');
+
+    if (!targetMessage || oscQueryServer !== null || oscServer !== null || oscStatus === 'PENDING') {
       // 対象のOSCメッセージが空文字列か、OSCサーバのどちらかが開始中か開始済の場合
       return;
     }
+
+    const changeOscStatus = useChangeOscStatus(onChangeOscStatus);
+
+    const prevOscStatus = oscStatus;
+    changeOscStatus('PENDING');
 
     this.startDiscovery();
 
@@ -53,28 +76,32 @@ export const oscApi = {
         oscPort: usingPort,
         httpPort: usingPort,
       });
-      oscQueryServer.addMethod(targetMessage, {
-        access: OSCQAccess.WRITEONLY,
-      });
+
+      if (!listenAllMessage) {
+        oscQueryServer.addMethod(targetMessage, {
+          access: OSCQAccess.WRITEONLY,
+        });
+      }
+
       await oscQueryServer.start(); // 念のためOSCサーバ開始前に開始させる
 
       oscServer = new Server(usingPort, '0.0.0.0', () => {
-        console.log('DefeatFit: Start listening');
-        if (onOpen !== undefined) {
-          onOpen();
-        }
+        changeOscStatus(listenAllMessage ? 'OPEN_ALL' : 'OPEN');
+        console.log('DefeatFit: Start listening: ' + targetMessage);
       });
     }
     catch (e) {
-      // TODO: 画面へのエラー表示
-      console.error(e);
+      changeOscStatus(prevOscStatus);
+      console.error(e); // TODO: 画面へのエラー表示
       return;
     }
 
     oscServer.on(targetMessage, value => {
+      // TODO: 対象メッセージだけでなく対象の値も設定できるようにする
       if (!value[1]) {
         return;
       }
+      const listenedMessage = value[0];
 
       /* HACK:
        * ネットワーク環境によってはOSCサービスが2つ以上登録され、同じメッセージが同タイミングで複数受信されることがある
@@ -82,36 +109,43 @@ export const oscApi = {
        */
       const nowDate = Date.now();
       const elapsedSinceLastListen = nowDate - lastListenedAt;
-      lastListenedAt = nowDate;
 
-      if (elapsedSinceLastListen <= 10) {
+      if (listenedMessage === lastListenedMessage && elapsedSinceLastListen <= 10) {
         return;
       }
 
-      onListen();
+      lastListenedAt = nowDate;
+      lastListenedMessage = listenedMessage;
+
+      onListen(listenedMessage);
     });
   },
 
-  async closeServer(onClose?: Function) {
-    if (oscServer === null || oscQueryServer === null) {
+  async closeServer(onChangeOscStatus: (oscStatus: OscStatus) => void) {
+    if (oscServer === null || oscQueryServer === null || oscStatus === 'PENDING') {
       return;
     }
+
+    const changeOscStatus = useChangeOscStatus(onChangeOscStatus);
+
+    changeOscStatus('PENDING');
 
     await oscQueryServer.stop();
     oscQueryServer = null;
 
     oscServer.close(() => {
-      console.log('DefeatFit: closed');
-      oscServer = null;
+      changeOscStatus('CLOSE');
 
-      if (onClose !== undefined) {
-        onClose();
-      }
+      console.log('DefeatFit: closed');
+
+      oscServer = null;
+      lastListenedAt = 0;
+      lastListenedMessage = '';
     });
   },
 
-  isListening() {
-    return oscServer !== null && oscQueryServer !== null;
+  getOscStatus() {
+    return oscStatus;
   },
 
   // NOTE: Discoveryの操作メソッドは現状フロント側に公開する必要はなさそう

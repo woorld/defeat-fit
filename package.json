@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "format": "prettier -w .",
     "osc:send": "node tools/osc-sender.mjs",
+    "osc:send-multiple": "node tools/osc-sender.mjs multiple",
     "osc:listen": "node tools/osc-listener.mjs",
     "postinstall": "patch-package"
   },
