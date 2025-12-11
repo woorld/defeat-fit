@@ -70,11 +70,6 @@ function createWindow() {
     win.webContents.openDevTools();
   }
 
-  // Test active push message to Renderer-process.
-  win.webContents.on('did-finish-load', () => {
-    win?.webContents.send('main-process-message', new Date().toLocaleString());
-  });
-
   win.on('ready-to-show', () => {
     win?.show();
   });
@@ -114,7 +109,7 @@ app.on('window-all-closed', () => {
   }
 
   oscApi.stopDiscovery();
-  oscApi.closeServer(onChangeOscStatus);
+  closeOscServer();
 });
 
 app.on('activate', () => {
@@ -144,6 +139,9 @@ const onChangeOscStatus = (oscStatus: OscStatus) => {
   win?.webContents.send('change-osc-status', oscStatus);
 };
 
+const openOscServer = () => oscApi.openServer(onChangeOscStatus, onListenTargetOscMessage);
+const closeOscServer = () => oscApi.closeServer(onChangeOscStatus);
+
 // 負けカウントAPI
 ipcMain.handle('get-defeat-count', () => defeatCountApi.getDefeatCount());
 ipcMain.handle('decrement-defeat-count', () => defeatCountApi.decrementDefeatCount());
@@ -154,9 +152,9 @@ ipcMain.on('reset-defeat-count', () => {
 
 // OSCサーバAPI
 ipcMain.handle('get-osc-status', () => oscApi.getOscStatus());
-ipcMain.handle('start-listening', () => oscApi.openServer(onChangeOscStatus, onListenTargetOscMessage));
+ipcMain.handle('start-listening', openOscServer);
 ipcMain.handle('start-listening-all', () => oscApi.openServer(onChangeOscStatus, onListenAllOscMessage, true));
-ipcMain.handle('stop-listening', () => oscApi.closeServer(onChangeOscStatus));
+ipcMain.handle('stop-listening', closeOscServer);
 
 // メニューAPI
 ipcMain.handle('get-menu-list', () => menuApi.getMenuList());
@@ -179,8 +177,8 @@ ipcMain.on('set-all-setting', async (_, setting: Setting) => {
   settingApi.setAllSetting(setting);
   if (oscApi.getOscStatus() === 'OPEN') {
     // OSCサーバを開きなおさないと変更が反映されない
-    await oscApi.closeServer(onChangeOscStatus);
-    return oscApi.openServer(onChangeOscStatus, onListenTargetOscMessage);
+    await closeOscServer();
+    return openOscServer();
   }
 });
 ipcMain.on('reset-setting', () => settingApi.resetSetting());
