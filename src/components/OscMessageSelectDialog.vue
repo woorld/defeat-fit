@@ -57,21 +57,26 @@ const onSelectOscMessage = (prefixedTargetOscMessage: unknown) => {
     </div>
     <VBtn
       v-if="['CLOSE', 'OPEN'].includes(oscStore.oscStatus)"
+      class="elevation-0 border"
       @click="oscStore.startListeningAll"
     >メッセージ受信開始</VBtn>
     <VProgressCircular v-else-if="oscStore.pending" indeterminate />
-    <p v-else-if="oscStore.listenedMessageList.size <= 0" class="text-grey">
-      メッセージを受信しています…<br />
-      負けとしてカウントしたいことをやってみましょう<br />
-      （例: 対戦ギミックで負ける）
-    </p>
-    <VList
-      v-else
-      class="text-left border overflow-auto rounded"
-      density="compact"
-      max-height="50vh"
-      :items="listenedOscMessagesByNewest"
-      @click:select="event => onSelectOscMessage(event.id)"
-    />
+    <template v-else>
+      <div class="border-e border-b border-s rounded overflow-hidden">
+        <VProgressLinear indeterminate height="1" />
+        <p v-if="oscStore.listenedMessageList.size <= 0" class="text-grey py-6">
+          カウントしたいことを実際にやってみましょう<br />
+          （例: 対戦ギミックで負ける）
+        </p>
+        <VList
+          v-else
+          class="text-left overflow-auto py-0"
+          density="compact"
+          max-height="50vh"
+          :items="listenedOscMessagesByNewest"
+          @click:select="event => onSelectOscMessage(event.id)"
+        />
+      </div>
+    </template>
   </BaseDialog>
 </template>
