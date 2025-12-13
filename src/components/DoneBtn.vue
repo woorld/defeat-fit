@@ -25,10 +25,11 @@ const onDone = async () => {
 
 <template>
   <VBtn color="green" :disabled="defeatCount.count <= 0">
-    やった
+    全部やった
     <ConfirmDialog
       v-model="isShowDialog"
-      explanation="今日の分を登録する？"
+      title="お疲れさまでした"
+      explanation="本日分を統計に登録しますか？"
       yesBtnColor="green"
       activateByParent
       @click-yes="onDone"

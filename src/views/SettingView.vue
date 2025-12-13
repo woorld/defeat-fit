@@ -106,7 +106,7 @@ onBeforeRouteLeave(async () => {
           設定をリセット
           <ConfirmDialog
             v-model="isResetDialogVisible"
-            explanation="ほんとに設定をリセットする？"
+            explanation="本当に設定をリセットしますか？"
             yesBtnColor="yellow"
             reverseYesNoPosition
             activateByParent

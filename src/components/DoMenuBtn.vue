@@ -51,7 +51,7 @@ const restoreIntegerTotalReps = () => {
     やる
     <BaseDialog v-model="isDialogVisible" activateByParent>
       <div class="d-flex justify-center align-center ga-8 flex-column">
-        <h3 class="text-h5">何セットに分ける？</h3>
+        <h3 class="text-h5">セット数選択</h3>
         <div class="d-flex flex-center align-center flex-column ga-2">
           <div class="d-flex justify-center align-center ga-4 border rounded-xl">
             <VBtn

@@ -17,8 +17,8 @@ const onDecrement = async () => {
     今のなし
     <ConfirmDialog
       v-model="isShowDialog"
-      title="事故死？"
-      explanation="ほんとに死亡回数を-1する？"
+      title="カウントの修正"
+      explanation="本当にカウントを-1しますか？"
       yesBtnColor="red"
       reverseYesNoPosition
       activateByParent

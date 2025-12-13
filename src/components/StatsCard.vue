@@ -76,6 +76,6 @@ const onDeleteStats = () => {
     @click-yes="onDeleteStats"
     @click-no="isDeleteDialogVisible = false"
   >
-    本当に {{ title }} の統計を削除する？
+    本当に {{ title }} の統計を削除しますか？
   </ConfirmDialog>
 </template>

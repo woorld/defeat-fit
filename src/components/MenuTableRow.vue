@@ -134,7 +134,7 @@ const onClickDiscard = () => {
         @click-yes="onDeleteMenu(menu.id)"
         @click-no="isDeleteDialogVisible = false"
       >
-        本当に {{ menu.name }} を削除する？<br />
+        本当に {{ menu.name }} を削除しますか？<br />
         <span class="text-red">※統計からも削除されます</span>
       </ConfirmDialog>
     </td>
