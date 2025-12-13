@@ -183,7 +183,7 @@ const deletePreset = async () => {
         @click-yes="deletePreset"
         @click-no="isDeleteDialogVisible = false"
       >
-        本当に {{ presetName }} を削除する？<br />
+        本当に {{ presetName }} を削除しますか？<br />
       </ConfirmDialog>
     </template>
   </div>

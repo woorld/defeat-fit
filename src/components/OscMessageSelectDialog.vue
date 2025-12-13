@@ -85,7 +85,7 @@ const onSelectOscMessage = (prefixedTargetOscMessage: unknown) => {
       <VCheckbox
         class="d-flex justify-center align-center mt-6"
         v-model="showOnlyAvatarParameters"
-        label="アバターのパラメーターのみ表示する"
+        label="アバターに関係するOSCメッセージのみ表示する"
         density="compact"
         hide-details
       />

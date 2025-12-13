@@ -48,7 +48,7 @@ onBeforeRouteLeave((to) => {
 <template>
   <ConfirmDialog
     v-model="isShow"
-    explanation="変更された設定を保存する？"
+    explanation="変更された設定を保存しますか？"
     yesBtnColor="green"
     @click-yes="leavePage(true)"
     @click-no="leavePage(false)"
