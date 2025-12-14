@@ -1,5 +1,5 @@
 import { ipcRenderer, contextBridge } from 'electron';
-import type { MenuIdWithMultiplier, OscStatus, PresetWithMenus, Setting, StatsWithMenus, TotalStats } from '../common/types';
+import type { MenuIdWithMultiplier, Notice, OscStatus, PresetWithMenus, Setting, StatsWithMenus, TotalStats } from '../common/types';
 import type { Menu, Stats, Preset } from '../prisma/generated/client';
 import type { UpdatePreset } from './api/preset';
 
@@ -75,12 +75,18 @@ const presetApi = {
     ipcRenderer.invoke('delete-preset', id),
 } as const;
 
+const noticeApi = {
+  onCreateNotice: (callback: (notice: Notice) => void) =>
+    ipcRenderer.on('create-notice', (_, notice: Notice) => callback(notice),)
+} as const;
+
 contextBridge.exposeInMainWorld('defeatCount', defeatCountApi);
 contextBridge.exposeInMainWorld('osc', oscApi);
 contextBridge.exposeInMainWorld('menu', menuApi);
 contextBridge.exposeInMainWorld('setting', settingApi);
 contextBridge.exposeInMainWorld('stats', statsApi);
 contextBridge.exposeInMainWorld('preset', presetApi);
+contextBridge.exposeInMainWorld('notice', noticeApi);
 
 export type DefeatCountApi = typeof defeatCountApi;
 export type OscApi = typeof oscApi;
@@ -88,3 +94,4 @@ export type MenuApi = typeof menuApi;
 export type SettingApi = typeof settingApi;
 export type StatsApi = typeof statsApi;
 export type PresetApi = typeof presetApi;
+export type NoticeApi = typeof noticeApi;

@@ -43,3 +43,10 @@ export type MenuIdWithMultiplier = {
 };
 
 export type OscStatus = 'OPEN'| 'OPEN_ALL' | 'CLOSE' | 'PENDING';
+
+export type NoticeColor = 'success' | 'error' | 'warning' | 'info';
+
+export type Notice = {
+  text: string,
+  color: NoticeColor,
+};

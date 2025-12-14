@@ -17,4 +17,5 @@ interface Window {
   setting: import('./preload').SettingApi;
   stats: import('./preload').StatsApi;
   preset: import('./preload').PresetApi;
+  notice: import('./preload').NoticeApi;
 }
