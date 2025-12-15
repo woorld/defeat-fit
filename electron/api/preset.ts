@@ -1,9 +1,37 @@
+import { ipcMain } from 'electron';
 import { MenuIdWithMultiplier } from '../../common/types';
 import { Preset, PrismaClient } from '../../prisma/generated/client';
 
 const prisma = new PrismaClient();
 
+let isInitialized = false;
+
 export const presetApi = {
+  initialize() {
+    if (isInitialized) {
+      return;
+    }
+
+    ipcMain.handle('get-preset-list', this.getPresetList);
+    ipcMain.handle(
+      'add-preset', (
+        _,
+        name: string,
+        presetMenuList: MenuIdWithMultiplier[]
+      ) => this.addPreset(name, presetMenuList)
+    );
+    ipcMain.handle(
+      'update-preset', (
+        _,
+        preset: Preset,
+        menuIdWithMultiplierList: MenuIdWithMultiplier[]
+      ) => this.updatePreset(preset, menuIdWithMultiplierList)
+    );
+    ipcMain.handle('delete-preset', (_, id: number) => this.deletePreset(id));
+
+    isInitialized = true;
+  },
+
   getPresetList() {
     return prisma.preset.findMany({
       include: {

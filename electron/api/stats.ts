@@ -1,10 +1,32 @@
 import { PrismaClient } from '../../prisma/generated/client';
 import type { MenuIdWithMultiplier, TotalStats } from '../../common/types';
 import { settingApi } from './setting';
+import { ipcMain } from 'electron';
 
 const prisma = new PrismaClient();
 
+let isInitialized = false;
+
 export const statsApi = {
+  initialize() {
+    if (isInitialized) {
+      return;
+    }
+
+    ipcMain.handle('get-stats-list', this.getStatsList);
+    ipcMain.handle('get-total-stats', this.getTotalStats);
+    ipcMain.handle(
+      'add-stats', (
+        _,
+        defeatCount: number,
+        menuIdWithMultiplierList: MenuIdWithMultiplier[]
+      ) => this.addStats(defeatCount, menuIdWithMultiplierList)
+    );
+    ipcMain.handle('delete-stats', (_, id: number) => this.deleteStats(id));
+
+    isInitialized = true;
+  },
+
   getStatsList() {
     return prisma.stats.findMany({
       include: {
