@@ -3,6 +3,7 @@ import { settingApi } from './setting';
 import { OSCQAccess, OSCQueryDiscovery, OSCQueryServer } from 'oscquery';
 import { setTimeout } from 'node:timers/promises';
 import type { OscStatus } from '../../common/types';
+import { ipcMain } from 'electron';
 
 const basePort = 11337;
 const minDiscoveryWaitMs = 3000;
@@ -16,6 +17,7 @@ let lastListenedAt = 0;
 let lastListenedMessage = '';
 
 let oscStatus: OscStatus = 'CLOSE';
+let isInitialized = false;
 
 // ローカルのステータスを更新してハンドラを実行する関数を返却
 const useChangeOscStatus = (onChangeOscStatus: (oscStatus: OscStatus) => void) =>
@@ -25,6 +27,37 @@ const useChangeOscStatus = (onChangeOscStatus: (oscStatus: OscStatus) => void) =
   };
 
 export const oscApi = {
+  initialize(deps: {
+    sendMessage: (channel: string, ...args: any[]) => void,
+    incrementDefeatCount: () => number,
+  }) {
+    if (isInitialized) {
+      return;
+    }
+
+    const onListenTargetOscMessage = (listenedMessage: string) => {
+      const newCount = deps.incrementDefeatCount();
+      console.log('DefeatFit: listened: ' + listenedMessage);
+      deps.sendMessage('update-defeat-count', newCount);
+    };
+
+    const onListenAllOscMessage = (listenedMessage: string) => {
+      console.log('DefeatFit: listened: ' + listenedMessage);
+      deps.sendMessage('listen-any-message', listenedMessage);
+    };
+
+    const onChangeOscStatus = (oscStatus: OscStatus) => {
+      deps.sendMessage('change-osc-status', oscStatus);
+    };
+
+    ipcMain.handle('get-osc-status', this.getOscStatus);
+    ipcMain.handle('start-listening', () => this.openServer(onChangeOscStatus, onListenTargetOscMessage));
+    ipcMain.handle('start-listening-all', () => oscApi.openServer(onChangeOscStatus, onListenAllOscMessage, true));
+    ipcMain.handle('stop-listening', () => this.closeServer(onChangeOscStatus));
+
+    isInitialized = true;
+  },
+
   async openServer(
     onChangeOscStatus: (oscStatus: OscStatus) => void,
     onListen: (listenedMessage: string) => void,

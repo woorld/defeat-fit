@@ -1,5 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
-import type { IpcMainInvokeEvent } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import fs from 'node:fs';
@@ -9,7 +8,7 @@ import { menuApi } from './api/menu';
 import { settingApi } from './api/setting';
 import { statsApi } from './api/stats';
 import { presetApi } from './api/preset';
-import type { Setting, OscStatus } from '../common/types';
+import type { OscStatus } from '../common/types';
 import 'dotenv/config'; // エントリポイントでのみロードすればOK
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -70,12 +69,22 @@ function createWindow() {
   }
 
   defeatCountApi.initialize({ sendMessage });
-  // TODO: oscApi.initialize()
+  oscApi.initialize({
+    sendMessage,
+    incrementDefeatCount: defeatCountApi.incrementDefeatCount
+  });
   menuApi.initialize();
-  // TODO: settingApi.initialize()
+  settingApi.initialize({
+    reopenOscServer: async () => {
+      if (oscApi.getOscStatus() === 'OPEN') {
+        // OSCサーバを開きなおさないと変更が反映されない
+        await closeOscServer();
+        return openOscServer();
+      }
+    }
+  })
   statsApi.initialize();
   presetApi.initialize();
-
 
   if (VITE_DEV_SERVER_URL) {
     win.webContents.openDevTools();
@@ -133,17 +142,12 @@ app.on('activate', () => {
 
 app.whenReady().then(createWindow);
 
-// -------- ↑ウィンドウ設定 API関連処理↓ --------
+// TODO: OSCAPI側にまとめる
 
 const onListenTargetOscMessage = (listenedMessage: string) => {
   const newCount = defeatCountApi.incrementDefeatCount();
   console.log('DefeatFit: listened: ' + listenedMessage);
   win?.webContents.send('update-defeat-count', newCount);
-};
-
-const onListenAllOscMessage = (listenedMessage: string) => {
-  console.log('DefeatFit: listened: ' + listenedMessage);
-  win?.webContents.send('listen-any-message', listenedMessage);
 };
 
 const onChangeOscStatus = (oscStatus: OscStatus) => {
@@ -152,30 +156,3 @@ const onChangeOscStatus = (oscStatus: OscStatus) => {
 
 const openOscServer = () => oscApi.openServer(onChangeOscStatus, onListenTargetOscMessage);
 const closeOscServer = () => oscApi.closeServer(onChangeOscStatus);
-
-// OSCサーバAPI
-ipcMain.handle('get-osc-status', () => oscApi.getOscStatus());
-ipcMain.handle('start-listening', openOscServer);
-ipcMain.handle('start-listening-all', () => oscApi.openServer(onChangeOscStatus, onListenAllOscMessage, true));
-ipcMain.handle('stop-listening', closeOscServer);
-
-// 設定API
-ipcMain.handle('get-setting', (_, settingName: keyof Setting) => settingApi.getSetting(settingName));
-ipcMain.handle('get-all-setting', () => settingApi.getAllSetting());
-ipcMain.handle(
-  'set-setting',
-  <K extends keyof Setting>(
-    _: IpcMainInvokeEvent,
-    settingName: K,
-    value: Setting[K]
-  ) => settingApi.setSetting(settingName, value)
-);
-ipcMain.on('set-all-setting', async (_, setting: Setting) => {
-  settingApi.setAllSetting(setting);
-  if (oscApi.getOscStatus() === 'OPEN') {
-    // OSCサーバを開きなおさないと変更が反映されない
-    await closeOscServer();
-    return openOscServer();
-  }
-});
-ipcMain.on('reset-setting', () => settingApi.resetSetting());
