@@ -34,7 +34,8 @@ export const settingApi = {
         return oscApi.openServer();
       }
     });
-    ipcMain.on('reset-setting', this.resetSetting);
+    // HACK: なぜかアロー関数でラップしないとthis.setAllSetting()がundefinedになる
+    ipcMain.on('reset-setting', () => this.resetSetting());
 
     isInitialized = true;
   },
