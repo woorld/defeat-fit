@@ -16,8 +16,6 @@ const oscStatusWhenEnter = oscStore.oscStatus;
 const setting = ref<Setting>({ ...SETTING_DEFAULT_VALUE });
 const prevSetting = ref<Setting>({ ...SETTING_DEFAULT_VALUE });
 const isResetDialogVisible = ref(false);
-const isSavedSnackbarVisible = ref(false);
-const snackbarLifetime = ref(2500);
 
 const getSetting = async () => {
   const fetchedSetting = await window.setting.getAllSetting();
@@ -121,17 +119,6 @@ onBeforeRouteLeave(async () => {
         >設定を保存</VBtn>
       </div>
     </div>
-    <VSnackbar
-      v-model="isSavedSnackbarVisible"
-      color="green"
-      location="bottom left"
-      :timeout="snackbarLifetime"
-    >
-      設定を保存しました
-      <template #actions>
-        <VBtn icon="mdi-close" @click="isSavedSnackbarVisible = false" />
-      </template>
-    </VSnackbar>
     <SettingNotSavedDialog
       :setting="setting"
       :prevSetting="prevSetting"

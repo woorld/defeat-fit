@@ -5,6 +5,7 @@ import { setTimeout } from 'node:timers/promises';
 import type { OscStatus, SendMessage } from '../../common/types';
 import { ipcMain } from 'electron';
 import { defeatCountApi } from './defeat-count';
+import { noticeApi } from './notice';
 
 const basePort = 11337;
 const minDiscoveryWaitMs = 3000;
@@ -110,12 +111,22 @@ export const oscApi = {
 
       oscServer = new Server(usingPort, '0.0.0.0', () => {
         changeOscStatus(listenAllMessage ? 'OPEN_ALL' : 'OPEN');
+        noticeApi.createNotice({
+          text: 'OSCメッセージの受信を開始しました',
+          color: 'success',
+        });
         console.log('DefeatFit: Start listening: ' + targetMessage);
       });
     }
     catch (e) {
       changeOscStatus(prevOscStatus);
-      console.error(e); // TODO: 画面へのエラー表示
+
+      noticeApi.createNotice({
+        text: 'OSCメッセージの受信開始に失敗しました',
+        color: 'error',
+      });
+
+      console.error(e);
       return;
     }
 
@@ -159,13 +170,18 @@ export const oscApi = {
     oscQueryServer = null;
 
     oscServer.close(() => {
-      changeOscStatus('CLOSE');
-
-      console.log('DefeatFit: closed');
-
       oscServer = null;
       lastListenedAt = 0;
       lastListenedMessage = '';
+
+      changeOscStatus('CLOSE');
+
+      noticeApi.createNotice({
+        text: 'OSCメッセージの受信を停止しました',
+        color: 'success',
+      });
+
+      console.log('DefeatFit: closed');
     });
   },
 

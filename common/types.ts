@@ -45,4 +45,9 @@ export type MenuIdWithMultiplier = {
 
 export type OscStatus = 'OPEN'| 'OPEN_ALL' | 'CLOSE' | 'PENDING';
 
+export type Notice = {
+  text: string,
+  color: 'success' | 'error' | 'warning' | 'info',
+};
+
 export type SendMessage = WebContents['send'];

@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron';
 import { PrismaClient } from '../../prisma/generated/client';
 import type { Menu } from '../../prisma/generated/client';
+import { noticeApi } from './notice';
 
 const prisma = new PrismaClient();
 
@@ -24,17 +25,25 @@ export const menuApi = {
     return prisma.menu.findMany();
   },
 
-  addMenu(menu: Menu) {
-    return prisma.menu.create({
+  async addMenu(menu: Menu) {
+    const result = await prisma.menu.create({
       data: {
         ...menu,
         id: undefined, // idをオートインクリメントさせるためにundefinedにする
       },
     });
+
+    noticeApi.createNotice({
+      text: 'メニューを追加しました',
+      color: 'success',
+    });
+
+    return result;
   },
 
   async deleteMenu(id: number) {
-    return prisma.$transaction(async (tx) => {
+    // NOTE: 戻り値がvoidなので返却不要
+    await prisma.$transaction(async (tx) => {
       // 削除対象メニューに関連する項目の削除
       await Promise.all([
         tx.statsMenu.deleteMany({ where: { menuId: id } }),
@@ -55,15 +64,27 @@ export const menuApi = {
       // メニュー本体の削除
       await tx.menu.delete({ where: { id } });
     });
+
+    noticeApi.createNotice({
+      text: 'メニューを削除しました',
+      color: 'success',
+    });
   },
 
-  replaceMenu(id: number, newMenu: Menu) {
-    return prisma.menu.update({
+  async replaceMenu(id: number, newMenu: Menu) {
+    const result = await prisma.menu.update({
       where: { id },
       data: {
         ...newMenu,
         id: undefined, // 念のためID以外を更新させる
       },
     });
+
+    noticeApi.createNotice({
+      text: 'メニューを更新しました',
+      color: 'success',
+    });
+
+    return result;
   },
 } as const;

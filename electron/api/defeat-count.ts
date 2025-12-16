@@ -1,5 +1,6 @@
 import { ipcMain } from "electron";
 import type { SendMessage } from "../../common/types";
+import { noticeApi } from "./notice";
 
 let defeatCount = 0;
 let isInitialized = false;
@@ -29,7 +30,14 @@ export const defeatCountApi = {
   },
 
   decrementDefeatCount() {
-    return defeatCount >= 1 ? --defeatCount : defeatCount;
+    const newCount = defeatCount >= 1 ? --defeatCount : defeatCount;
+
+    noticeApi.createNotice({
+      text: 'カウントを-1しました',
+      color: 'success',
+    });
+
+    return newCount;
   },
 
   resetDefeatCount() {

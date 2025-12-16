@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import BottomNav from './components/BottomNav.vue';
+import { useNoticeStore } from './stores/notice';
+
+const noticeStore = useNoticeStore();
 </script>
 
 <template>
@@ -12,6 +15,15 @@ import BottomNav from './components/BottomNav.vue';
       </RouterView>
     </VMain>
     <BottomNav />
+    <!-- HACK: 閉じるボタンをmdi-closeにしようとすると割とめんどくさい -->
+    <VSnackbarQueue
+      v-model="noticeStore.noticeList"
+      timeout="3000"
+      location="top left"
+      closable
+      close-text="×"
+      timer
+    />
   </VApp>
 </template>
 

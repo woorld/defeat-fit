@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron';
 import { MenuIdWithMultiplier } from '../../common/types';
 import { Preset, PrismaClient } from '../../prisma/generated/client';
+import { noticeApi } from './notice';
 
 const prisma = new PrismaClient();
 
@@ -43,7 +44,7 @@ export const presetApi = {
   },
 
   async addPreset(name: string, menuIdWithMultiplierList: MenuIdWithMultiplier[]) {
-    return prisma.preset.create({
+    const result = await prisma.preset.create({
       data: {
         name,
         presetMenuList: {
@@ -51,6 +52,13 @@ export const presetApi = {
         },
       },
     });
+
+    noticeApi.createNotice({
+      text: 'プリセットを登録しました',
+      color: 'success',
+    });
+
+    return result;
   },
 
   async updatePreset(preset: Preset, menuIdWithMultiplierList: MenuIdWithMultiplier[]) {
@@ -65,7 +73,7 @@ export const presetApi = {
         })
       );
 
-    return prisma.$transaction([
+    const result = await prisma.$transaction([
       // 新プリセットに存在しないプリセットメニューの削除
       prisma.presetMenu.deleteMany({
         where: {
@@ -99,13 +107,27 @@ export const presetApi = {
         data: newPresetMenu,
       }),
     ]);
+
+    noticeApi.createNotice({
+      text: 'プリセットを更新しました',
+      color: 'success',
+    });
+
+    return result;
   },
 
   async deletePreset(id: number) {
-    return prisma.$transaction([
+    const result = await prisma.$transaction([
       prisma.presetMenu.deleteMany({ where: { presetId: id }}),
       prisma.preset.delete({ where: { id } }),
     ]);
+
+    noticeApi.createNotice({
+      text: 'プリセットを削除しました',
+      color: 'success',
+    });
+
+    return result;
   },
 };
 
