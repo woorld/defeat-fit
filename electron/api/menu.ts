@@ -42,6 +42,7 @@ export const menuApi = {
   },
 
   async deleteMenu(id: number) {
+    // NOTE: 戻り値がvoidなので返却不要
     await prisma.$transaction(async (tx) => {
       // 削除対象メニューに関連する項目の削除
       await Promise.all([

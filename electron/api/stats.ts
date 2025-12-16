@@ -118,7 +118,7 @@ export const statsApi = {
   },
 
   async deleteStats(id: number) {
-    await prisma.$transaction([
+    const result = await prisma.$transaction([
       prisma.statsMenu.deleteMany({ where: { statsId: id } }),
       prisma.stats.delete({ where: { id } }),
     ]);
@@ -127,5 +127,7 @@ export const statsApi = {
       text: '統計を削除しました',
       color: 'success',
     });
+
+    return result;
   },
 } as const;

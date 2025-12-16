@@ -73,7 +73,7 @@ export const presetApi = {
         })
       );
 
-    const result = prisma.$transaction([
+    const result = await prisma.$transaction([
       // 新プリセットに存在しないプリセットメニューの削除
       prisma.presetMenu.deleteMany({
         where: {
