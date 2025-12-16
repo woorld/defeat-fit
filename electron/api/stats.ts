@@ -2,6 +2,7 @@ import { PrismaClient } from '../../prisma/generated/client';
 import type { MenuIdWithMultiplier, TotalStats } from '../../common/types';
 import { settingApi } from './setting';
 import { ipcMain } from 'electron';
+import { noticeApi } from './notice';
 
 const prisma = new PrismaClient();
 
@@ -108,11 +109,23 @@ export const statsApi = {
       });
     }
 
+    noticeApi.createNotice({
+      text: '統計を保存しました',
+      color: 'success',
+    });
+
     return todayStats;
   },
 
   async deleteStats(id: number) {
-    await prisma.statsMenu.deleteMany({ where: { statsId: id } });
-    return prisma.stats.delete({ where: { id } });
+    await prisma.$transaction([
+      prisma.statsMenu.deleteMany({ where: { statsId: id } }),
+      prisma.stats.delete({ where: { id } }),
+    ]);
+
+    noticeApi.createNotice({
+      text: '統計を削除しました',
+      color: 'success',
+    });
   },
 } as const;

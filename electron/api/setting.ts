@@ -3,6 +3,7 @@ import type { Setting } from '../../common/types';
 import { SETTING_DEFAULT_VALUE } from '../../common/constants';
 import { ipcMain, type IpcMainInvokeEvent } from 'electron';
 import { oscApi } from './osc';
+import { noticeApi } from './notice';
 
 const store = new Store<Setting>();
 const storeKey = 'setting';
@@ -54,10 +55,18 @@ export const settingApi = {
   },
 
   async setAllSetting(setting: Setting) {
-    return store.set(storeKey, setting);
+    await store.set(storeKey, setting);
+    noticeApi.createNotice({
+      text: '設定を保存しました',
+      color: 'success',
+    });
   },
 
   async resetSetting() {
-    return this.setAllSetting(SETTING_DEFAULT_VALUE);
+    await this.setAllSetting(SETTING_DEFAULT_VALUE);
+    noticeApi.createNotice({
+      text: '設定をリセットしました',
+      color: 'success',
+    });
   },
 } as const;
