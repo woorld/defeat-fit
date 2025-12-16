@@ -1,10 +1,11 @@
 import { ipcMain } from "electron";
+import type { SendMessage } from "../../common/types";
 
 let defeatCount = 0;
 let isInitialized = false;
 
 export const defeatCountApi = {
-  initialize(deps: { sendMessage: (channel: string, ...args: any[]) => void }) {
+  initialize(deps: { sendMessage: SendMessage }) {
     if (isInitialized) {
       return;
     }

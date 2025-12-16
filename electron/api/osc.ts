@@ -2,7 +2,7 @@ import { Server } from 'node-osc';
 import { settingApi } from './setting';
 import { OSCQAccess, OSCQueryDiscovery, OSCQueryServer } from 'oscquery';
 import { setTimeout } from 'node:timers/promises';
-import type { OscStatus } from '../../common/types';
+import type { OscStatus, SendMessage } from '../../common/types';
 import { ipcMain } from 'electron';
 import { defeatCountApi } from './defeat-count';
 
@@ -20,9 +20,9 @@ let lastListenedMessage = '';
 let oscStatus: OscStatus = 'CLOSE';
 let isInitialized = false;
 
-let sendMessage: ((channel: string, ...args: any[]) => void) | null = null;
+let sendMessage: SendMessage | null = null;
 
-const sendMessageIfNotNull = (channel: string, ...args: any[]) => {
+const sendMessageIfNotNull: SendMessage = (channel, ...args) => {
   if (sendMessage !== null) {
     sendMessage(channel, ...args);
   }
@@ -39,9 +39,7 @@ const updateDefeatCount = () => {
 }
 
 export const oscApi = {
-  initialize(deps: {
-    sendMessage: (channel: string, ...args: any[]) => void,
-  }) {
+  initialize(deps: { sendMessage: SendMessage }) {
     if (isInitialized) {
       return;
     }

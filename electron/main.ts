@@ -9,6 +9,7 @@ import { settingApi } from './api/setting';
 import { statsApi } from './api/stats';
 import { presetApi } from './api/preset';
 import 'dotenv/config'; // エントリポイントでのみロードすればOK
+import type { SendMessage } from '../common/types';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -63,7 +64,7 @@ function createWindow() {
     show: false, // ページがロードされるまではウィンドウを非表示にする
   });
 
-  const sendMessage = (channel: string, ...args: any[]): void => {
+  const sendMessage: SendMessage = (channel, ...args) => {
     win?.webContents.send(channel, ...args);
   }
 

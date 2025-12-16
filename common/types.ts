@@ -1,3 +1,4 @@
+import type { WebContents } from 'electron';
 import type { Prisma, Menu, PresetMenu } from '../prisma/generated/client';
 
 export type Setting = {
@@ -43,3 +44,5 @@ export type MenuIdWithMultiplier = {
 };
 
 export type OscStatus = 'OPEN'| 'OPEN_ALL' | 'CLOSE' | 'PENDING';
+
+export type SendMessage = WebContents['send'];
