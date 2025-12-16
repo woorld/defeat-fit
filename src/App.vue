@@ -15,12 +15,14 @@ const noticeStore = useNoticeStore();
       </RouterView>
     </VMain>
     <BottomNav />
+    <!-- HACK: 閉じるボタンをmdi-closeにしようとすると割とめんどくさい -->
     <VSnackbarQueue
       v-model="noticeStore.noticeList"
-      timeout="5000"
-      location="bottom left"
+      timeout="3000"
+      location="top left"
       closable
-      close-text="閉じる"
+      close-text="×"
+      timer
     />
   </VApp>
 </template>
