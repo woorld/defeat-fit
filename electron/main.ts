@@ -8,7 +8,6 @@ import { menuApi } from './api/menu';
 import { settingApi } from './api/setting';
 import { statsApi } from './api/stats';
 import { presetApi } from './api/preset';
-import type { OscStatus } from '../common/types';
 import 'dotenv/config'; // エントリポイントでのみロードすればOK
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -69,20 +68,9 @@ function createWindow() {
   }
 
   defeatCountApi.initialize({ sendMessage });
-  oscApi.initialize({
-    sendMessage,
-    incrementDefeatCount: defeatCountApi.incrementDefeatCount
-  });
+  oscApi.initialize({ sendMessage });
   menuApi.initialize();
-  settingApi.initialize({
-    reopenOscServer: async () => {
-      if (oscApi.getOscStatus() === 'OPEN') {
-        // OSCサーバを開きなおさないと変更が反映されない
-        await closeOscServer();
-        return openOscServer();
-      }
-    }
-  })
+  settingApi.initialize();
   statsApi.initialize();
   presetApi.initialize();
 
@@ -129,7 +117,7 @@ app.on('window-all-closed', () => {
   }
 
   oscApi.stopDiscovery();
-  closeOscServer();
+  oscApi.closeServer();
 });
 
 app.on('activate', () => {
@@ -141,18 +129,3 @@ app.on('activate', () => {
 });
 
 app.whenReady().then(createWindow);
-
-// TODO: OSCAPI側にまとめる
-
-const onListenTargetOscMessage = (listenedMessage: string) => {
-  const newCount = defeatCountApi.incrementDefeatCount();
-  console.log('DefeatFit: listened: ' + listenedMessage);
-  win?.webContents.send('update-defeat-count', newCount);
-};
-
-const onChangeOscStatus = (oscStatus: OscStatus) => {
-  win?.webContents.send('change-osc-status', oscStatus);
-};
-
-const openOscServer = () => oscApi.openServer(onChangeOscStatus, onListenTargetOscMessage);
-const closeOscServer = () => oscApi.closeServer(onChangeOscStatus);
