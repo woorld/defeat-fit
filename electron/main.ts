@@ -1,5 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
-import type { IpcMainInvokeEvent } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import fs from 'node:fs';
@@ -9,9 +8,8 @@ import { menuApi } from './api/menu';
 import { settingApi } from './api/setting';
 import { statsApi } from './api/stats';
 import { presetApi } from './api/preset';
-import type { Setting, MenuIdWithMultiplier, OscStatus } from '../common/types';
-import type { Menu, Preset } from '../prisma/generated/client';
 import 'dotenv/config'; // エントリポイントでのみロードすればOK
+import type { SendMessage } from '../common/types';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -66,6 +64,17 @@ function createWindow() {
     show: false, // ページがロードされるまではウィンドウを非表示にする
   });
 
+  const sendMessage: SendMessage = (channel, ...args) => {
+    win?.webContents.send(channel, ...args);
+  }
+
+  defeatCountApi.initialize({ sendMessage });
+  oscApi.initialize({ sendMessage });
+  menuApi.initialize();
+  settingApi.initialize();
+  statsApi.initialize();
+  presetApi.initialize();
+
   if (VITE_DEV_SERVER_URL) {
     win.webContents.openDevTools();
   }
@@ -109,7 +118,7 @@ app.on('window-all-closed', () => {
   }
 
   oscApi.stopDiscovery();
-  closeOscServer();
+  oscApi.closeServer();
 });
 
 app.on('activate', () => {
@@ -121,82 +130,3 @@ app.on('activate', () => {
 });
 
 app.whenReady().then(createWindow);
-
-// -------- ↑ウィンドウ設定 API関連処理↓ --------
-
-const onListenTargetOscMessage = (listenedMessage: string) => {
-  const newCount = defeatCountApi.incrementDefeatCount();
-  console.log('DefeatFit: listened: ' + listenedMessage);
-  win?.webContents.send('update-defeat-count', newCount);
-};
-
-const onListenAllOscMessage = (listenedMessage: string) => {
-  console.log('DefeatFit: listened: ' + listenedMessage);
-  win?.webContents.send('listen-any-message', listenedMessage);
-};
-
-const onChangeOscStatus = (oscStatus: OscStatus) => {
-  win?.webContents.send('change-osc-status', oscStatus);
-};
-
-const openOscServer = () => oscApi.openServer(onChangeOscStatus, onListenTargetOscMessage);
-const closeOscServer = () => oscApi.closeServer(onChangeOscStatus);
-
-// 負けカウントAPI
-ipcMain.handle('get-defeat-count', () => defeatCountApi.getDefeatCount());
-ipcMain.handle('decrement-defeat-count', () => defeatCountApi.decrementDefeatCount());
-ipcMain.on('reset-defeat-count', () => {
-  defeatCountApi.resetDefeatCount();
-  win?.webContents.send('update-defeat-count', defeatCountApi.getDefeatCount());
-});
-
-// OSCサーバAPI
-ipcMain.handle('get-osc-status', () => oscApi.getOscStatus());
-ipcMain.handle('start-listening', openOscServer);
-ipcMain.handle('start-listening-all', () => oscApi.openServer(onChangeOscStatus, onListenAllOscMessage, true));
-ipcMain.handle('stop-listening', closeOscServer);
-
-// メニューAPI
-ipcMain.handle('get-menu-list', () => menuApi.getMenuList());
-ipcMain.handle('add-menu', (_, menu: Menu) => menuApi.addMenu(menu));
-ipcMain.handle('delete-menu', (_, id: number) => menuApi.deleteMenu(id));
-ipcMain.handle('replace-menu', (_, id: number, newMenu: Menu) => menuApi.replaceMenu(id, newMenu));
-
-// 設定API
-ipcMain.handle('get-setting', (_, settingName: keyof Setting) => settingApi.getSetting(settingName));
-ipcMain.handle('get-all-setting', () => settingApi.getAllSetting());
-ipcMain.handle(
-  'set-setting',
-  <K extends keyof Setting>(
-    _: IpcMainInvokeEvent,
-    settingName: K,
-    value: Setting[K]
-  ) => settingApi.setSetting(settingName, value)
-);
-ipcMain.on('set-all-setting', async (_, setting: Setting) => {
-  settingApi.setAllSetting(setting);
-  if (oscApi.getOscStatus() === 'OPEN') {
-    // OSCサーバを開きなおさないと変更が反映されない
-    await closeOscServer();
-    return openOscServer();
-  }
-});
-ipcMain.on('reset-setting', () => settingApi.resetSetting());
-
-// 統計API
-ipcMain.handle('get-stats-list', () => statsApi.getStatsList());
-ipcMain.handle('get-total-stats', () => statsApi.getTotalStats());
-ipcMain.handle('add-stats', (_, defeatCount: number, menuIdWithMultiplierList: MenuIdWithMultiplier[]) => statsApi.addStats(defeatCount, menuIdWithMultiplierList));
-ipcMain.handle('delete-stats', (_, id: number) => statsApi.deleteStats(id));
-
-// プリセットAPI
-ipcMain.handle('get-preset-list', () => presetApi.getPresetList());
-ipcMain.handle('add-preset', (_, name: string, presetMenuList: MenuIdWithMultiplier[]) => presetApi.addPreset(name, presetMenuList));
-ipcMain.handle(
-  'update-preset', (
-    _,
-    preset: Preset,
-    menuIdWithMultiplierList: MenuIdWithMultiplier[]
-  ) => presetApi.updatePreset(preset, menuIdWithMultiplierList)
-);
-ipcMain.handle('delete-preset', (_, id: number) => presetApi.deletePreset(id));
