@@ -64,7 +64,9 @@ export const settingApi = {
   },
 
   async resetSetting() {
+    await oscApi.closeServer(); // 対象OSCメッセージが空文字列になるためオフにする
     await this.setAllSetting(SETTING_DEFAULT_VALUE);
+
     noticeApi.createNotice({
       text: '設定をリセットしました',
       color: 'success',
