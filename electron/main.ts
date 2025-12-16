@@ -10,6 +10,7 @@ import { statsApi } from './api/stats';
 import { presetApi } from './api/preset';
 import 'dotenv/config'; // エントリポイントでのみロードすればOK
 import type { SendMessage } from '../common/types';
+import { noticeApi } from './api/notice';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -74,6 +75,7 @@ function createWindow() {
   settingApi.initialize();
   statsApi.initialize();
   presetApi.initialize();
+  noticeApi.initialize({ sendMessage });
 
   if (VITE_DEV_SERVER_URL) {
     win.webContents.openDevTools();
