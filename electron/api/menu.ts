@@ -1,9 +1,25 @@
+import { ipcMain } from 'electron';
 import { PrismaClient } from '../../prisma/generated/client';
 import type { Menu } from '../../prisma/generated/client';
 
 const prisma = new PrismaClient();
 
+let isInitialized = false;
+
 export const menuApi = {
+  initialize() {
+    if (isInitialized) {
+      return;
+    }
+
+    ipcMain.handle('get-menu-list', this.getMenuList);
+    ipcMain.handle('add-menu', (_, menu: Menu) => this.addMenu(menu));
+    ipcMain.handle('delete-menu', (_, id: number) => this.deleteMenu(id));
+    ipcMain.handle('replace-menu', (_, id: number, newMenu: Menu) => this.replaceMenu(id, newMenu));
+
+    isInitialized = true;
+  },
+
   getMenuList() {
     return prisma.menu.findMany();
   },

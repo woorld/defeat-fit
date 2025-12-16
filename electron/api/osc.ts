@@ -2,7 +2,9 @@ import { Server } from 'node-osc';
 import { settingApi } from './setting';
 import { OSCQAccess, OSCQueryDiscovery, OSCQueryServer } from 'oscquery';
 import { setTimeout } from 'node:timers/promises';
-import type { OscStatus } from '../../common/types';
+import type { OscStatus, SendMessage } from '../../common/types';
+import { ipcMain } from 'electron';
+import { defeatCountApi } from './defeat-count';
 
 const basePort = 11337;
 const minDiscoveryWaitMs = 3000;
@@ -16,20 +18,43 @@ let lastListenedAt = 0;
 let lastListenedMessage = '';
 
 let oscStatus: OscStatus = 'CLOSE';
+let isInitialized = false;
 
-// ローカルのステータスを更新してハンドラを実行する関数を返却
-const useChangeOscStatus = (onChangeOscStatus: (oscStatus: OscStatus) => void) =>
-  (newOscStatus: OscStatus) => {
-    oscStatus = newOscStatus;
-    onChangeOscStatus(newOscStatus);
-  };
+let sendMessage: SendMessage | null = null;
+
+const sendMessageIfNotNull: SendMessage = (channel, ...args) => {
+  if (sendMessage !== null) {
+    sendMessage(channel, ...args);
+  }
+}
+
+const changeOscStatus = (newOscStatus: OscStatus) => {
+  oscStatus = newOscStatus;
+  sendMessageIfNotNull('change-osc-status', newOscStatus);
+}
+
+const updateDefeatCount = () => {
+  const newCount = defeatCountApi.incrementDefeatCount();
+  sendMessageIfNotNull('update-defeat-count', newCount);
+}
 
 export const oscApi = {
-  async openServer(
-    onChangeOscStatus: (oscStatus: OscStatus) => void,
-    onListen: (listenedMessage: string) => void,
-    listenAllMessage = false
-  ) {
+  initialize(deps: { sendMessage: SendMessage }) {
+    if (isInitialized) {
+      return;
+    }
+
+    sendMessage = deps.sendMessage;
+
+    ipcMain.handle('get-osc-status', this.getOscStatus);
+    ipcMain.handle('start-listening', () => this.openServer());
+    ipcMain.handle('start-listening-all', () => this.openServer(true));
+    ipcMain.handle('stop-listening', this.closeServer);
+
+    isInitialized = true;
+  },
+
+  async openServer(listenAllMessage = false) {
     const targetMessage = listenAllMessage
       ? 'message' // oscServer.on()に渡すイベント名
       : await settingApi.getSetting('targetOscMessage');
@@ -38,8 +63,6 @@ export const oscApi = {
       // 対象のOSCメッセージが空文字列か、OSCサーバのどちらかが開始中か開始済の場合
       return;
     }
-
-    const changeOscStatus = useChangeOscStatus(onChangeOscStatus);
 
     const prevOscStatus = oscStatus;
     changeOscStatus('PENDING');
@@ -117,16 +140,18 @@ export const oscApi = {
       lastListenedAt = nowDate;
       lastListenedMessage = listenedMessage;
 
-      onListen(listenedMessage);
+      // OSC受信時の処理
+      console.log('DefeatFit: listened: ' + listenedMessage);
+      listenAllMessage
+        ? sendMessageIfNotNull('listen-any-message', listenedMessage)
+        : updateDefeatCount();
     });
   },
 
-  async closeServer(onChangeOscStatus: (oscStatus: OscStatus) => void) {
+  async closeServer() {
     if (oscServer === null || oscQueryServer === null || oscStatus === 'PENDING') {
       return;
     }
-
-    const changeOscStatus = useChangeOscStatus(onChangeOscStatus);
 
     changeOscStatus('PENDING');
 

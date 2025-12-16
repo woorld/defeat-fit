@@ -1,3 +1,4 @@
+import type { WebContents } from 'electron';
 import type { Prisma, Menu, PresetMenu } from '../prisma/generated/client';
 
 export type Setting = {
@@ -50,3 +51,5 @@ export type Notice = {
   text: string,
   color: NoticeColor,
 };
+
+export type SendMessage = WebContents['send'];
