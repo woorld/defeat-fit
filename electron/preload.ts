@@ -77,7 +77,7 @@ const presetApi = {
 
 const noticeApi = {
   onCreateNotice: (callback: (notice: Notice) => void) =>
-    ipcRenderer.on('create-notice', (_, notice: Notice) => callback(notice),)
+    ipcRenderer.on('create-notice', (_, notice: Notice) => callback(notice)),
 } as const;
 
 contextBridge.exposeInMainWorld('defeatCount', defeatCountApi);
