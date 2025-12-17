@@ -17,7 +17,7 @@ export const settingApi = {
     }
 
     ipcMain.handle('get-setting', (_, settingName: keyof Setting) => this.getSetting(settingName));
-    ipcMain.handle('get-all-setting', this.getAllSetting);
+    ipcMain.handle('get-all-setting', () => this.getAllSetting());
     ipcMain.handle(
       'set-setting',
       <K extends keyof Setting>(
@@ -34,7 +34,6 @@ export const settingApi = {
         return oscApi.openServer();
       }
     });
-    // HACK: なぜかアロー関数でラップしないとthis.setAllSetting()がundefinedになる
     ipcMain.on('reset-setting', () => this.resetSetting());
 
     isInitialized = true;

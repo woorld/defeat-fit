@@ -14,8 +14,8 @@ export const statsApi = {
       return;
     }
 
-    ipcMain.handle('get-stats-list', this.getStatsList);
-    ipcMain.handle('get-total-stats', this.getTotalStats);
+    ipcMain.handle('get-stats-list', () => this.getStatsList());
+    ipcMain.handle('get-total-stats', () => this.getTotalStats());
     ipcMain.handle(
       'add-stats', (
         _,

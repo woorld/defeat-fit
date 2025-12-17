@@ -47,10 +47,10 @@ export const oscApi = {
 
     sendMessage = deps.sendMessage;
 
-    ipcMain.handle('get-osc-status', this.getOscStatus);
+    ipcMain.handle('get-osc-status', () => this.getOscStatus());
     ipcMain.handle('start-listening', () => this.openServer());
     ipcMain.handle('start-listening-all', () => this.openServer(true));
-    ipcMain.handle('stop-listening', this.closeServer);
+    ipcMain.handle('stop-listening', () => this.closeServer());
 
     isInitialized = true;
   },

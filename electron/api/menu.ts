@@ -13,7 +13,7 @@ export const menuApi = {
       return;
     }
 
-    ipcMain.handle('get-menu-list', this.getMenuList);
+    ipcMain.handle('get-menu-list', () => this.getMenuList());
     ipcMain.handle('add-menu', (_, menu: Menu) => this.addMenu(menu));
     ipcMain.handle('delete-menu', (_, id: number) => this.deleteMenu(id));
     ipcMain.handle('replace-menu', (_, id: number, newMenu: Menu) => this.replaceMenu(id, newMenu));

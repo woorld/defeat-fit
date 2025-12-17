@@ -13,7 +13,7 @@ export const presetApi = {
       return;
     }
 
-    ipcMain.handle('get-preset-list', this.getPresetList);
+    ipcMain.handle('get-preset-list', () => this.getPresetList());
     ipcMain.handle(
       'add-preset', (
         _,
