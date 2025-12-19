@@ -1,4 +1,4 @@
-import { Client } from 'node-osc';
+import OSC from 'osc-js';
 import readline from 'readline';
 import { oscSetting, useLog } from './common.mjs';
 import process from 'process';
@@ -7,9 +7,8 @@ const sendMultipleType = process.argv[2] === 'multiple';
 const log = useLog('osc-sender');
 
 const oscAddress = '/avatar/parameters/BJK/IsDead';
-const oscValue = 'true';
-const client = new Client(oscSetting.host, oscSetting.port);
-
+const oscValue = true;
+const client = new OSC({ plugin: new OSC.DatagramPlugin() });
 let count = 0;
 
 const onKeyPress = (_str, key) => {
@@ -19,7 +18,7 @@ const onKeyPress = (_str, key) => {
 
   if (key.ctrl && key.name === 'c') {
     log('Exit');
-    client.close();
+    client.close(); // クライアントとして使う場合もclose()が必要
     process.stdin.pause(); // 標準入力の監視をやめる
     return;
   }
@@ -30,9 +29,9 @@ const onKeyPress = (_str, key) => {
       ? `${oscAddress}/${count}`
       : oscAddress;
 
-    client.send(sendOscAddress, oscValue, () => {
-      log(`Message Sent - ${sendOscAddress},${oscValue}`);
-    });
+    const message = new OSC.Message(sendOscAddress, oscValue);
+    client.send(message, { host: oscSetting.host, port: oscSetting.port });
+    log(`Message Sent - ${sendOscAddress},${oscValue}`);
   }
 };
 

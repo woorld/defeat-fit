@@ -1,16 +1,18 @@
-import { Server } from 'node-osc';
+// TODO: OSCQuery対応してVRChatのOSCも受信できるようにする
+import OSC from 'osc-js';
 import readline from 'readline';
 import { oscSetting, useLog } from './common.mjs';
 
 const log = useLog('osc-listener');
 
-const oscServer = new Server(oscSetting.port, oscSetting.host, () => {
+const oscServer = new OSC({ plugin: new OSC.DatagramPlugin() });
+oscServer.on('*', (message) => {
+  log(`Message Received - ${message.address},${message.args.join(',')}`);
+});
+oscServer.on('open', () => {
   log('Start Listening');
 });
-
-oscServer.on('message', (message) => {
-  log(`Message Received - ${message}`);
-});
+oscServer.open({ host: oscSetting.host, port: oscSetting.port });
 
 const onExit = () => {
   log('End Listening');
