@@ -1,8 +1,8 @@
 import { Server } from 'node-osc';
 import readline from 'readline';
-import { oscSetting } from './constants.mjs';
+import { oscSetting, useLog } from './common.mjs';
 
-const log = (str) => console.log('osc-listener: ' + str);
+const log = useLog('osc-listener');
 
 const oscServer = new Server(oscSetting.port, oscSetting.host, () => {
   log('Start Listening');

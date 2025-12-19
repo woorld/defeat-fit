@@ -1,10 +1,10 @@
 import { Client } from 'node-osc';
 import readline from 'readline';
-import { oscSetting } from './constants.mjs';
+import { oscSetting, useLog } from './common.mjs';
 import process from 'process';
 
 const sendMultipleType = process.argv[2] === 'multiple';
-const log = (str) => console.log('osc-sender: ' + str);
+const log = useLog('osc-sender');
 
 const oscAddress = '/avatar/parameters/BJK/IsDead';
 const oscValue = 'true';
