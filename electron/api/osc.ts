@@ -1,4 +1,4 @@
-import { Server } from 'node-osc';
+import OSC from 'osc-js';
 import { settingApi } from './setting';
 import { OSCQAccess, OSCQueryDiscovery, OSCQueryServer } from 'oscquery';
 import { setTimeout } from 'node:timers/promises';
@@ -14,7 +14,7 @@ const oscQueryDiscovery = new OSCQueryDiscovery;
 let discoveryStartAt = 0;
 
 let oscQueryServer: OSCQueryServer | null = null;
-let oscServer: Server | null = null;
+let oscServer: OSC | null = null;
 let lastListenedAt = 0;
 let lastListenedMessage = '';
 
@@ -57,7 +57,7 @@ export const oscApi = {
 
   async openServer(listenAllMessage = false) {
     const targetMessage = listenAllMessage
-      ? 'message' // oscServer.on()に渡すイベント名
+      ? '*' // oscServer.on()に渡すイベント名
       : await settingApi.getSetting('targetOscMessage');
 
     if (!targetMessage || oscQueryServer !== null || oscServer !== null || oscStatus === 'PENDING') {
@@ -84,6 +84,66 @@ export const oscApi = {
         .map(service => service.hostInfo.oscPort as number) // 手前でundefinedを弾いているので型アサーションしてOK
     ];
 
+    // TODO: 別の個所に移設
+    type OscPayload = {
+      offset: number,
+      address: string,
+      types: string,
+      args: unknown[],
+    };
+
+    const onListenTargetMessage = (payload: OscPayload) => {
+      // TODO: 対象メッセージだけでなく対象の値も設定できるようにする
+      if (!payload.args[0]) {
+        return;
+      }
+      const listenedMessage = payload.address;
+
+      /* HACK:
+      * ネットワーク環境によってはOSCサービスが2つ以上登録され、同じメッセージが同タイミングで複数受信されることがある
+      * 1回のOSC送信で多重にカウントされるのを防止するため、前回の受信から10ms以下で同じメッセージが来た場合は無視する
+      */
+      const nowDate = Date.now();
+      const elapsedSinceLastListen = nowDate - lastListenedAt;
+
+      if (listenedMessage === lastListenedMessage && elapsedSinceLastListen <= 10) {
+        return;
+      }
+
+      lastListenedAt = nowDate;
+      lastListenedMessage = listenedMessage;
+
+      // OSC受信時の処理
+      console.log('DefeatFit: listened: ' + listenedMessage);
+      listenAllMessage
+        ? sendMessageIfNotNull('listen-any-message', listenedMessage)
+        : updateDefeatCount();
+    };
+
+    const onOpenServer = () => {
+      changeOscStatus(listenAllMessage ? 'OPEN_ALL' : 'OPEN');
+      noticeApi.createNotice({
+        text: 'OSCメッセージの受信を開始しました',
+        color: 'success',
+      });
+      console.log('DefeatFit: Start listening: ' + targetMessage);
+    };
+
+    const onCloseServer = () => {
+      oscServer = null;
+      lastListenedAt = 0;
+      lastListenedMessage = '';
+
+      changeOscStatus('CLOSE');
+
+      noticeApi.createNotice({
+        text: 'OSCメッセージの受信を停止しました',
+        color: 'success',
+      });
+
+      console.log('DefeatFit: closed');
+    };
+
     try {
       let usingPort = basePort;
 
@@ -109,14 +169,13 @@ export const oscApi = {
 
       await oscQueryServer.start(); // 念のためOSCサーバ開始前に開始させる
 
-      oscServer = new Server(usingPort, '0.0.0.0', () => {
-        changeOscStatus(listenAllMessage ? 'OPEN_ALL' : 'OPEN');
-        noticeApi.createNotice({
-          text: 'OSCメッセージの受信を開始しました',
-          color: 'success',
-        });
-        console.log('DefeatFit: Start listening: ' + targetMessage);
-      });
+      oscServer = new OSC({ plugin: new OSC.DatagramPlugin() });
+
+      oscServer.on(targetMessage, (payload: OscPayload) => onListenTargetMessage(payload));
+      oscServer.on('open', onOpenServer);
+      oscServer.on('close', onCloseServer);
+
+      oscServer.open({ host: '0.0.0.0', port: usingPort });
     }
     catch (e) {
       changeOscStatus(prevOscStatus);
@@ -129,34 +188,6 @@ export const oscApi = {
       console.error(e);
       return;
     }
-
-    oscServer.on(targetMessage, value => {
-      // TODO: 対象メッセージだけでなく対象の値も設定できるようにする
-      if (!value[1]) {
-        return;
-      }
-      const listenedMessage = value[0];
-
-      /* HACK:
-       * ネットワーク環境によってはOSCサービスが2つ以上登録され、同じメッセージが同タイミングで複数受信されることがある
-       * 1回のOSC送信で多重にカウントされるのを防止するため、前回の受信から10ms以下で同じメッセージが来た場合は無視する
-       */
-      const nowDate = Date.now();
-      const elapsedSinceLastListen = nowDate - lastListenedAt;
-
-      if (listenedMessage === lastListenedMessage && elapsedSinceLastListen <= 10) {
-        return;
-      }
-
-      lastListenedAt = nowDate;
-      lastListenedMessage = listenedMessage;
-
-      // OSC受信時の処理
-      console.log('DefeatFit: listened: ' + listenedMessage);
-      listenAllMessage
-        ? sendMessageIfNotNull('listen-any-message', listenedMessage)
-        : updateDefeatCount();
-    });
   },
 
   async closeServer() {
@@ -168,21 +199,7 @@ export const oscApi = {
 
     await oscQueryServer.stop();
     oscQueryServer = null;
-
-    oscServer.close(() => {
-      oscServer = null;
-      lastListenedAt = 0;
-      lastListenedMessage = '';
-
-      changeOscStatus('CLOSE');
-
-      noticeApi.createNotice({
-        text: 'OSCメッセージの受信を停止しました',
-        color: 'success',
-      });
-
-      console.log('DefeatFit: closed');
-    });
+    oscServer.close();
   },
 
   getOscStatus() {
