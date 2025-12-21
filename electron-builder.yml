@@ -11,6 +11,8 @@ files:
 extraResources:
   - from: dist/app.db
     to: .
+  - from: dist/license
+    to: license
 mac:
   target:
     - dmg
