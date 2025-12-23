@@ -51,3 +51,9 @@ export type Notice = {
 };
 
 export type SendMessage = WebContents['send'];
+
+export type License = {
+  name: string | null,
+  version: string | null,
+  licenseText: string | null,
+};

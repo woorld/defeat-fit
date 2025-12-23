@@ -3,6 +3,7 @@ import path from 'node:path';
 import electron from 'vite-plugin-electron/simple';
 import vue from '@vitejs/plugin-vue';
 import license from 'rollup-plugin-license';
+import type { License } from './common/types';
 
 const outDirRoot = 'dist';
 const outDirMain = path.join(outDirRoot, 'main');
@@ -10,9 +11,22 @@ const outDirRenderer = path.join(outDirRoot, 'renderer');
 
 const getLicenseConfig = (filename: string) => license({
   thirdParty: {
-    output: {
-      file: path.join(outDirRoot, 'license', filename + '.txt'),
-    },
+    output: [
+      {
+        file: path.join(outDirRoot, 'license', filename + '.json'),
+        template: deps => JSON.stringify(
+          deps.map((dep): License => ({
+            name: dep.name,
+            version: dep.version,
+            licenseText: dep.licenseText,
+          }))
+        ),
+      },
+      {
+        // アプリ外からも読めるように通常のテキストファイルも出力する
+        file: path.join(outDirRoot, 'license', filename + '.txt'),
+      },
+    ],
   },
 });
 
