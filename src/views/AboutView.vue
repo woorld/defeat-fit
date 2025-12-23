@@ -1,52 +1,71 @@
 <script setup lang="ts">
 // TODO: ライトモード対応
+import { ref } from 'vue';
+import type { License } from '../../common/types';
 import AppLogo from '../components/logo/AppLogo.vue';
 import WooooorldLogo from '../components/logo/WooooorldLogo.vue';
 import LinkWithIcon from '../components/LinkWithIcon.vue';
+
+const licenseText = ref<License[]>([]);
+
+(async () => {
+  licenseText.value = await window.file.getLicenses();
+})();
 </script>
 
 <template>
   <VContainer>
-    <VRow class="mt-6">
-      <VCol cols="6" class="d-flex justify-center align-center ga-4">
-        <AppLogo class="logo" />
-        <div>
-          <h3 class="text-h3">DefeatFit</h3>
-          <p class="text-subtitle-1 text-center mt-1">v0.1.0-ultrabeta</p>
-        </div>
-        <!-- TODO: バージョンを外部からとってくる -->
-      </VCol>
-      <VCol cols="6" class="text-center d-flex justify-center align-center">
-        <WooooorldLogo class="logo" color="white" />
-        <div class="flex-1-1-0">
-          <p>Developed by <span class="text-h4 ml-2">わーるど</span></p>
-          <div class="d-flex justify-center align-center ga-2 mt-2">
-            <LinkWithIcon
-              linkType="githubRepository"
-              iconName="mdi-github"
-              :iconSize="32"
-            />
-            <LinkWithIcon
-              linkType="developerTwitter"
-              iconName="mdi-twitter"
-              :iconSize="32"
-            />
+    <div class="mt-12 mb-16 d-flex justify-center align-center ga-16">
+      <div class="text-center">
+        <div class="d-flex justify-end align-center ga-4">
+          <AppLogo class="logo" />
+          <div class="text-center">
+            <h3 class="text-h4 font-weight-bold">DefeatFit</h3>
+            <!-- TODO: バージョンを外部からとってくる -->
+            <p class="text-subtitle-1 text-grey">v0.1.0-ultrabeta</p>
           </div>
         </div>
-      </VCol>
-    </VRow>
-    <h3 class="text-h4 text-center mt-12">LICENSE</h3>
-    <!-- TODO -->
-    <VCard class="mt-4" text="TODO: ライセンステキストを読み込んで表示"></VCard>
+        <LinkWithIcon
+          class="mt-5"
+          linkType="githubRepository"
+          linkText="GitHub Repository"
+          iconName="mdi-github"
+        />
+      </div>
+      <div class="text-center">
+        <div class="d-flex justify-start align-center ga-4">
+          <div class="text-center">
+            <p class="text-subtitle-1 text-grey">Developed by</p>
+            <p class="text-h4 font-weight-bold">わーるど</p>
+          </div>
+          <WooooorldLogo class="logo" color="white" />
+        </div>
+        <LinkWithIcon
+          class="mt-5"
+          linkType="developerTwitter"
+          linkText="Developer's Twitter"
+          iconName="mdi-twitter"
+        />
+      </div>
+    </div>
+    <h3 class="text-h5 text-center">OSS Licenses</h3>
+    <VExpansionPanels class="mt-4">
+      <VExpansionPanel  v-for="license of licenseText">
+        <template #title>
+          <span>{{ license.name }}</span>
+          <span class="text-grey ml-2">{{ license.version }}</span>
+        </template>
+        <template #text>
+          <pre class="text-pre-wrap">{{ license.licenseText }}</pre>
+        </template>
+      </VExpansionPanel>
+    </VExpansionPanels>
   </VContainer>
 </template>
 
 <style scoped>
 .logo {
   width: 100px;
-}
-
-a {
-  color: white;
+  height: 100px;
 }
 </style>
