@@ -59,4 +59,8 @@ export default defineConfig({
   build: {
     outDir: outDirRenderer,
   },
+  define: {
+    // NOTE: JSON.stringifyは"を付与するため
+    __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
+  },
 });

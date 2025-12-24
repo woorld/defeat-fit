@@ -6,6 +6,8 @@ import AppLogo from '../components/logo/AppLogo.vue';
 import WooooorldLogo from '../components/logo/WooooorldLogo.vue';
 import LinkWithIcon from '../components/LinkWithIcon.vue';
 
+const appVersion = __APP_VERSION__; // NOTE: テンプレートでそのまま使うことができない
+
 const licenseText = ref<License[]>([]);
 
 (async () => {
@@ -21,8 +23,7 @@ const licenseText = ref<License[]>([]);
           <AppLogo class="logo" />
           <div class="text-center">
             <h3 class="text-h4 font-weight-bold">DefeatFit</h3>
-            <!-- TODO: バージョンを外部からとってくる -->
-            <p class="text-subtitle-1 text-grey">v0.1.0-ultrabeta</p>
+            <p class="text-subtitle-1 text-grey">v{{ appVersion }}</p>
           </div>
         </div>
         <LinkWithIcon
