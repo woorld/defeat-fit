@@ -24,6 +24,9 @@ const getLicenseConfig = (filename: string) => license({
       {
         // アプリ外からも読めるように通常のテキストファイルも出力する
         file: path.join(outDirRoot, 'license', filename + '.txt'),
+        template: deps => deps.map(dep =>
+          `${dep.name} ${dep.version}\n\n${dep.licenseText}`
+        ).join('\n--------------------------------\n')
       },
     ],
   },
