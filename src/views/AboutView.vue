@@ -1,28 +1,36 @@
 <script setup lang="ts">
-// TODO: ライトモード対応
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import type { License } from '../../common/types';
 import AppLogo from '../components/logo/AppLogo.vue';
 import WooooorldLogo from '../components/logo/WooooorldLogo.vue';
 import LinkWithIcon from '../components/LinkWithIcon.vue';
+import ViewHeading from '../components/ViewHeading.vue';
+import { useTheme } from 'vuetify';
 
+const theme = useTheme();
 const appVersion = __APP_VERSION__; // NOTE: テンプレートでそのまま使うことができない
 
-const licenseText = ref<License[]>([]);
+const licenses = ref<License[]>([]);
+
+const iconColor = computed(() => theme.current.value.dark
+  ? 'white'
+  : 'black'
+);
 
 (async () => {
-  licenseText.value = await window.file.getLicenses();
+  licenses.value = await window.file.getLicenses();
 })();
 </script>
 
 <template>
   <VContainer>
+    <ViewHeading title="About" />
     <div class="mt-12 mb-16 d-flex justify-center align-center ga-16">
       <div class="text-center">
         <div class="d-flex justify-end align-center ga-4">
           <AppLogo class="logo" />
           <div class="text-center">
-            <h3 class="text-h4 font-weight-bold">DefeatFit</h3>
+            <p class="text-h4 font-weight-bold">DefeatFit</p>
             <p class="text-subtitle-1 text-grey">v{{ appVersion }}</p>
           </div>
         </div>
@@ -31,6 +39,7 @@ const licenseText = ref<License[]>([]);
           linkType="githubRepository"
           linkText="GitHub Repository"
           iconName="mdi-github"
+          :iconColor
         />
       </div>
       <div class="text-center">
@@ -39,28 +48,31 @@ const licenseText = ref<License[]>([]);
             <p class="text-subtitle-1 text-grey">Developed by</p>
             <p class="text-h4 font-weight-bold">わーるど</p>
           </div>
-          <WooooorldLogo class="logo" color="white" />
+          <WooooorldLogo class="logo" :color="iconColor" />
         </div>
         <LinkWithIcon
           class="mt-5"
           linkType="developerTwitter"
           linkText="Developer's Twitter"
           iconName="mdi-twitter"
+          :iconColor
         />
       </div>
     </div>
-    <h3 class="text-h5 text-center">OSS Licenses</h3>
-    <VExpansionPanels class="mt-4">
-      <VExpansionPanel  v-for="license of licenseText">
-        <template #title>
-          <span>{{ license.name }}</span>
-          <span class="text-grey ml-2">{{ license.version }}</span>
-        </template>
-        <template #text>
-          <pre class="text-pre-wrap">{{ license.licenseText }}</pre>
-        </template>
-      </VExpansionPanel>
-    </VExpansionPanels>
+    <template v-if="licenses.length >= 1">
+      <h3 class="text-h5 text-center">OSS Licenses</h3>
+      <VExpansionPanels class="mt-4">
+        <VExpansionPanel v-for="license of licenses">
+          <template #title>
+            {{ license.name }}
+            <span class="text-grey ml-2">{{ license.version }}</span>
+          </template>
+          <template #text>
+            <pre class="text-pre-wrap">{{ license.licenseText }}</pre>
+          </template>
+        </VExpansionPanel>
+      </VExpansionPanels>
+    </template>
   </VContainer>
 </template>
 

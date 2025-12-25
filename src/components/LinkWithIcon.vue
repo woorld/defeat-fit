@@ -4,6 +4,7 @@ const props = defineProps<{
   linkType: keyof typeof ALLOWED_EXTERNAL_LINKS,
   linkText: string,
   iconName: string,
+  iconColor: string,
 }>();
 </script>
 
@@ -13,7 +14,7 @@ const props = defineProps<{
     target="_blank"
     :href="ALLOWED_EXTERNAL_LINKS[props.linkType]"
   >
-    <VIcon size="32">{{ props.iconName }}</VIcon>
+    <VIcon size="32" :color="props.iconColor">{{ props.iconName }}</VIcon>
     <span class="text-grey">{{ props.linkText }}</span>
     <VIcon size="16" color="grey">mdi-open-in-new</VIcon>
   </a>
