@@ -30,7 +30,7 @@ const onDeleteStats = () => {
 </script>
 
 <template>
-  <VCard class="mb-6 py-2">
+  <VCard class="mb-6 py-2" border>
     <template #text>
       <div class="d-flex justify-space-between align-center ga-4">
         <div class="w-25 text-center">
