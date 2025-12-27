@@ -4,7 +4,6 @@ const props = defineProps<{
   linkType: string, // keyof typeof ALLOWED~ は不可
   linkText: string,
   iconName: string,
-  iconColor: string,
 }>();
 </script>
 
