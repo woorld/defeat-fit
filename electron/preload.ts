@@ -83,6 +83,8 @@ const noticeApi = {
 const fileApi = {
   getLicenses: (): Promise<License[]> =>
     ipcRenderer.invoke('get-license-text'),
+  openLicenseFolder: () =>
+    ipcRenderer.send('open-license-folder'),
 } as const;
 
 contextBridge.exposeInMainWorld('defeatCount', defeatCountApi);

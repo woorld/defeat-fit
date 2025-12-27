@@ -17,6 +17,10 @@ const iconColor = computed(() => theme.current.value.dark
   : 'black'
 );
 
+const openLicenseFolder = () => {
+  window.file.openLicenseFolder();
+};
+
 (async () => {
   licenses.value = await window.file.getLicenses();
 })();
@@ -73,6 +77,17 @@ const iconColor = computed(() => theme.current.value.dark
         </VExpansionPanel>
       </VExpansionPanels>
     </template>
+    <div v-else class="text-center">
+      <p>OSSライセンスの読み込みに失敗しました。</p>
+      <VBtn
+        class="mt-4 border"
+        color="transparent"
+        rounded
+        elevation="0"
+        prepend-icon="mdi-folder"
+        @click="openLicenseFolder"
+      >OSSライセンスフォルダを開く</VBtn>
+    </div>
   </VContainer>
 </template>
 

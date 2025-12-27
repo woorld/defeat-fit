@@ -1,4 +1,4 @@
-import { ipcMain } from 'electron';
+import { ipcMain, shell } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { License } from '../../common/types';
@@ -6,6 +6,7 @@ import { noticeApi } from './notice';
 
 let isInitialized = false;
 let isDev = false;
+let licenseDir = '';
 
 export const fileApi = {
   initialize(deps: { isDev: boolean }) {
@@ -14,13 +15,7 @@ export const fileApi = {
     }
 
     isDev = deps.isDev;
-    ipcMain.handle('get-license-text', () => this.getLicenses());
-
-    isInitialized = true;
-  },
-
-  getLicenses(): License[] {
-    const licenseDir = path.join(
+    licenseDir = path.join(
       // TODO: ビルド済みを見越してる開発用パス設定なんとかならんか
       isDev
         ? path.join(process.env.APP_ROOT, 'dist')
@@ -28,6 +23,13 @@ export const fileApi = {
       'license'
     );
 
+    ipcMain.handle('get-license-text', () => this.getLicenses());
+    ipcMain.on('open-license-folder', () => this.openLicenseFolder());
+
+    isInitialized = true;
+  },
+
+  getLicenses(): License[] {
     try {
       const licenseMain = fs.readFileSync(path.join(licenseDir, 'license.main.json'), 'utf8');
       const licenseRenderer = fs.readFileSync(path.join(licenseDir, 'license.renderer.json'), 'utf8');
@@ -39,10 +41,14 @@ export const fileApi = {
     }
     catch (e) {
       noticeApi.createNotice({
-        text: 'OSSライセンス表記の読み込みに失敗しました',
+        text: 'OSSライセンスの読み込みに失敗しました',
         color: 'error',
       });
       return [];
     }
+  },
+
+  openLicenseFolder() {
+    shell.openPath(licenseDir);
   },
 } as const;
