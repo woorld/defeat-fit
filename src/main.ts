@@ -16,11 +16,12 @@ import SettingView from './views/SettingView.vue';
 import AboutView from './views/AboutView.vue';
 import { createPinia } from 'pinia';
 
+const colorTheme = await window.setting.getSetting('colorTheme');
 const vuetify = createVuetify({
   components,
   directives,
   theme: {
-    defaultTheme: 'system',
+    defaultTheme: colorTheme ?? 'system',
   },
 });
 

@@ -9,8 +9,11 @@ import ViewHeading from '../components/ViewHeading.vue';
 import { useOscStore } from '../stores/osc';
 import { onBeforeRouteLeave } from 'vue-router';
 import OscMessageSelectDialog from '../components/OscMessageSelectDialog.vue';
+import ColorThemeSelect from '../components/ColorThemeSelect.vue';
+import { useTheme } from 'vuetify';
 
 const oscStore = useOscStore();
+const theme = useTheme();
 const oscStatusWhenEnter = oscStore.oscStatus;
 
 const setting = ref<Setting>({ ...SETTING_DEFAULT_VALUE });
@@ -31,7 +34,21 @@ const resetSetting = async () => {
 
 const saveSetting = async () => {
   await window.setting.setAllSetting(toRaw(setting.value));
+
+  if (setting.value.colorTheme === 'system') {
+    const isOsDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    theme.change(isOsDarkMode ? 'dark' : 'light');
+  }
+  else {
+    theme.change(setting.value.colorTheme);
+  }
+
   getSetting();
+};
+
+const saveSettingBeforeLeave = async () => {
+  prevSetting.value = setting.value // 旧設定を新しいものに更新し、ダイアログの再表示を防止
+  saveSetting();
 };
 
 getSetting();
@@ -52,6 +69,7 @@ onBeforeRouteLeave(async () => {
   <VContainer>
     <ViewHeading title="設定" />
     <div class="d-flex flex-column ga-10">
+      <ColorThemeSelect v-model="setting.colorTheme" />
       <div class="d-flex justify-center align-center ga-4">
         <VTextField
           label="対象のOSCメッセージ"
@@ -122,7 +140,7 @@ onBeforeRouteLeave(async () => {
     <SettingNotSavedDialog
       :setting="setting"
       :prevSetting="prevSetting"
-      @update-setting="prevSetting = setting"
+      @update-setting="saveSettingBeforeLeave"
       @discard-changed-setting="setting = prevSetting"
     />
   </VContainer>
