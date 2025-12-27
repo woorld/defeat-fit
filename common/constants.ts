@@ -7,6 +7,7 @@ export const SETTING_DEFAULT_VALUE: Setting = {
   showCautionDialog: true,
   dayBoundaryOffsetHours: 0,
   lastSelectedPresetId: null,
+  colorTheme: 'system',
 } as const;
 
 export const ALLOWED_EXTERNAL_LINKS: { [key: string]: string} = {

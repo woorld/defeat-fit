@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, toRaw } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter, onBeforeRouteLeave } from 'vue-router';
 import type { Setting } from '../../common/types';
 import ConfirmDialog from './ConfirmDialog.vue';
@@ -13,7 +13,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'update-setting'): void,
+  (e: 'save-setting'): void,
   (e: 'discard-changed-setting'): void,
 }>();
 
@@ -25,13 +25,10 @@ const isSettingChanged = computed(() => {
 });
 
 const leavePage = async (isSaveSetting: boolean) => {
-  if (isSaveSetting) {
-    await window.setting.setAllSetting(toRaw(props.setting));
-    emit('update-setting'); // 親コンポーネントで持っている旧設定を新しいものに更新し、ダイアログ表示を防止
-  }
-  else {
-    emit('discard-changed-setting');
-  }
+  // emit内の文字列を三項演算子で出し分けたいがエラーになる
+  isSaveSetting
+    ? emit('save-setting')
+    : emit('discard-changed-setting');
   isShow.value = false;
   router.push(nextPagePath);
 };

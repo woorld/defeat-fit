@@ -1,6 +1,8 @@
 import type { WebContents } from 'electron';
 import type { Prisma, Menu, PresetMenu } from '../prisma/generated/client';
 
+export type ColorThemeSetting = 'light' | 'dark' | 'system';
+
 export type Setting = {
   targetOscMessage: string,
   soundVolume: number,
@@ -8,6 +10,7 @@ export type Setting = {
   showCautionDialog: boolean,
   dayBoundaryOffsetHours: number,
   lastSelectedPresetId: number | null,
+  colorTheme: ColorThemeSetting,
 };
 
 export type StatsWithMenus = Prisma.StatsGetPayload<{
