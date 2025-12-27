@@ -13,7 +13,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'update-setting'): void,
+  (e: 'save-setting'): void,
   (e: 'discard-changed-setting'): void,
 }>();
 
@@ -27,7 +27,7 @@ const isSettingChanged = computed(() => {
 const leavePage = async (isSaveSetting: boolean) => {
   // emit内の文字列を三項演算子で出し分けたいがエラーになる
   isSaveSetting
-    ? emit('update-setting')
+    ? emit('save-setting')
     : emit('discard-changed-setting');
   isShow.value = false;
   router.push(nextPagePath);

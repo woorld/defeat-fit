@@ -32,7 +32,11 @@ const resetSetting = async () => {
   isResetDialogVisible.value = false;
 };
 
-const saveSetting = async () => {
+const saveSetting = async (byNotSavedDialog = false) => {
+  if (byNotSavedDialog) {
+    prevSetting.value = setting.value // 旧設定を新しいものに更新し、ダイアログの再表示を防止
+  }
+
   await window.setting.setAllSetting(toRaw(setting.value));
 
   if (setting.value.colorTheme === 'system') {
@@ -44,11 +48,6 @@ const saveSetting = async () => {
   }
 
   getSetting();
-};
-
-const saveSettingBeforeLeave = async () => {
-  prevSetting.value = setting.value // 旧設定を新しいものに更新し、ダイアログの再表示を防止
-  saveSetting();
 };
 
 getSetting();
@@ -140,7 +139,7 @@ onBeforeRouteLeave(async () => {
     <SettingNotSavedDialog
       :setting="setting"
       :prevSetting="prevSetting"
-      @update-setting="saveSettingBeforeLeave"
+      @save-setting="saveSetting(true)"
       @discard-changed-setting="setting = prevSetting"
     />
   </VContainer>
