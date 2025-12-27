@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, shell } from 'electron';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import fs from 'node:fs';
@@ -11,6 +11,8 @@ import { presetApi } from './api/preset';
 import 'dotenv/config'; // エントリポイントでのみロードすればOK
 import type { SendMessage } from '../common/types';
 import { noticeApi } from './api/notice';
+import { ALLOWED_EXTERNAL_LINKS } from '../common/constants';
+import { fileApi } from './api/file';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -56,6 +58,8 @@ let win: BrowserWindow | null;
 function createWindow() {
   win = new BrowserWindow({
     width: VITE_DEV_SERVER_URL ? 1200 : undefined, // 開発者ツールでコンテンツが潰れないよう横幅を広げる
+    minWidth: 800,
+    minHeight: 600,
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
@@ -76,6 +80,7 @@ function createWindow() {
   statsApi.initialize();
   presetApi.initialize();
   noticeApi.initialize({ sendMessage });
+  fileApi.initialize({ isDev: Boolean(VITE_DEV_SERVER_URL) });
 
   if (VITE_DEV_SERVER_URL) {
     win.webContents.openDevTools();
@@ -100,7 +105,12 @@ function createWindow() {
     }
   });
 
-  win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  win.webContents.setWindowOpenHandler(detail => {
+    if (Object.values(ALLOWED_EXTERNAL_LINKS).includes(detail.url)) {
+      shell.openExternal(detail.url);
+    }
+    return { action: 'deny' };
+  });
 
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL);

@@ -26,5 +26,8 @@ const isInMenuView = computed(() => route.path.startsWith('/menu'));
     <VBtn to="/setting" :disabled="oscStore.oscStatus === 'PENDING'">
       <VIcon>mdi-cog</VIcon>
     </VBtn>
+    <VBtn to="/about">
+      <VIcon>mdi-information</VIcon>
+    </VBtn>
   </VBottomNavigation>
 </template>

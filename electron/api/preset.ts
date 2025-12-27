@@ -129,6 +129,6 @@ export const presetApi = {
 
     return result;
   },
-};
+} as const;
 
 export type UpdatePreset = ReturnType<typeof presetApi.updatePreset>;

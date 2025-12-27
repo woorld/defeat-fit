@@ -13,6 +13,7 @@ import MenuEditView from './views/MenuEditView.vue';
 import MenuPresetView from './views/MenuPresetView.vue';
 import StatsView from './views/StatsView.vue';
 import SettingView from './views/SettingView.vue';
+import AboutView from './views/AboutView.vue';
 import { createPinia } from 'pinia';
 
 const vuetify = createVuetify({
@@ -59,6 +60,11 @@ const routes = [
     name: 'setting',
     component: SettingView
   },
+  {
+    path: '/about',
+    name: 'about',
+    component: AboutView
+  }
 ];
 
 const router = createRouter({

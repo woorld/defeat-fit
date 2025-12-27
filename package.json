@@ -1,7 +1,7 @@
 {
   "name": "defeat-fit",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0-ultrabeta",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -33,6 +33,7 @@
     "electron-store": "^10.1.0",
     "prettier": "^3.6.2",
     "prisma": "^6.18.0",
+    "rollup-plugin-license": "^3.6.0",
     "sass": "^1.89.2",
     "typescript": "^5.2.2",
     "utf-8-validate": "^6.0.6",

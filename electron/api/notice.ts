@@ -23,4 +23,4 @@ export const noticeApi = {
   createNotice(notice: Notice) {
     sendMessageIfNotNull('create-notice', notice);
   },
-};
+} as const;
