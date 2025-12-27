@@ -43,7 +43,6 @@ const openLicenseFolder = () => {
           linkType="githubRepository"
           linkText="GitHub Repository"
           iconName="mdi-github"
-          :iconColor
         />
       </div>
       <div class="text-center">
@@ -59,7 +58,6 @@ const openLicenseFolder = () => {
           linkType="developerTwitter"
           linkText="Developer's Twitter"
           iconName="mdi-twitter"
-          :iconColor
         />
       </div>
     </div>
