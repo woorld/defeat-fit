@@ -80,11 +80,11 @@ const openLicenseFolder = () => {
     <div v-else class="text-center">
       <p>OSSライセンスの読み込みに失敗しました。</p>
       <VBtn
-        class="mt-4 border"
+        class="mt-4"
         color="transparent"
+        border
         rounded
         elevation="0"
-        prepend-icon="mdi-folder"
         @click="openLicenseFolder"
       >OSSライセンスフォルダを開く</VBtn>
     </div>

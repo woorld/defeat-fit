@@ -9,15 +9,21 @@ const props = defineProps<{
 </script>
 
 <template>
-  <a
-    class="d-inline-flex justify-center align-center ga-2 border rounded-xl px-3 py-1"
+  <VBtn
+    class="text-capitalize"
+    border
+    rounded
+    elevation="0"
     target="_blank"
+    color="transparent"
+    append-icon="mdi-open-in-new"
     :href="ALLOWED_EXTERNAL_LINKS[props.linkType]"
   >
-    <VIcon size="32" :color="props.iconColor">{{ props.iconName }}</VIcon>
-    <span class="text-grey">{{ props.linkText }}</span>
-    <VIcon size="16" color="grey">mdi-open-in-new</VIcon>
-  </a>
+    <template #prepend>
+      <VIcon size="24">{{ props.iconName }}</VIcon>
+    </template>
+    {{ props.linkText }}
+  </VBtn>
 </template>
 
 <style scoped>
