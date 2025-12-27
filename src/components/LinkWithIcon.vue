@@ -25,10 +25,3 @@ const props = defineProps<{
     {{ props.linkText }}
   </VBtn>
 </template>
-
-<style scoped>
-a {
-  color: white;
-  text-decoration: none;
-}
-</style>
