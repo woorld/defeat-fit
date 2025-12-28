@@ -1,18 +1,126 @@
-# Vue 3 + TypeScript + Vite
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/882fcc25-4459-4881-9c44-8f17c20cb251" width="128" height="128">
+  <h1>DefeatFit</h1>
+</div>
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+> [!WARNING]
+> 本アプリは現在 **ウルトラベータ版** です。
+> 機能やデザインが予告なく変更される場合があります。
 
-## Recommended IDE Setup
+## 概要
 
-- [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+OSCメッセージを受信した回数（≒負けた回数）に応じて筋トレを促すアプリです。
 
-## Type Support For `.vue` Imports in TS
+VRChatの対戦アバターギミック向けと併用する想定で作られていますが、設定次第でほかの用途にも使えます。
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
+### コンセプト
 
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
+***負けて、鍛えて、強くなる。***
 
-1. Disable the built-in TypeScript Extension
-   1. Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-   2. Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
+本アプリは、アバターギミックでの対戦で生まれる「負け」というネガティブな経験を、「筋トレによる自身の成長・健康維持」というポジティブな経験に置き換えることが目的で生まれました。
+
+> [!WARNING]
+> ***戦いやめるな！筋トレやめろ！***
+>
+> 本アプリで促される筋トレは義務ではなく、あくまで ***任意*** です。
+>
+> 本アプリでの筋トレが嫌になり、もともと楽しめていた対戦が楽しくなくなってしまっては本末転倒です。
+>
+> 筋トレに義務感が生じてきた場合は直ちに本アプリの使用を中断しましょう！
+>
+> ***無理せず楽しく対戦・筋トレ！***
+
+## 主な機能
+
+- OSCメッセージ受信回数（≒負けた回数）の自動記録
+- 上記の回数に応じた筋トレ回数の提示
+- セット数算出、タイマーなどの筋トレの補助機能
+- 今までのOSCメッセージ受信回数と筋トレ回数の保存
+
+## 動作環境
+
+- Windows 11でのみ動作を確認しています。
+- Windows 10でも問題なく動作する想定ですが、動作確認は行っておりません。
+- VRChatの動作環境でないMac / Linuxでの使用は想定していません。
+
+## インストール
+
+> [!NOTE]
+> 本アプリは有料のコード署名を行っていないため、インストール時に警告が表示される場合があります。
+>
+> 表示された場合は、「詳細情報」→「実行」の順に押すことでインストールを行えます。
+
+1. [リリース一覧](https://github.com/woorld/defeat-fit/releases)から最新版をダウンロード
+2. インストーラーを実行し、表示された指示に従ってインストール
+
+## 使い方
+
+> [!NOTE]
+> OSC通信を扱う都合上、初回起動時にネットワークへのアクセス許可を求められることがあります。
+>
+> 続ける場合は「許可」を押してください。
+
+### 1. 対象OSCメッセージの設定
+
+設定画面の「対象のOSCメッセージ」にカウント対象とするOSCメッセージを入力し、画面下部の「保存」を押して設定を保存してください。
+
+### 2. メニュー、プリセットの登録
+
+メニュー画面でメニューとプリセットの登録を行ってください。
+
+- メニュー: OSCメッセージを受信した回数に応じて行う筋トレの種目
+- プリセット: どのメニューを行うか、1カウント当たり何回行うかの設定
+
+### 3. プリセットの選択
+
+ホーム画面で先ほど登録したプリセットを選択してください。
+
+### 4. VRChatで遊ぶ
+
+以下をすべて満たしているのを確認し、VRChatのアバターギミックで対戦を行います。
+
+- ホーム画面右上のボタンが緑色の「OSC受信中」になっている
+- VRChatのExpressionMenuでOSCを有効にしている
+  - 「オプション」→「OSC」→「有効」でオンにできます
+
+負けた時にホーム画面上部の数字が+1されていれば、設定が正しく行われています。
+
+### 5. 筋トレ
+
+ある程度負けた後、ホーム画面の表示に従って筋トレを行います。
+
+この時、右上の「OSC受信中」を押してOSC受信をオフにしておくと、筋トレ中にカウントが増えることがないためやりやすくなります。
+
+各メニューの右側にある「やる」ボタンから、1セットに行う秒数/回数を確認することが可能です。
+
+また、秒数制のメニューはタイマー画面にセット数・秒数を反映することが可能です。
+
+### 6. 統計への記録
+
+プリセット内のメニューをすべて行ったあと、ホーム画面右下の「全部やった」ボタンを押すことで、今日の記録を統計に記録することができます。
+
+こうして積み重なっていく記録は、想像以上にモチベーションにつながります。
+
+## その他の機能
+
+### 「今のなし」ボタン
+
+ギミックでの対戦中以外に意図せずカウントが行われてしまった場合、ホーム画面左下の「今のなし」ボタンを押すことで、カウントを-1することができます。
+
+### タイマー機能
+
+ホーム画面の「やる」ボタン、もしくは下部メニューからタイマー画面にアクセスできます。
+秒数制のメニューをこなす場合に便利です。
+
+---
+
+## 開発に関係する諸々
+
+### ビルド方法
+
+以下の手順で`defeat-fit/dist/release/`にビルド済みアプリが出力されます
+
+1. 本リポジトリをクローン
+2. クローンしたリポジトリに`cd`で移動
+3. `npm ci`もしくは`npm i`で依存関係のインストール
+4. `npm run build`でビルド
