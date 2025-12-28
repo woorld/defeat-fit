@@ -13,16 +13,12 @@ extraResources:
     to: .
   - from: dist/license
     to: license
-mac:
-  target:
-    - dmg
-  artifactName: ${productName}-Mac-${version}-Installer.${ext}
 win:
   target:
     - target: nsis
       arch:
         - x64
-  artifactName: ${productName}-Windows-${version}-Setup.${ext}
+  artifactName: ${productName}_${version}_Setup.${ext}
 nsis:
   oneClick: false
   perMachine: false
