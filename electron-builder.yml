@@ -13,6 +13,8 @@ extraResources:
     to: .
   - from: dist/license
     to: license
+  - from: prisma/generated/query_engine-windows.dll.node
+    to: .prisma/client/query_engine-windows.dll.node # NOTE: .prisma/client配下にクエリエンジンを置かないと検知されない
 win:
   target:
     - target: nsis
