@@ -38,6 +38,7 @@ const electronViteConfig = {
   ],
   build: {
     outDir: outDirMain,
+    target: 'ESNext',
   },
 };
 
@@ -61,6 +62,7 @@ export default defineConfig({
   ],
   build: {
     outDir: outDirRenderer,
+    target: 'ESNext',
   },
   define: {
     // NOTE: JSON.stringifyは"を付与するため
