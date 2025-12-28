@@ -24,10 +24,6 @@ nsis:
   perMachine: false
   allowToChangeInstallationDirectory: true
   deleteAppDataOnUninstall: false
-linux:
-  target:
-    - AppImage
-  artifactName: ${productName}-Linux-${version}.${ext}
 electronLanguages:
   - ja
   - en-US
