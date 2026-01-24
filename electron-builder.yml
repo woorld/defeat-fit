@@ -21,6 +21,10 @@ win:
       arch:
         - x64
   artifactName: ${productName}_${version}_Setup.${ext}
+  publish:
+    provider: github
+    owner: woorld
+    repo: defeat-fit
 nsis:
   oneClick: false
   perMachine: false
