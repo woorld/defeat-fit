@@ -10,6 +10,7 @@ import { useOscServer, type OscPayload } from '../osc/osc-server';
 
 const basePort = 11337;
 const minDiscoveryWaitMs = 3000;
+const oscQueryPathWhenListenAllMessage = '/avatar/parameters/AngularY';
 const oscQueryDiscovery = new OSCQueryDiscovery();
 
 let discoveryStartAt = 0;
@@ -125,11 +126,13 @@ export const oscApi = {
         httpPort: usingPort,
       });
 
-      if (!listenAllMessage) {
-        oscQueryServer.addMethod(targetMessage, {
-          access: OSCQAccess.WRITEONLY,
-        });
-      }
+      oscQueryServer.addMethod(
+        listenAllMessage
+          // HACK: 全メッセージを表すパスがないため、VRChatから送信されるパスの1つを登録する
+          ? oscQueryPathWhenListenAllMessage
+          : targetMessage,
+        { access: OSCQAccess.WRITEONLY }
+      );
 
       await oscQueryServer.start(); // 念のためOSCサーバ開始前に開始させる
 
