@@ -31,11 +31,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <!-- FIXME: ダイアログ表示中にOSCボタンのツールチップが触れる -->
   <BaseDialog v-model="model" :canClose="downloadStatus !== 'PROGRESS'">
     <template v-if="downloadStatus === 'STANDBY'">
       <p>最新のアップデートが見つかりました。ダウンロードしますか？</p>
-      <!-- TODO: コンポーネント化 -->
       <div class="w-100 mt-8 d-flex justify-center align-center ga-4">
         <VBtn variant="outlined" @click="model = false">いいえ</VBtn>
         <VBtn color="green" @click="downloadUpdate">はい</VBtn>
@@ -48,7 +46,6 @@ onMounted(async () => {
     <template v-else-if="downloadStatus === 'COMPLETE'">
       <p>必要なファイルのダウンロードが完了しました。</p>
       <p>アップデートを適用するには再起動してください。</p>
-      <!-- TODO: コンポーネント化 -->
       <div class="w-100 mt-8 d-flex justify-center align-center ga-4">
         <VBtn variant="outlined" @click="model = false">あとで再起動する</VBtn>
         <VBtn color="green" @click="relaunchApp">再起動</VBtn>
