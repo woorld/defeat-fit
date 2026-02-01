@@ -13,6 +13,7 @@ import type { SendMessage } from '../common/types';
 import { noticeApi } from './api/notice';
 import { ALLOWED_EXTERNAL_LINKS } from '../common/constants';
 import { fileApi } from './api/file';
+import { updateApi } from './api/update';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -81,6 +82,7 @@ function createWindow() {
   presetApi.initialize();
   noticeApi.initialize({ sendMessage });
   fileApi.initialize({ isDev: Boolean(VITE_DEV_SERVER_URL) });
+  updateApi.initialize({ sendMessage })
 
   if (VITE_DEV_SERVER_URL) {
     win.webContents.openDevTools();

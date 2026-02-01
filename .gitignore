@@ -27,3 +27,6 @@ dist-ssr
 /prisma/generated
 .env
 *.db
+
+# electron-updater
+dev-app-update.yml

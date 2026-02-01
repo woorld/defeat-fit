@@ -19,4 +19,5 @@ interface Window {
   preset: import('./preload').PresetApi;
   notice: import('./preload').NoticeApi;
   file: import('./preload').FileApi;
+  update: import('./preload').UpdateApi;
 }

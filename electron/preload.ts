@@ -87,6 +87,21 @@ const fileApi = {
     ipcRenderer.send('open-license-folder'),
 } as const;
 
+const updateApi = {
+  isUpdateAvailable: (): Promise<boolean> =>
+    ipcRenderer.invoke('is-update-available'),
+  downloadUpdate: (): Promise<void> =>
+    ipcRenderer.invoke('download-update'),
+  relaunchApp: () =>
+    ipcRenderer.send('relaunch-app'),
+  onReceiveDownloadProgress: (callback: (percent: number) => void) =>
+    ipcRenderer.on('send-download-progress', (_, percent: number) => callback(percent)),
+  onUpdateDownloaded: (callback: () => void) =>
+    ipcRenderer.on('update-downloaded', () => callback()),
+  onErrorWhileUpdate: (callback: (error: Error) => void) =>
+    ipcRenderer.on('error-while-update', (_, error: Error) => callback(error)),
+} as const;
+
 contextBridge.exposeInMainWorld('defeatCount', defeatCountApi);
 contextBridge.exposeInMainWorld('osc', oscApi);
 contextBridge.exposeInMainWorld('menu', menuApi);
@@ -95,6 +110,7 @@ contextBridge.exposeInMainWorld('stats', statsApi);
 contextBridge.exposeInMainWorld('preset', presetApi);
 contextBridge.exposeInMainWorld('notice', noticeApi);
 contextBridge.exposeInMainWorld('file', fileApi);
+contextBridge.exposeInMainWorld('update', updateApi);
 
 export type DefeatCountApi = typeof defeatCountApi;
 export type OscApi = typeof oscApi;
@@ -104,3 +120,4 @@ export type StatsApi = typeof statsApi;
 export type PresetApi = typeof presetApi;
 export type NoticeApi = typeof noticeApi;
 export type FileApi = typeof fileApi;
+export type UpdateApi = typeof updateApi;
