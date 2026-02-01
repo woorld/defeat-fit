@@ -1,8 +1,12 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import BottomNav from './components/BottomNav.vue';
 import { useNoticeStore } from './stores/notice';
+import UpdateDialog from './components/UpdateDialog.vue';
 
 const noticeStore = useNoticeStore();
+
+const isUpdateDialogVisible = ref(false);
 </script>
 
 <template>
@@ -24,6 +28,7 @@ const noticeStore = useNoticeStore();
       close-text="×"
       timer
     />
+    <UpdateDialog v-model="isUpdateDialogVisible" />
   </VApp>
 </template>
 
