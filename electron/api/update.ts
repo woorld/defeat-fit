@@ -18,8 +18,8 @@ const getAutoUpdater = (): AppUpdater => {
   autoUpdater.on('update-downloaded', () => {
     sendMessageIfNotNull('update-downloaded');
   });
-  autoUpdater.on('error', () => {
-    sendMessageIfNotNull('error-while-update');
+  autoUpdater.on('error', (error) => {
+    sendMessageIfNotNull('error-while-update', error);
   });
 
   return autoUpdater;

@@ -1,10 +1,24 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import BaseDialog from './BaseDialog.vue';
+import CopiableCodeArea from './CopiableCodeArea.vue';
 
 const model = defineModel<boolean>({ required: true });
+
 const downloadStatus = ref<'STANDBY' | 'PROGRESS' | 'COMPLETE' | 'ERROR'>('STANDBY');
 const downloadProgressPercent = ref(0);
+const downloadError = ref<Error | null>(null);
+
+const downloadErrorMessage = computed(() =>
+  downloadError.value === null
+    ? 'downloadError is null'
+    : [
+      `name: ${downloadError.value.name}`,
+      `message: ${downloadError.value.message}`,
+      `cause: ${downloadError.value.cause}`,
+      `stack: ${downloadError.value.stack}`,
+    ].join('\n')
+);
 
 const downloadUpdate = () => {
   window.update.onReceiveDownloadProgress((progress: number) => {
@@ -13,7 +27,8 @@ const downloadUpdate = () => {
   window.update.onUpdateDownloaded(() => {
     downloadStatus.value = 'COMPLETE';
   });
-  window.update.onErrorWhileUpdate(() => {
+  window.update.onErrorWhileUpdate((error) => {
+    downloadError.value = error;
     downloadStatus.value = 'ERROR';
   });
 
@@ -23,7 +38,7 @@ const downloadUpdate = () => {
 
 const relaunchApp = () => {
   window.update.relaunchApp();
-}
+};
 
 onMounted(async () => {
   model.value = await window.update.isUpdateAvailable();
@@ -41,16 +56,27 @@ onMounted(async () => {
     </template>
     <template v-else-if="downloadStatus === 'PROGRESS'">
       <p class="mb-4">アップデートに必要なファイルをダウンロードしています…</p>
-      <VProgressLinear v-model="downloadProgressPercent" rounded height="8" />
+      <VProgressLinear
+        v-model="downloadProgressPercent"
+        rounded
+        height="8"
+      />
     </template>
     <template v-else-if="downloadStatus === 'COMPLETE'">
       <p>必要なファイルのダウンロードが完了しました。</p>
-      <p>アップデートを適用するには再起動してください。</p>
+      <p>アップデートを適用するには、アプリを再起動してください。</p>
       <div class="w-100 mt-8 d-flex justify-center align-center ga-4">
         <VBtn variant="outlined" @click="model = false">あとで再起動する</VBtn>
         <VBtn color="green" @click="relaunchApp">再起動</VBtn>
       </div>
     </template>
-    <template v-else-if="downloadStatus === 'ERROR'"></template>
+    <div v-else-if="downloadStatus === 'ERROR'" class="d-flex justify-center align-center flex-column ga-6">
+      <div>
+        <p>エラーが発生しました。</p>
+        <p>問題が解決しない場合は、以下のコードを開発者にご連絡ください。</p>
+      </div>
+      <CopiableCodeArea :code="downloadErrorMessage" />
+      <VBtn variant="outlined" @click="model = false">閉じる</VBtn>
+    </div>
   </BaseDialog>
 </template>

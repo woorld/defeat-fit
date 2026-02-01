@@ -98,8 +98,8 @@ const updateApi = {
     ipcRenderer.on('send-download-progress', (_, percent: number) => callback(percent)),
   onUpdateDownloaded: (callback: () => void) =>
     ipcRenderer.on('update-downloaded', () => callback()),
-  onErrorWhileUpdate: (callback: () => void) =>
-    ipcRenderer.on('error-while-update', () => callback()),
+  onErrorWhileUpdate: (callback: (error: Error) => void) =>
+    ipcRenderer.on('error-while-update', (_, error: Error) => callback(error)),
 } as const;
 
 contextBridge.exposeInMainWorld('defeatCount', defeatCountApi);
