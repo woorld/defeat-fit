@@ -1,10 +1,15 @@
 import type { WebContents } from 'electron';
 import type { Prisma, Menu, PresetMenu } from '../prisma/generated/client';
 
+export type TargetOscMessageSetting = {
+  address: string,
+  enabled: boolean,
+};
+
 export type ColorThemeSetting = 'light' | 'dark' | 'system';
 
 export type Setting = {
-  targetOscMessage: string,
+  targetOscMessage: TargetOscMessageSetting[],
   soundVolume: number,
   breakTimeSecBetweenSets: number,
   showCautionDialog: boolean,

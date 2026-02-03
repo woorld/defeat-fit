@@ -5,7 +5,7 @@ import { ipcMain, type IpcMainInvokeEvent } from 'electron';
 import { oscApi } from './osc';
 import { noticeApi } from './notice';
 
-const store = new Store<Setting>();
+const store = new Store<{ setting: Setting }>();
 const storeKey = 'setting';
 
 let isInitialized = false;
@@ -44,7 +44,7 @@ export const settingApi = {
     return setting[settingName] ?? SETTING_DEFAULT_VALUE[settingName];
   },
 
-  async getAllSetting() {
+  async getAllSetting(): Promise<Setting> {
     return store.get(storeKey, SETTING_DEFAULT_VALUE);
   },
 
