@@ -8,9 +8,9 @@ import ConfirmDialog from '../components/ConfirmDialog.vue';
 import ViewHeading from '../components/ViewHeading.vue';
 import { useOscStore } from '../stores/osc';
 import { onBeforeRouteLeave } from 'vue-router';
-import OscMessageSelectDialog from '../components/OscMessageSelectDialog.vue';
 import ColorThemeSelect from '../components/ColorThemeSelect.vue';
 import { useTheme } from 'vuetify';
+import TargetOscMessageList from '../components/TargetOscMessageList.vue';
 
 const oscStore = useOscStore();
 const theme = useTheme();
@@ -69,20 +69,7 @@ onBeforeRouteLeave(async () => {
     <ViewHeading title="設定" />
     <div class="d-flex flex-column ga-10">
       <ColorThemeSelect v-model="setting.colorTheme" />
-      <div class="d-flex justify-center align-center ga-4">
-        <VTextField
-          label="対象のOSCメッセージ"
-          v-model="setting.targetOscMessage"
-          hide-details
-        />
-        <VBtn>
-          一覧から選ぶ
-          <OscMessageSelectDialog
-            activateByParent
-            @select-message="message => setting.targetOscMessage = message"
-          />
-        </VBtn>
-      </div>
+      <TargetOscMessageList v-model="setting.targetOscMessage" />
       <SettingSlider
         setting-name="soundVolume"
         label="SE音量"

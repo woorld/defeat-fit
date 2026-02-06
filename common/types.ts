@@ -2,6 +2,7 @@ import type { WebContents } from 'electron';
 import type { Prisma, Menu, PresetMenu } from '../prisma/generated/client';
 
 export type TargetOscMessageSetting = {
+  id: number,
   address: string,
   enabled: boolean,
 };
