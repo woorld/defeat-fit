@@ -43,7 +43,7 @@ const menuApi = {
 const settingApi = {
   getSetting: (settingName: keyof Setting) =>
     ipcRenderer.invoke('get-setting', settingName),
-  getAllSetting: () =>
+  getAllSetting: (): Promise<Setting> =>
     ipcRenderer.invoke('get-all-setting'),
   setSetting: <K extends keyof Setting>(settingName: K, value: Setting[K]) =>
     ipcRenderer.invoke('set-setting', settingName, value),
