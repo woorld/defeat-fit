@@ -22,8 +22,8 @@ const isResetDialogVisible = ref(false);
 
 const getSetting = async () => {
   const fetchedSetting = await window.setting.getAllSetting();
-  setting.value = { ...fetchedSetting };
-  prevSetting.value = { ...fetchedSetting };
+  setting.value = structuredClone(fetchedSetting);
+  prevSetting.value = structuredClone(fetchedSetting);
 };
 
 const resetSetting = async () => {
@@ -34,7 +34,7 @@ const resetSetting = async () => {
 
 const saveSetting = async (byNotSavedDialog = false) => {
   if (byNotSavedDialog) {
-    prevSetting.value = setting.value // 旧設定を新しいものに更新し、ダイアログの再表示を防止
+    prevSetting.value = structuredClone(toRaw(setting.value)) // 旧設定を新しいものに更新し、ダイアログの再表示を防止
   }
 
   await window.setting.setAllSetting(toRaw(setting.value));

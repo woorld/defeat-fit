@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useRouter, onBeforeRouteLeave } from 'vue-router';
-import type { Setting } from '../../common/types';
+import { toRaw } from 'vue';
+import type { TargetOscMessageSetting, Setting } from '../../common/types';
 import ConfirmDialog from './ConfirmDialog.vue';
 
 const router = useRouter();
@@ -20,7 +21,25 @@ const emit = defineEmits<{
 const isShow = ref(false);
 
 const isSettingChanged = computed(() => {
-  const settingProps = Object.keys(props.setting) as [keyof Setting]; // setting: Settingなので型アサーションして問題ない
+  const sortById = <T extends TargetOscMessageSetting>(a: T, b: T) => a.id - b.id;
+  const sortedOscSetting = toRaw(props.setting.targetOscMessage).toSorted(sortById);
+  const sortedPrevOscSetting = toRaw(props.prevSetting.targetOscMessage).toSorted(sortById);
+
+  if (sortedOscSetting.length !== sortedPrevOscSetting.length) {
+    return true;
+  }
+
+  if (sortedOscSetting.some((setting, index) => (
+    setting.address !== sortedPrevOscSetting[index].address ||
+    setting.enabled !== sortedPrevOscSetting[index].enabled)
+  )) {
+    return true;
+  }
+
+  const settingProps = (
+    Object.keys(props.setting).filter(key => key !== 'targetOscMessage')
+  ) as (keyof Omit<Setting, 'targetOscMessage'>)[]; // setting: Settingなので型アサーションして問題ない
+
   return settingProps.some(name => props.setting[name] !== props.prevSetting[name]);
 });
 
