@@ -31,10 +31,12 @@ const isSettingChanged = computed(() => {
     return true;
   }
 
-  if (sortedOscSetting.some((setting, index) => (
-    setting.address !== sortedPrevOscSetting[index].address ||
-    setting.enabled !== sortedPrevOscSetting[index].enabled)
-  )) {
+  if (
+    sortedOscSetting.some((setting, index) =>
+      setting.address !== sortedPrevOscSetting[index].address ||
+      setting.enabled !== sortedPrevOscSetting[index].enabled
+    )
+  ) {
     return true;
   }
 

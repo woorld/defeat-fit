@@ -58,7 +58,7 @@ export const oscApi = {
       : (await settingApi.getSetting('targetOscMessage')).filter(m => m.enabled).map(m => m.address);
 
     if (targetAddresses.length <= 0 || oscQueryServer !== null || oscServer !== null || oscStatus === 'PENDING') {
-      // 対象のOSCメッセージが空文字列か、OSCサーバのどちらかが開始中か開始済の場合
+      // 対象のOSCメッセージが空配列か、OSCサーバのどちらかが開始中か開始済の場合
       return;
     }
 
@@ -131,8 +131,8 @@ export const oscApi = {
         oscQueryServer.addMethod(oscQueryPathWhenListenAllMessage, { access: OSCQAccess.WRITEONLY });
       }
       else {
-        for (const message of targetAddresses) {
-          oscQueryServer.addMethod(message, { access: OSCQAccess.WRITEONLY });
+        for (const address of targetAddresses) {
+          oscQueryServer.addMethod(address, { access: OSCQAccess.WRITEONLY });
         }
       }
 

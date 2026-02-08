@@ -5,7 +5,7 @@ import ItemEmptyCard from './ItemEmptyCard.vue';
 
 const addressValidator = [
   (v: string) => v.length >= 1,
-  (v: string) => model.value.filter(s => s.address === v).length <= 1
+  (v: string) => model.value.filter(s => s.address === v).length <= 1,
 ];
 
 const model = defineModel<TargetOscMessageSetting[]>({ required: true });
@@ -16,7 +16,7 @@ const addMessage = (address: string) => {
     address,
     enabled: true,
   });
-}
+};
 </script>
 
 <template>
