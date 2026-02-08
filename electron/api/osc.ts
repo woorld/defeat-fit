@@ -53,12 +53,12 @@ export const oscApi = {
   },
 
   async openServer(listenAllMessage = false) {
-    const targetMessage = listenAllMessage
-      ? '*' // oscServer.on()に渡すイベント名
-      : await settingApi.getSetting('targetOscMessage');
+    const targetAddresses = listenAllMessage
+      ? ['*']
+      : (await settingApi.getSetting('targetOscMessage')).filter(m => m.enabled).map(m => m.address);
 
-    if (!targetMessage || oscQueryServer !== null || oscServer !== null || oscStatus === 'PENDING') {
-      // 対象のOSCメッセージが空文字列か、OSCサーバのどちらかが開始中か開始済の場合
+    if (targetAddresses.length <= 0 || oscQueryServer !== null || oscServer !== null || oscStatus === 'PENDING') {
+      // 対象のOSCメッセージが空配列か、OSCサーバのどちらかが開始中か開始済の場合
       return;
     }
 
@@ -126,17 +126,19 @@ export const oscApi = {
         httpPort: usingPort,
       });
 
-      oscQueryServer.addMethod(
-        listenAllMessage
-          // HACK: 全メッセージを表すパスがないため、VRChatから送信されるパスの1つを登録する
-          ? oscQueryPathWhenListenAllMessage
-          : targetMessage,
-        { access: OSCQAccess.WRITEONLY }
-      );
+      if (listenAllMessage) {
+        // HACK: 全メッセージを表すパスがないため、VRChatから送信されるパスの1つを登録する
+        oscQueryServer.addMethod(oscQueryPathWhenListenAllMessage, { access: OSCQAccess.WRITEONLY });
+      }
+      else {
+        for (const address of targetAddresses) {
+          oscQueryServer.addMethod(address, { access: OSCQAccess.WRITEONLY });
+        }
+      }
 
       await oscQueryServer.start(); // 念のためOSCサーバ開始前に開始させる
 
-      oscServer = useOscServer(targetMessage, {
+      oscServer = useOscServer(targetAddresses, {
         onOpen,
         onClose,
         onListen,

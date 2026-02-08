@@ -13,9 +13,9 @@ const icon = computed(() => oscStore.isListening ? 'mdi-wifi' : 'mdi-wifi-streng
 const isTooltipVisible = computed(() => isTargetOscMessageEmpty.value && !oscStore.isListening);
 
 (async () => {
-  const targetOscMessage = await window.setting.getSetting('targetOscMessage');
+  const targetOscMessage = (await window.setting.getSetting('targetOscMessage')).filter(s => s.enabled);
 
-  if (targetOscMessage === '') {
+  if (targetOscMessage.length <= 0) {
     isTargetOscMessageEmpty.value = true;
   }
 })();

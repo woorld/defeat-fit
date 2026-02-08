@@ -1,17 +1,18 @@
 <script setup lang="ts">
-import { ref, toRaw } from 'vue';
+import { computed, ref, toRaw } from 'vue';
 import { SETTING_DEFAULT_VALUE } from '../../common/constants';
-import type { Setting } from '../../common/types';
+import type { Setting, TargetOscMessageSetting } from '../../common/types';
 import SettingSlider from '../components/SettingSlider.vue';
-import SettingNotSavedDialog from '../components/SettingNotSavedDialog.vue';
 import ConfirmDialog from '../components/ConfirmDialog.vue';
 import ViewHeading from '../components/ViewHeading.vue';
 import { useOscStore } from '../stores/osc';
-import { onBeforeRouteLeave } from 'vue-router';
-import OscMessageSelectDialog from '../components/OscMessageSelectDialog.vue';
+import { onBeforeRouteLeave, useRouter } from 'vue-router';
 import ColorThemeSelect from '../components/ColorThemeSelect.vue';
 import { useTheme } from 'vuetify';
+import TargetOscMessageList from '../components/TargetOscMessageList.vue';
 
+let nextPagePath = '';
+const router = useRouter();
 const oscStore = useOscStore();
 const theme = useTheme();
 const oscStatusWhenEnter = oscStore.oscStatus;
@@ -19,11 +20,37 @@ const oscStatusWhenEnter = oscStore.oscStatus;
 const setting = ref<Setting>({ ...SETTING_DEFAULT_VALUE });
 const prevSetting = ref<Setting>({ ...SETTING_DEFAULT_VALUE });
 const isResetDialogVisible = ref(false);
+const isNotSavedDialogVisible = ref(false);
+
+const isSettingChanged = computed(() => {
+  const sortById = <T extends TargetOscMessageSetting>(a: T, b: T) => a.id - b.id;
+  const sortedOscSetting = toRaw(setting.value.targetOscMessage).toSorted(sortById);
+  const sortedPrevOscSetting = toRaw(prevSetting.value.targetOscMessage).toSorted(sortById);
+
+  if (sortedOscSetting.length !== sortedPrevOscSetting.length) {
+    return true;
+  }
+
+  if (
+    sortedOscSetting.some((setting, index) =>
+      setting.address !== sortedPrevOscSetting[index].address ||
+      setting.enabled !== sortedPrevOscSetting[index].enabled
+    )
+  ) {
+    return true;
+  }
+
+  const settingProps = (
+    Object.keys(setting.value).filter(key => key !== 'targetOscMessage')
+  ) as (keyof Omit<Setting, 'targetOscMessage'>)[]; // setting: Settingなので型アサーションして問題ない
+
+  return settingProps.some(name => setting.value[name] !== prevSetting.value[name]);
+});
 
 const getSetting = async () => {
   const fetchedSetting = await window.setting.getAllSetting();
-  setting.value = { ...fetchedSetting };
-  prevSetting.value = { ...fetchedSetting };
+  setting.value = structuredClone(fetchedSetting);
+  prevSetting.value = structuredClone(fetchedSetting);
 };
 
 const resetSetting = async () => {
@@ -34,7 +61,7 @@ const resetSetting = async () => {
 
 const saveSetting = async (byNotSavedDialog = false) => {
   if (byNotSavedDialog) {
-    prevSetting.value = setting.value // 旧設定を新しいものに更新し、ダイアログの再表示を防止
+    prevSetting.value = structuredClone(toRaw(setting.value)) // 旧設定を新しいものに更新し、ダイアログの再表示を防止
   }
 
   await window.setting.setAllSetting(toRaw(setting.value));
@@ -50,9 +77,29 @@ const saveSetting = async (byNotSavedDialog = false) => {
   getSetting();
 };
 
+const leavePage = async (isSaveSetting: boolean) => {
+  if (isSaveSetting) {
+    await saveSetting(true);
+  }
+  else {
+    setting.value = prevSetting.value;
+  }
+
+  isNotSavedDialogVisible.value = false;
+  router.push(nextPagePath);
+};
+
+// 設定中はOSCサーバーがリッスンするメッセージと設定内容に差が生じる可能性があるため、サーバーを停止
+window.osc.stopListening();
 getSetting();
 
-onBeforeRouteLeave(async () => {
+onBeforeRouteLeave(async (to) => {
+  if (isSettingChanged.value) {
+    isNotSavedDialogVisible.value = true;
+    nextPagePath = to.path;
+    return false;
+  }
+
   if (oscStore.oscStatus === 'OPEN_ALL') {
     await window.osc.stopListening();
   }
@@ -69,20 +116,7 @@ onBeforeRouteLeave(async () => {
     <ViewHeading title="設定" />
     <div class="d-flex flex-column ga-10">
       <ColorThemeSelect v-model="setting.colorTheme" />
-      <div class="d-flex justify-center align-center ga-4">
-        <VTextField
-          label="対象のOSCメッセージ"
-          v-model="setting.targetOscMessage"
-          hide-details
-        />
-        <VBtn>
-          一覧から選ぶ
-          <OscMessageSelectDialog
-            activateByParent
-            @select-message="message => setting.targetOscMessage = message"
-          />
-        </VBtn>
-      </div>
+      <TargetOscMessageList v-model="setting.targetOscMessage" />
       <SettingSlider
         setting-name="soundVolume"
         label="SE音量"
@@ -136,11 +170,12 @@ onBeforeRouteLeave(async () => {
         >設定を保存</VBtn>
       </div>
     </div>
-    <SettingNotSavedDialog
-      :setting="setting"
-      :prevSetting="prevSetting"
-      @save-setting="saveSetting(true)"
-      @discard-changed-setting="setting = prevSetting"
+    <ConfirmDialog
+      v-model="isNotSavedDialogVisible"
+      explanation="変更された設定を保存しますか？"
+      yesBtnColor="green"
+      @click-yes="leavePage(true)"
+      @click-no="leavePage(false)"
     />
   </VContainer>
 </template>

@@ -7,7 +7,7 @@ export type OscPayload = {
   args: unknown[],
 };
 
-export const useOscServer = (targetAddress: string, handlers: {
+export const useOscServer = (targetAddresses: string[], handlers: {
   onOpen: () => void,
   onClose: () => void,
   onListen: (payload: OscPayload) => void,
@@ -19,7 +19,7 @@ export const useOscServer = (targetAddress: string, handlers: {
 
   oscServer.on('open', () => {
     onOpen();
-    console.log('DefeatFit: Start listening: ' + targetAddress);
+    console.log('DefeatFit: Start listening: ' + targetAddresses.join(', '));
   });
 
   oscServer.on('close', () => {
@@ -29,7 +29,7 @@ export const useOscServer = (targetAddress: string, handlers: {
     console.log('DefeatFit: closed');
   });
 
-  oscServer.on(targetAddress, (payload: OscPayload) => {
+  const listenedCallback = (payload: OscPayload) => {
     /* HACK:
     * ネットワーク環境によってはOSCサービスが2つ以上登録され、同じメッセージが同タイミングで複数受信されることがある
     * 1回のOSC送信で多重にカウントされるのを防止するため、前回の受信から10ms以下で同じメッセージが来た場合は無視する
@@ -46,7 +46,11 @@ export const useOscServer = (targetAddress: string, handlers: {
 
     onListen(payload);
     console.log('DefeatFit: listened: ' + `${payload.address},${payload.args.join(',')}`);
-  });
+  };
+
+  for (const address of targetAddresses) {
+    oscServer.on(address, listenedCallback);
+  }
 
   return oscServer;
 };

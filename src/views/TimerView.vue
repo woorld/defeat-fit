@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { useTimer } from '../composables/useTimer';
+import { useTimer } from '../composables/timer';
 
 const route = useRoute();
 
