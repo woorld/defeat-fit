@@ -2,7 +2,6 @@ import Store from 'electron-store';
 import type { Setting, TargetOscMessageSetting } from '../../common/types';
 import { SETTING_DEFAULT_VALUE } from '../../common/constants';
 import { ipcMain, type IpcMainInvokeEvent } from 'electron';
-import { oscApi } from './osc';
 import { noticeApi } from './notice';
 
 const store = new Store<{ setting: Setting }>();
@@ -44,23 +43,23 @@ export const settingApi = {
         value: Setting[K]
       ) => this.setSetting(settingName, value)
     );
-    ipcMain.on('set-all-setting', async (_, setting: Setting) => this.setAllSetting(setting));
+    ipcMain.on('set-all-setting', (_, setting: Setting) => this.setAllSetting(setting));
     ipcMain.on('reset-setting', () => this.resetSetting());
 
     isInitialized = true;
   },
 
-  async getSetting<K extends keyof Setting>(settingName: K): Promise<Setting[K]> {
-    const setting = await this.getAllSetting();
+  getSetting<K extends keyof Setting>(settingName: K): Setting[K] {
+    const setting = this.getAllSetting();
     return setting[settingName] ?? SETTING_DEFAULT_VALUE[settingName];
   },
 
-  async getAllSetting(): Promise<Setting> {
+  getAllSetting(): Setting {
     return store.get(storeKey, SETTING_DEFAULT_VALUE);
   },
 
-  async setSetting<K extends keyof Setting>(settingName: K, value: Setting[K]) {
-    const setting = await this.getAllSetting();
+  setSetting<K extends keyof Setting>(settingName: K, value: Setting[K]) {
+    const setting = this.getAllSetting();
 
     // NOTE: setting[settingName] = isTargetOscMessageSettingKey(settingName) ? ... : ... は無理
     isTargetOscMessageSettingKey(settingName)
@@ -71,18 +70,17 @@ export const settingApi = {
     return this.setAllSetting(setting);
   },
 
-  async setAllSetting(setting: Setting) {
+  setAllSetting(setting: Setting) {
     setting.targetOscMessage = formatTargetOscMessageSetting(setting.targetOscMessage);
-    await store.set(storeKey, setting);
+    store.set(storeKey, setting);
     noticeApi.createNotice({
       text: '設定を保存しました',
       color: 'success',
     });
   },
 
-  async resetSetting() {
-    await oscApi.closeServer(); // 対象OSCメッセージが空文字列になるためオフにする
-    await this.setAllSetting(SETTING_DEFAULT_VALUE);
+  resetSetting() {
+    this.setAllSetting(SETTING_DEFAULT_VALUE);
 
     noticeApi.createNotice({
       text: '設定をリセットしました',
