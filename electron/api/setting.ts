@@ -5,15 +5,11 @@ import { app, ipcMain, type IpcMainInvokeEvent } from 'electron';
 import { noticeApi } from './notice';
 import path from 'node:path';
 import fs from 'node:fs';
+import type { Schema } from '../../common/electron-store-schema';
 
-type SettingStore = { setting: Setting };
-
-let store: Store<SettingStore> | null = null;
+let store: Store<Schema> | null = null;
 const storeKey = 'setting';
 let isInitialized = false;
-
-const isTargetOscMessageSettingKey = (key: keyof Setting): key is 'targetOscMessage' =>
-  key === 'targetOscMessage';
 
 const formatTargetOscMessageSetting = (settings: TargetOscMessageSetting[]): TargetOscMessageSetting[] => {
   const validSettings: TargetOscMessageSetting[] = [];
@@ -58,14 +54,14 @@ const regenerateSettingFile = () => {
   }
 };
 
-const getStore = (): Store<SettingStore> | null => {
+const getStore = (): Store<Schema> | null => {
   try {
-    return new Store<SettingStore>();
+    return new Store<Schema>();
   }
   catch (e) {
     if (e instanceof SyntaxError) {
       regenerateSettingFile();
-      return new Store<SettingStore>();
+      return new Store<Schema>();
     }
     console.log(e);
     return null;
@@ -135,9 +131,9 @@ export const settingApi = {
     const setting = this.getAllSetting();
 
     // NOTE: setting[settingName] = isTargetOscMessageSettingKey(settingName) ? ... : ... は無理
-    isTargetOscMessageSettingKey(settingName)
-      // NOTE: Setting['targetOscMessage']: TargetOscMessageSetting[] なので型アサーションして問題ない
-      ? setting[settingName] = formatTargetOscMessageSetting(value as TargetOscMessageSetting[])
+    settingName === 'targetOscMessage'
+      // NOTE: setting[settingName] だと型エラー、value: Setting['targetOscMessage'] なので型アサーションしてOK
+      ? setting.targetOscMessage = formatTargetOscMessageSetting(value as TargetOscMessageSetting[])
       : setting[settingName] = value;
 
     return this.setAllSetting(setting);
