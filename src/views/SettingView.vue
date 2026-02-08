@@ -87,6 +87,8 @@ const leavePage = async (isSaveSetting: boolean) => {
   router.push(nextPagePath);
 };
 
+// 設定中はOSCサーバーがリッスンするメッセージと設定内容に差が生じる可能性があるため、サーバーを停止
+window.osc.stopListening();
 getSetting();
 
 onBeforeRouteLeave(async (to) => {

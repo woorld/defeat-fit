@@ -44,14 +44,7 @@ export const settingApi = {
         value: Setting[K]
       ) => this.setSetting(settingName, value)
     );
-    ipcMain.on('set-all-setting', async (_, setting: Setting) => {
-      this.setAllSetting(setting);
-      if (oscApi.getOscStatus() === 'OPEN') {
-        // OSCサーバを開きなおさないと変更が反映されない
-        await oscApi.closeServer();
-        return oscApi.openServer();
-      }
-    });
+    ipcMain.on('set-all-setting', async (_, setting: Setting) => this.setAllSetting(setting));
     ipcMain.on('reset-setting', () => this.resetSetting());
 
     isInitialized = true;
