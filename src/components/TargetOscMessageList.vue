@@ -30,7 +30,7 @@ const addMessage = (address: string) => {
         icon-size="24"
         density="compact"
         color="info"
-      >重複や未入力、空白のみの設定は削除されます</VAlert>
+      >チェックボックスで受信のオンオフを切り替えられます。<br>重複・未入力・空白のみの設定は、保存時に削除されます。</VAlert>
       <VList>
         <VListItem
           v-for="setting, index of model"
