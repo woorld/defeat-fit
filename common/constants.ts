@@ -10,6 +10,11 @@ export const SETTING_DEFAULT_VALUE: Setting = {
   colorTheme: 'system',
 } as const;
 
+export const ELECTRON_STORE_DEFAULT_VALUE = {
+  SCHEMA_VERSION: 2,
+  setting: SETTING_DEFAULT_VALUE,
+};
+
 export const ALLOWED_EXTERNAL_LINKS: { [key: string]: string} = {
   githubRepository: 'https://github.com/woorld/defeat-fit',
   developerTwitter: 'https://x.com/world912000',
