@@ -1,11 +1,10 @@
 import Store from 'electron-store';
 import type { Setting, TargetOscMessageSetting } from '../../common/types';
 import { SETTING_DEFAULT_VALUE } from '../../common/constants';
-import { app, ipcMain, type IpcMainInvokeEvent } from 'electron';
+import { ipcMain, type IpcMainInvokeEvent } from 'electron';
 import { noticeApi } from './notice';
-import path from 'node:path';
-import fs from 'node:fs';
-import type { Schema } from '../../common/electron-store-schema';
+import type { Schema } from '../store/schema';
+import { getStore } from '../store/store';
 
 let store: Store<Schema> | null = null;
 const storeKey = 'setting';
@@ -24,48 +23,6 @@ const formatTargetOscMessageSetting = (settings: TargetOscMessageSetting[]): Tar
   }
 
   return validSettings;
-};
-
-const regenerateSettingFile = () => {
-  const userDataPath = app.getPath('userData');
-  const settingPath = path.join(userDataPath, 'config.json');
-  const renamedSettingPath = path.join(userDataPath, `config_bak-${Date.now()}.json`);
-
-  // JSONのパースに失敗した場合、既存の設定ファイルをリネームして新しい設定ファイルを生成する
-  try {
-    if (!fs.existsSync(settingPath)) {
-      throw Error('リネーム対象のファイルが存在しません');
-    }
-
-    fs.renameSync(settingPath, renamedSettingPath);
-
-    noticeApi.createNotice({
-      text: '破損した設定ファイルをバックアップし、設定ファイルを再作成しました',
-      color: 'success',
-    });
-  }
-  catch (e) {
-    console.error(e);
-    store = null;
-    noticeApi.createNotice({
-      text: '既存の設定ファイルのバックアップ・再作成処理に失敗しました',
-      color: 'error',
-    });
-  }
-};
-
-const getStore = (): Store<Schema> | null => {
-  try {
-    return new Store<Schema>();
-  }
-  catch (e) {
-    if (e instanceof SyntaxError) {
-      regenerateSettingFile();
-      return new Store<Schema>();
-    }
-    console.log(e);
-    return null;
-  }
 };
 
 export const settingApi = {
