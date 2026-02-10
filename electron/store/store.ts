@@ -8,7 +8,7 @@ import { ELECTRON_STORE_DEFAULT_VALUE } from '../../common/constants';
 const userDataPath = app.getPath('userData');
 const settingPath = path.join(userDataPath, 'config.json');
 
-const getNewStore = () => {
+const getNewStore = (): Store<Schema> => {
   return new Store({ defaults: ELECTRON_STORE_DEFAULT_VALUE });
 };
 
