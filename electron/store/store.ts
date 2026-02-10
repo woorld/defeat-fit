@@ -6,16 +6,24 @@ import { app } from 'electron';
 import { ELECTRON_STORE_DEFAULT_VALUE } from '../../common/constants';
 
 const userDataPath = app.getPath('userData');
-const settingPath = path.join(userDataPath, 'config.json');
+const settingFileName = 'config';
+const settingPath = path.join(userDataPath, `${settingFileName}.json`);
+const storePathOption = {
+  // NOTE: リネーム処理でパスが食い違うのを防ぐため、明示的に指定する
+  cwd: userDataPath,
+  name: settingFileName,
+} as const;
 
 const getNewStore = (): Store<Schema> => {
-  return new Store({ defaults: ELECTRON_STORE_DEFAULT_VALUE });
+  return new Store({
+    defaults: ELECTRON_STORE_DEFAULT_VALUE,
+    ...storePathOption,
+  });
 };
 
-export const renameInvalidSettingFile = () => {
+const renameSettingFile = () => {
   const renamedSettingPath = path.join(userDataPath, `config_bak-${Date.now()}.json`);
 
-  // JSONのパースに失敗した場合、既存の設定ファイルをリネームして新しい設定ファイルを生成する
   try {
     if (!fs.existsSync(settingPath)) {
       throw Error('リネーム対象のファイルが存在しません');
@@ -28,19 +36,24 @@ export const renameInvalidSettingFile = () => {
   }
 };
 
+export const regenerateSettingFile = (): Store<Schema> => {
+  renameSettingFile();
+  return getNewStore();
+};
+
 export const getStore = (): Store<Schema> | null => {
   if (!fs.existsSync(settingPath)) {
     return getNewStore();
   }
 
   try {
-    return new Store<Schema>();
+    return new Store<Schema>(storePathOption);
   }
   catch (e) {
     if (e instanceof SyntaxError) {
       try {
-        renameInvalidSettingFile();
-        return getNewStore();
+        // JSONのパースに失敗した場合、既存の設定ファイルをリネームして新しい設定ファイルを生成する
+        return regenerateSettingFile();
       }
       catch (e) {
         return null;
