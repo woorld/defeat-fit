@@ -1,23 +1,12 @@
 import type { WebContents } from 'electron';
 import type { Prisma, Menu, PresetMenu } from '../prisma/generated/client';
+import type { Schema } from '../electron/store/schema';
 
-export type TargetOscMessageSetting = {
-  id: number,
-  address: string,
-  enabled: boolean,
-};
+export type Setting = Schema['setting'];
 
-export type ColorThemeSetting = 'light' | 'dark' | 'system';
+export type TargetOscMessageSetting = Setting['targetOscMessage'][number];
 
-export type Setting = {
-  targetOscMessage: TargetOscMessageSetting[],
-  soundVolume: number,
-  breakTimeSecBetweenSets: number,
-  showCautionDialog: boolean,
-  dayBoundaryOffsetHours: number,
-  lastSelectedPresetId: number | null,
-  colorTheme: ColorThemeSetting,
-};
+export type ColorThemeSetting = Setting['colorTheme'];
 
 export type StatsWithMenus = Prisma.StatsGetPayload<{
   include: {

@@ -1,4 +1,5 @@
 import type { Setting } from './types';
+import type { Schema } from '../electron/store/schema';
 
 export const SETTING_DEFAULT_VALUE: Setting = {
   targetOscMessage: [],
@@ -8,6 +9,11 @@ export const SETTING_DEFAULT_VALUE: Setting = {
   dayBoundaryOffsetHours: 0,
   lastSelectedPresetId: null,
   colorTheme: 'system',
+} as const;
+
+export const ELECTRON_STORE_DEFAULT_VALUE: Schema = {
+  SCHEMA_VERSION: 2,
+  setting: SETTING_DEFAULT_VALUE,
 } as const;
 
 export const ALLOWED_EXTERNAL_LINKS: { [key: string]: string} = {

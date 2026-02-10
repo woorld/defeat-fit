@@ -14,6 +14,7 @@ import { noticeApi } from './api/notice';
 import { ALLOWED_EXTERNAL_LINKS } from '../common/constants';
 import { fileApi } from './api/file';
 import { updateApi } from './api/update';
+import { migrateStore } from './store/migrate';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -143,4 +144,7 @@ app.on('activate', () => {
   }
 });
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  migrateStore();
+  createWindow();
+});
