@@ -10,6 +10,7 @@ import { onBeforeRouteLeave, useRouter } from 'vue-router';
 import ColorThemeSelect from '../components/ColorThemeSelect.vue';
 import { useTheme } from 'vuetify';
 import TargetOscMessageList from '../components/TargetOscMessageList.vue';
+import DefeatSoundSelect from '../components/DefeatSoundSelect.vue';
 
 let nextPagePath = '';
 const router = useRouter();
@@ -117,6 +118,7 @@ onBeforeRouteLeave(async (to) => {
     <div class="d-flex flex-column ga-10">
       <ColorThemeSelect v-model="setting.colorTheme" />
       <TargetOscMessageList v-model="setting.targetOscMessage" />
+      <DefeatSoundSelect v-model="setting.defeatSound" />
       <SettingSlider
         setting-name="soundVolume"
         label="SE音量"
