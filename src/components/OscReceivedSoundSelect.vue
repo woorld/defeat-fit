@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import type { OscReceivedSoundSetting } from '../../common/types';
 
-type ColorThemeSelectItem = {
+type OscReceivedSoundSelectItem = {
   title: string,
   value: OscReceivedSoundSetting,
 };
 
-const colorThemeSelectItems: ColorThemeSelectItem[] = [
+const OscReceivedSoundSelectItems: OscReceivedSoundSelectItem[] = [
   { title: 'なし', value: null },
   { title: '剣で斬る', value: 'slash' },
   { title: '何かを引っこ抜く', value: 'pull' },
@@ -25,6 +25,6 @@ const model = defineModel<OscReceivedSoundSetting>({ required: true });
     v-model="model"
     label="対象OSCメッセージ受信時の効果音"
     hide-details
-    :items="colorThemeSelectItems"
+    :items="OscReceivedSoundSelectItems"
   />
 </template>

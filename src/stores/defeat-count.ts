@@ -21,6 +21,8 @@ const oscReceivedSounds: Record<Exclude<OscReceivedSoundSetting, null>, string> 
 
 export const useDefeatCountStore = defineStore('defeat-count', () => {
   const audio = new Audio();
+  let shouldPlayAudio = false;
+
   const count = ref(0);
 
   const decrement = async () => {
@@ -34,14 +36,20 @@ export const useDefeatCountStore = defineStore('defeat-count', () => {
   const updateSoundSetting = async () => {
     const soundVariant = await window.setting.getSetting('oscReceivedSound');
     if (soundVariant == null || !Object.keys(oscReceivedSounds).includes(soundVariant)) {
+      shouldPlayAudio = false;
       return;
     }
 
+    shouldPlayAudio = true;
     audio.src = oscReceivedSounds[soundVariant];
     audio.volume = await window.setting.getSetting('soundVolume');
   }
 
   const playOscReceivedSound = () => {
+    if (!shouldPlayAudio) {
+      return;
+    }
+
     audio.currentTime = 0;
     audio.play();
   };
