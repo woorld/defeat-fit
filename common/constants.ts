@@ -9,6 +9,7 @@ export const SETTING_DEFAULT_VALUE: Setting = {
   dayBoundaryOffsetHours: 0,
   lastSelectedPresetId: null,
   colorTheme: 'system',
+  defeatSound: 'slash',
 } as const;
 
 export const ELECTRON_STORE_DEFAULT_VALUE: Schema = {
