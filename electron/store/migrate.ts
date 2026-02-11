@@ -45,6 +45,6 @@ const migrateV1ToV2 = (store: Store<SchemaV1>) => {
     }];
 
   store.set('setting.targetOscMessage', targetOscMessageSetting);
-  store.set('setting.defeatSound', SETTING_DEFAULT_VALUE.defeatSound);
+  store.set('setting.oscReceivedSound', SETTING_DEFAULT_VALUE.oscReceivedSound);
   store.set('SCHEMA_VERSION', 2);
 };

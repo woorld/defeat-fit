@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { DefeatSoundSetting } from '../../common/types';
+import type { OscReceivedSoundSetting } from '../../common/types';
 
 type ColorThemeSelectItem = {
   title: string,
-  value: DefeatSoundSetting,
+  value: OscReceivedSoundSetting,
 };
 
 const colorThemeSelectItems: ColorThemeSelectItem[] = [
@@ -17,7 +17,7 @@ const colorThemeSelectItems: ColorThemeSelectItem[] = [
   { title: '拳で殴る', value: 'hit' },
 ] as const;
 
-const model = defineModel<DefeatSoundSetting>({ required: true });
+const model = defineModel<OscReceivedSoundSetting>({ required: true });
 </script>
 
 <template>

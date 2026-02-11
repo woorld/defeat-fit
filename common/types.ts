@@ -8,7 +8,7 @@ export type TargetOscMessageSetting = Setting['targetOscMessage'][number];
 
 export type ColorThemeSetting = Setting['colorTheme'];
 
-export type DefeatSoundSetting = Setting['defeatSound'];
+export type OscReceivedSoundSetting = Setting['oscReceivedSound'];
 
 export type StatsWithMenus = Prisma.StatsGetPayload<{
   include: {
