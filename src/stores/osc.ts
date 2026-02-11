@@ -1,8 +1,10 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import type { OscStatus } from '../../common/types';
+import { useDefeatCountStore } from './defeat-count';
 
 export const useOscStore = defineStore('osc', () => {
+  const defeatCountStore = useDefeatCountStore();
   const oscStatus = ref<OscStatus>('CLOSE');
   const listenedMessageList = ref(new Set<string>());
 
@@ -30,6 +32,9 @@ export const useOscStore = defineStore('osc', () => {
 
     window.osc.onChangeOscStatus((newOscStatus) => {
       oscStatus.value = newOscStatus;
+      if (newOscStatus === 'OPEN') {
+        defeatCountStore.updateSoundSetting();
+      }
     });
     window.osc.onListenAnyMessage((listenedMessage) => {
       listenedMessageList.value.add(listenedMessage);

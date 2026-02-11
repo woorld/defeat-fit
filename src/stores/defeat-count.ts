@@ -19,22 +19,8 @@ const oscReceivedSounds: Record<Exclude<OscReceivedSoundSetting, null>, string> 
   'hit': soundHit,
 };
 
-const playOscReceivedSound = async () => {
-  // TODO: 実行するたびに設定とってくるの何とかしたい OSCのストアと連携してOSCのリッスンが開始されたときに設定を取得して保持する？
-  const soundVariant = await window.setting.getSetting('oscReceivedSound');
-
-  if (soundVariant == null || !Object.keys(oscReceivedSounds).includes(soundVariant)) {
-    return;
-  }
-
-  const soundVolume = await window.setting.getSetting('soundVolume');
-  const audio = new Audio(oscReceivedSounds[soundVariant]);
-  audio.volume = soundVolume;
-  // audio.currentTime = 0;
-  audio.play();
-};
-
 export const useDefeatCountStore = defineStore('defeat-count', () => {
+  const audio = new Audio();
   const count = ref(0);
 
   const decrement = async () => {
@@ -45,8 +31,25 @@ export const useDefeatCountStore = defineStore('defeat-count', () => {
     count.value = await window.defeatCount.getDefeatCount();
   };
 
-  (async () => {
+  const updateSoundSetting = async () => {
+    const soundVariant = await window.setting.getSetting('oscReceivedSound');
+    if (soundVariant == null || !Object.keys(oscReceivedSounds).includes(soundVariant)) {
+      return;
+    }
+
+    audio.src = oscReceivedSounds[soundVariant];
+    audio.volume = await window.setting.getSetting('soundVolume');
+  }
+
+  const playOscReceivedSound = () => {
+    audio.currentTime = 0;
+    audio.play();
+  };
+
+  (() => {
     getDefeatCount();
+    updateSoundSetting();
+
     window.defeatCount.onUpdateDefeatCount((newCount) => {
       if (newCount > count.value) {
         playOscReceivedSound();
@@ -58,5 +61,6 @@ export const useDefeatCountStore = defineStore('defeat-count', () => {
   return {
     count,
     decrement,
+    updateSoundSetting,
   };
 });
