@@ -2,6 +2,7 @@ import Store from 'electron-store';
 import type { SchemaV1 } from './schema';
 import type { TargetOscMessageSetting } from '../../common/types';
 import { getStore, regenerateSettingFile } from './store';
+import { SETTING_DEFAULT_VALUE } from '../../common/constants';
 
 export const migrateStore = () => {
   const store = getStore();
@@ -44,5 +45,6 @@ const migrateV1ToV2 = (store: Store<SchemaV1>) => {
     }];
 
   store.set('setting.targetOscMessage', targetOscMessageSetting);
+  store.set('setting.oscReceivedSound', SETTING_DEFAULT_VALUE.oscReceivedSound);
   store.set('SCHEMA_VERSION', 2);
 };

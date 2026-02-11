@@ -22,7 +22,8 @@ export type Schema = Overwrite<
         id: number,
         address: string,
         enabled: boolean,
-      }[]
+      }[],
+      oscReceivedSound: null | 'slash' | 'pull' | 'explode' | 'bell-small' | 'bell-large' | 'shoot' | 'hit',
     }>
   }
 >;

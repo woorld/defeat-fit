@@ -51,7 +51,9 @@ export const settingApi = {
 
   getSetting<K extends keyof Setting>(settingName: K): Setting[K] {
     const setting = this.getAllSetting();
-    return setting[settingName] ?? SETTING_DEFAULT_VALUE[settingName];
+    return setting[settingName] !== undefined
+      ? setting[settingName]
+      : SETTING_DEFAULT_VALUE[settingName];
   },
 
   getAllSetting(): Setting {
