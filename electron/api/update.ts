@@ -1,5 +1,5 @@
 import { app, ipcMain } from 'electron';
-import { SendMessage } from '@common/types';
+import type { SendMessage } from '@common/types';
 import electronUpdater, { type AppUpdater } from 'electron-updater';
 import { oscApi } from '@electron/api/osc';
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { PresetWithMenus } from '@common/types';
+import type { PresetWithMenus } from '@common/types';
 import type { Menu } from '@prisma-generated-client';
 import PresetMenuEditor from '@src/components/PresetMenuEditor.vue';
 import ConfirmDialog from '@src/components/ConfirmDialog.vue';

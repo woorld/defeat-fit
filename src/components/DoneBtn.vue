@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import ConfirmDialog from '@src/components/ConfirmDialog.vue';
 import { useDefeatCountStore } from '@src/stores/defeat-count';
-import { MenuIdWithMultiplier } from '@common/types';
+import type { MenuIdWithMultiplier } from '@common/types';
 
 const router = useRouter();
 const defeatCount = useDefeatCountStore();

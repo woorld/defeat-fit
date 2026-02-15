@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { StatsWithMenus, TotalStats } from '@common/types';
+import type { StatsWithMenus, TotalStats } from '@common/types';
 import { menuUnitMap } from '@common/util';
 import ConfirmDialog from '@src/components/ConfirmDialog.vue';
 

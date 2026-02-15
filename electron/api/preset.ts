@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron';
-import { MenuIdWithMultiplier } from '@common/types';
+import type { MenuIdWithMultiplier } from '@common/types';
 import { Preset, PrismaClient } from '@prisma-generated-client';
 import { noticeApi } from '@electron/api/notice';
 
