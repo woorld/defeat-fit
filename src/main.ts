@@ -7,7 +7,7 @@ import * as directives from 'vuetify/directives';
 import '@mdi/font/css/materialdesignicons.css';
 import { createMemoryHistory, createRouter } from 'vue-router';
 import HomeView from '@src/views/home/HomeView.vue';
-import TimerView from '@src/views/TimerView.vue';
+import TimerView from '@src/views/timer/TimerView.vue';
 import MenuView from '@src/views/MenuView.vue';
 import MenuEditView from '@src/views/MenuEditView.vue';
 import MenuPresetView from '@src/views/MenuPresetView.vue';
