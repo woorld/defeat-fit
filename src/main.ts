@@ -11,7 +11,7 @@ import TimerView from '@src/views/timer/TimerView.vue';
 import MenuView from '@src/views/MenuView.vue';
 import MenuEditView from '@src/views/MenuEditView.vue';
 import MenuPresetView from '@src/views/MenuPresetView.vue';
-import StatsView from '@src/views/StatsView.vue';
+import StatsView from '@src/views/stats/StatsView.vue';
 import SettingView from '@src/views/SettingView.vue';
 import AboutView from '@src/views/about/AboutView.vue';
 import { createPinia } from 'pinia';
