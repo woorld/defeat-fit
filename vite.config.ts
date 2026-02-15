@@ -3,6 +3,7 @@ import path from 'node:path';
 import electron from 'vite-plugin-electron/simple';
 import vue from '@vitejs/plugin-vue';
 import license from 'rollup-plugin-license';
+import { fileURLToPath, URL } from 'node:url';
 
 const outDirRoot = 'dist';
 const outDirMain = path.join(outDirRoot, 'main');
@@ -40,6 +41,12 @@ const electronViteConfig = {
     outDir: outDirMain,
     target: 'ESNext',
   },
+  resolve: {
+    alias: {
+      '@electron': fileURLToPath(new URL('./electron', import.meta.url)),
+      '@common': fileURLToPath(new URL('./common', import.meta.url)),
+    },
+  },
 };
 
 export default defineConfig({
@@ -67,5 +74,11 @@ export default defineConfig({
   define: {
     // NOTE: JSON.stringifyは"を付与するため
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
+  },
+  resolve: {
+    alias: {
+      '@src': fileURLToPath(new URL('./src', import.meta.url)),
+      '@common': fileURLToPath(new URL('./common', import.meta.url)),
+    },
   },
 });
