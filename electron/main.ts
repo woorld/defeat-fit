@@ -2,19 +2,19 @@ import { app, BrowserWindow, shell } from 'electron';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import fs from 'node:fs';
-import { defeatCountApi } from './api/defeat-count';
-import { oscApi } from './api/osc';
-import { menuApi } from './api/menu';
-import { settingApi } from './api/setting';
-import { statsApi } from './api/stats';
-import { presetApi } from './api/preset';
+import { defeatCountApi } from '@electron/api/defeat-count';
+import { oscApi } from '@electron/api/osc';
+import { menuApi } from '@electron/api/menu';
+import { settingApi } from '@electron/api/setting';
+import { statsApi } from '@electron/api/stats';
+import { presetApi } from '@electron/api/preset';
 import 'dotenv/config'; // エントリポイントでのみロードすればOK
-import type { SendMessage } from '../common/types';
-import { noticeApi } from './api/notice';
-import { ALLOWED_EXTERNAL_LINKS } from '../common/constants';
-import { fileApi } from './api/file';
-import { updateApi } from './api/update';
-import { migrateStore } from './store/migrate';
+import type { SendMessage } from '@common/types';
+import { noticeApi } from '@electron/api/notice';
+import { ALLOWED_EXTERNAL_LINKS } from '@common/constants';
+import { fileApi } from '@electron/api/file';
+import { updateApi } from '@electron/api/update';
+import { migrateStore } from '@electron/store/migrate';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
