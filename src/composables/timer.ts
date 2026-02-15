@@ -1,8 +1,8 @@
 import { ref, computed, onUnmounted } from 'vue';
 import type { Ref } from 'vue';
-import timerStartCountdownSound from '@src/assets/sound/timer/timer-start-countdown.mp3';
-import timerStartSound from '@src/assets/sound/timer/timer-start.mp3';
-import timerEndSound from '@src/assets/sound/timer/timer-end.mp3';
+import timerStartCountdownSound from '@src/assets/sound/timer/start-countdown.mp3';
+import timerStartSound from '@src/assets/sound/timer/start.mp3';
+import timerEndSound from '@src/assets/sound/timer/end.mp3';
 import { SETTING_DEFAULT_VALUE } from '@common/constants';
 import type { Setting } from '@common/types';
 
