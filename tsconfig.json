@@ -24,7 +24,8 @@
     "paths": {
       "@src/*": [ "./src/*" ],
       "@electron/*": [ "./electron/*" ],
-      "@common/*": [ "./common/*" ]
+      "@common/*": [ "./common/*" ],
+      "@prisma-generated-client": [ "./prisma/generated/client.ts" ]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "electron"],

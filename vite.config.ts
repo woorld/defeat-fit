@@ -33,6 +33,13 @@ const getLicenseConfig = (filename: string) => license({
   },
 });
 
+const getAliasPath = (path: string) => fileURLToPath(new URL(path, import.meta.url));
+
+const commonAliases = {
+  '@common': getAliasPath('./common'),
+  '@prisma-generated-client': getAliasPath('./prisma/generated/client.ts'),
+};
+
 const electronViteConfig = {
   plugins: [
     getLicenseConfig('license.main'),
@@ -43,8 +50,8 @@ const electronViteConfig = {
   },
   resolve: {
     alias: {
-      '@electron': fileURLToPath(new URL('./electron', import.meta.url)),
-      '@common': fileURLToPath(new URL('./common', import.meta.url)),
+      '@electron': getAliasPath('./electron'),
+      ...commonAliases,
     },
   },
 };
@@ -77,8 +84,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@src': fileURLToPath(new URL('./src', import.meta.url)),
-      '@common': fileURLToPath(new URL('./common', import.meta.url)),
+      '@src': getAliasPath('./src'),
+      ...commonAliases,
     },
   },
 });
