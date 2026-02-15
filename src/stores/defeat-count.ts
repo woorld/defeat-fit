@@ -1,13 +1,13 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import type { OscReceivedSoundSetting } from '../../common/types';
-import soundSlash from '../assets/sound/defeat/slash.mp3';
-import soundPull from '../assets/sound/defeat/pull.mp3';
-import soundExplode from '../assets/sound/defeat/explode.mp3';
-import soundBellSmall from '../assets/sound/defeat/bell-small.mp3';
-import soundBellLarge from '../assets/sound/defeat/bell-large.mp3';
-import soundShoot from '../assets/sound/defeat/shoot.mp3';
-import soundHit from '../assets/sound/defeat/hit.mp3';
+import type { OscReceivedSoundSetting } from '@common/types';
+import soundSlash from '@src/assets/sound/defeat/slash.mp3';
+import soundPull from '@src/assets/sound/defeat/pull.mp3';
+import soundExplode from '@src/assets/sound/defeat/explode.mp3';
+import soundBellSmall from '@src/assets/sound/defeat/bell-small.mp3';
+import soundBellLarge from '@src/assets/sound/defeat/bell-large.mp3';
+import soundShoot from '@src/assets/sound/defeat/shoot.mp3';
+import soundHit from '@src/assets/sound/defeat/hit.mp3';
 
 const oscReceivedSounds: Record<Exclude<OscReceivedSoundSetting, null>, string> = {
   'slash': soundSlash,

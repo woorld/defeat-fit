@@ -18,7 +18,15 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    /* aliases */
+    "paths": {
+      "@src/*": [ "./src/*" ],
+      "@electron/*": [ "./electron/*" ],
+      "@common/*": [ "./common/*" ],
+      "@prisma-generated-client": [ "./prisma/generated/client.ts" ]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "electron"],
   "references": [{ "path": "./tsconfig.node.json" }]

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import BaseDialog from './BaseDialog.vue';
-import type { Prisma } from '../../prisma/generated/client';
-import { useDefeatCountStore } from '../stores/defeat-count';
-import { menuUnitMap } from '../../common/util';
+import BaseDialog from '@src/components/BaseDialog.vue';
+import type { Prisma } from '@prisma-generated-client';
+import { useDefeatCountStore } from '@src/stores/defeat-count';
+import { menuUnitMap } from '@common/util';
 
 const defeatCount = useDefeatCountStore();
 

@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import BaseDialog from './BaseDialog.vue';
-import { useOscStore } from '../stores/osc';
-import { VList } from 'vuetify/components';
+import BaseDialog from '@src/components/BaseDialog.vue';
+import { useOscStore } from '@src/stores/osc';
 
 const oscStore = useOscStore();
 

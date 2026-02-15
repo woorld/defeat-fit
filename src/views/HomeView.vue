@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { useDefeatCountStore } from '../stores/defeat-count';
-import DecrementBtn from '../components/DecrementBtn.vue';
-import OscControlBtn from '../components/OscControlBtn.vue';
-import DoMenuBtn from '../components/DoMenuBtn.vue';
-import DoneBtn from '../components/DoneBtn.vue';
-import CautionDialog from '../components/CautionDialog.vue';
-import { menuUnitMap } from '../../common/util';
-import { MenuIdWithMultiplier, PresetWithMenus } from '../../common/types';
-import ItemEmptyCardWithNav from '../components/ItemEmptyCardWithNav.vue';
+import { useDefeatCountStore } from '@src/stores/defeat-count';
+import DecrementBtn from '@src/components/DecrementBtn.vue';
+import OscControlBtn from '@src/components/OscControlBtn.vue';
+import DoMenuBtn from '@src/components/DoMenuBtn.vue';
+import DoneBtn from '@src/components/DoneBtn.vue';
+import CautionDialog from '@src/components/CautionDialog.vue';
+import { menuUnitMap } from '@common/util';
+import type { MenuIdWithMultiplier, PresetWithMenus } from '@common/types';
+import ItemEmptyCardWithNav from '@src/components/ItemEmptyCardWithNav.vue';
 
 const defeatCount = useDefeatCountStore();
 

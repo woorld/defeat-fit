@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Setting } from '../../common/types';
+import type { Setting } from '@common/types';
 
 const props = defineProps<{
   settingName: keyof Setting,

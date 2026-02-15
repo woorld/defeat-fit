@@ -1,4 +1,4 @@
-import type { Notice, SendMessage } from "../../common/types";
+import type { Notice, SendMessage } from '@common/types';
 
 let isInitialized = false;
 let sendMessage: SendMessage | null = null;

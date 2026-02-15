@@ -1,7 +1,7 @@
 import { ipcRenderer, contextBridge } from 'electron';
-import type { License, MenuIdWithMultiplier, Notice, OscStatus, PresetWithMenus, Setting, StatsWithMenus, TotalStats } from '../common/types';
-import type { Menu, Stats, Preset } from '../prisma/generated/client';
-import type { UpdatePreset } from './api/preset';
+import type { License, MenuIdWithMultiplier, Notice, OscStatus, PresetWithMenus, Setting, StatsWithMenus, TotalStats } from '@common/types';
+import type { Menu, Stats, Preset } from '@prisma-generated-client';
+import type { UpdatePreset } from '@electron/api/preset';
 
 const defeatCountApi = {
   onUpdateDefeatCount: (callback: (defeatCount: number) => void) =>

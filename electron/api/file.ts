@@ -1,8 +1,8 @@
 import { ipcMain, shell } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';
-import type { License } from '../../common/types';
-import { noticeApi } from './notice';
+import type { License } from '@common/types';
+import { noticeApi } from '@electron/api/notice';
 
 let isInitialized = false;
 let isDev = false;

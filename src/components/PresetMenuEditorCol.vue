@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { menuUnitMap } from '../../common/util';
-import { Menu, MenuUnit } from '../../prisma/generated/client';
+import { menuUnitMap } from '@common/util';
+import { Menu, MenuUnit } from '@prisma-generated-client';
 import Draggable from 'vuedraggable';
 import type { SortableEvent } from 'sortablejs';
 

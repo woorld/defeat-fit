@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { StatsWithMenus, TotalStats } from '../../common/types';
-import { menuUnitMap } from '../../common/util';
-import ConfirmDialog from './ConfirmDialog.vue';
+import type { StatsWithMenus, TotalStats } from '@common/types';
+import { menuUnitMap } from '@common/util';
+import ConfirmDialog from '@src/components/ConfirmDialog.vue';
 
 // NOTE: Computedだとユーザ定義型ガードとして使えない
 const isStatsWithMenus = (stats: StatsWithMenus | TotalStats): stats is StatsWithMenus =>

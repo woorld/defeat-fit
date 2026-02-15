@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { Menu } from '../../prisma/generated/client';
+import type { Menu } from '@prisma-generated-client';
 import type { SortableEvent } from 'sortablejs';
-import PresetMenuEditorCol from './PresetMenuEditorCol.vue';
+import PresetMenuEditorCol from '@src/components/PresetMenuEditorCol.vue';
 
 const menuList = defineModel<Menu[]>('menuList', { required: true });
 const menuListInPreset = defineModel<Menu[]>('menuListInPreset', { required: true });

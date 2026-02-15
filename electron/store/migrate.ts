@@ -1,8 +1,8 @@
 import Store from 'electron-store';
-import type { SchemaV1 } from './schema';
-import type { TargetOscMessageSetting } from '../../common/types';
-import { getStore, regenerateSettingFile } from './store';
-import { SETTING_DEFAULT_VALUE } from '../../common/constants';
+import type { SchemaV1 } from '@electron/store/schema';
+import type { TargetOscMessageSetting } from '@common/types';
+import { getStore, regenerateSettingFile } from '@electron/store/store';
+import { SETTING_DEFAULT_VALUE } from '@common/constants';
 
 export const migrateStore = () => {
   const store = getStore();

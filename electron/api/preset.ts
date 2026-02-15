@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron';
-import { MenuIdWithMultiplier } from '../../common/types';
-import { Preset, PrismaClient } from '../../prisma/generated/client';
-import { noticeApi } from './notice';
+import type { MenuIdWithMultiplier } from '@common/types';
+import { Preset, PrismaClient } from '@prisma-generated-client';
+import { noticeApi } from '@electron/api/notice';
 
 const prisma = new PrismaClient();
 

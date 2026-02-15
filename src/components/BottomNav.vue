@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
-import { useOscStore } from '../stores/osc';
+import { useOscStore } from '@src/stores/osc';
 
 const route = useRoute();
 const oscStore = useOscStore();

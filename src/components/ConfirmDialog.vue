@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BaseDialog from './BaseDialog.vue';
+import BaseDialog from '@src/components/BaseDialog.vue';
 
 const props = defineProps<{
   title?: string,

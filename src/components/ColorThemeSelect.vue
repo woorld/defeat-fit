@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ColorThemeSetting } from '../../common/types';
+import type { ColorThemeSetting } from '@common/types';
 
 type ColorThemeSelectItem = {
   title: string,

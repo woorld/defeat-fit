@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import MenuTableRow from '../components/MenuTableRow.vue';
-import type { Menu } from '../../prisma/generated/client';
-import ItemEmptyCard from '../components/ItemEmptyCard.vue';
+import MenuTableRow from '@src/components/MenuTableRow.vue';
+import type { Menu } from '@prisma-generated-client';
+import ItemEmptyCard from '@src/components/ItemEmptyCard.vue';
 
 const menuList = ref<Menu[]>([]);
 const editingMenuId = ref<null | number>(null); // 0の場合は新規追加

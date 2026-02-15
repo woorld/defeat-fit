@@ -1,10 +1,10 @@
 import { ref, computed, onUnmounted } from 'vue';
 import type { Ref } from 'vue';
-import timerStartCountdownSound from '../assets/timer-start-countdown.mp3';
-import timerStartSound from '../assets/timer-start.mp3';
-import timerEndSound from '../assets/timer-end.mp3';
-import { SETTING_DEFAULT_VALUE } from '../../common/constants';
-import type { Setting } from '../../common/types';
+import timerStartCountdownSound from '@src/assets/timer-start-countdown.mp3';
+import timerStartSound from '@src/assets/timer-start.mp3';
+import timerEndSound from '@src/assets/timer-end.mp3';
+import { SETTING_DEFAULT_VALUE } from '@common/constants';
+import type { Setting } from '@common/types';
 
 export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>) {
   let recentTimerSeconds = 0;
