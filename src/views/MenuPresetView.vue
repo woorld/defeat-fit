@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { PresetWithMenus } from '../../common/types';
-import type { Menu } from '../../prisma/generated/client';
-import PresetMenuEditor from '../components/PresetMenuEditor.vue';
-import ConfirmDialog from '../components/ConfirmDialog.vue';
-import ItemEmptyCard from '../components/ItemEmptyCard.vue';
-import ItemEmptyCardWithNav from '../components/ItemEmptyCardWithNav.vue';
+import { PresetWithMenus } from '@common/types';
+import type { Menu } from '@prisma-generated-client';
+import PresetMenuEditor from '@src/components/PresetMenuEditor.vue';
+import ConfirmDialog from '@src/components/ConfirmDialog.vue';
+import ItemEmptyCard from '@src/components/ItemEmptyCard.vue';
+import ItemEmptyCardWithNav from '@src/components/ItemEmptyCardWithNav.vue';
 
 const presetName = ref('');
 const presetList = ref<PresetWithMenus[]>([]);

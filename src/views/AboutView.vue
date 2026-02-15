@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import type { License } from '../../common/types';
-import AppLogo from '../components/logo/AppLogo.vue';
-import WooooorldLogo from '../components/logo/WooooorldLogo.vue';
-import LinkWithIcon from '../components/LinkWithIcon.vue';
-import ViewHeading from '../components/ViewHeading.vue';
+import type { License } from '@common/types';
+import AppLogo from '@src/components/logo/AppLogo.vue';
+import WooooorldLogo from '@src/components/logo/WooooorldLogo.vue';
+import LinkWithIcon from '@src/components/LinkWithIcon.vue';
+import ViewHeading from '@src/components/ViewHeading.vue';
 import { useTheme } from 'vuetify';
 
 const theme = useTheme();
