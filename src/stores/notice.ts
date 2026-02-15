@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { Notice } from '../../common/types';
+import { Notice } from '@common/types';
 import { ref } from 'vue';
 
 export const useNoticeStore = defineStore('notice', () => {
