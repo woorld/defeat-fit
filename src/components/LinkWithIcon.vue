@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ALLOWED_EXTERNAL_LINKS } from '../../common/constants';
+import { ALLOWED_EXTERNAL_LINKS } from '@common/constants';
+
 const props = defineProps<{
   linkType: string, // keyof typeof ALLOWED~ は不可
   linkText: string,

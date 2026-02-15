@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { useOscStore } from '../stores/osc';
-import { VBtn } from 'vuetify/components';
+import { useOscStore } from '@src/stores/osc';
 
 const oscStore = useOscStore();
 

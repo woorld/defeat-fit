@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { OscReceivedSoundSetting } from '../../common/types';
+import type { OscReceivedSoundSetting } from '@common/types';
 
 type OscReceivedSoundSelectItem = {
   title: string,
