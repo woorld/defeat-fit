@@ -1,6 +1,6 @@
-import { ipcMain } from "electron";
-import type { SendMessage } from "../../common/types";
-import { noticeApi } from "./notice";
+import { ipcMain } from 'electron';
+import type { SendMessage } from '@common/types';
+import { noticeApi } from '@electron/api/notice';
 
 let defeatCount = 0;
 let isInitialized = false;

@@ -1,12 +1,12 @@
 import type OSC from 'osc-js';
-import { settingApi } from './setting';
+import { settingApi } from '@electron/api/setting';
 import { OSCQAccess, OSCQueryDiscovery, OSCQueryServer } from 'oscquery';
 import { setTimeout } from 'node:timers/promises';
-import type { OscStatus, SendMessage } from '../../common/types';
+import type { OscStatus, SendMessage } from '@common/types';
 import { ipcMain } from 'electron';
-import { defeatCountApi } from './defeat-count';
-import { noticeApi } from './notice';
-import { useOscServer, type OscPayload } from '../osc/osc-server';
+import { defeatCountApi } from '@electron/api/defeat-count';
+import { noticeApi } from '@electron/api/notice';
+import { useOscServer, type OscPayload } from '@electron/osc/osc-server';
 
 const basePort = 11337;
 const minDiscoveryWaitMs = 3000;

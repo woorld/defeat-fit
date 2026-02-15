@@ -1,7 +1,7 @@
 import { app, ipcMain } from 'electron';
-import { SendMessage } from '../../common/types';
+import { SendMessage } from '@common/types';
 import electronUpdater, { type AppUpdater } from 'electron-updater';
-import { oscApi } from './osc';
+import { oscApi } from '@electron/api/osc';
 
 // NOTE: https://www.electron.build/auto-update#quick-setup-guide に沿った実装
 const getAutoUpdater = (): AppUpdater => {
