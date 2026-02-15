@@ -1,6 +1,6 @@
 import type { WebContents } from 'electron';
-import type { Prisma, Menu, PresetMenu } from '../prisma/generated/client';
-import type { Schema } from '../electron/store/schema';
+import type { Prisma, Menu, PresetMenu } from '@prisma-generated-client';
+import type { Schema } from '@electron/store/schema';
 
 export type Setting = Schema['setting'];
 

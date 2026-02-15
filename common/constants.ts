@@ -1,5 +1,5 @@
-import type { Setting } from './types';
-import type { Schema } from '../electron/store/schema';
+import type { Setting } from '@common/types';
+import type { Schema } from '@electron/store/schema';
 
 export const SETTING_DEFAULT_VALUE: Setting = {
   targetOscMessage: [],
