@@ -29,9 +29,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 process.env.APP_ROOT = path.join(__dirname, '../..');
 
 // 🚧 Use ['ENV_NAME'] avoid vite:define plugin - Vite@2.x
-export const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL'];
-export const MAIN_DIST = path.join(process.env.APP_ROOT, 'dist', 'main');
-export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist', 'renderer');
+const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL'];
+const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist', 'renderer');
 
 process.env.VITE_PUBLIC = app.isPackaged
   ? RENDERER_DIST
