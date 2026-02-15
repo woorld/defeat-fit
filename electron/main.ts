@@ -33,12 +33,12 @@ export const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL'];
 export const MAIN_DIST = path.join(process.env.APP_ROOT, 'dist', 'main');
 export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist', 'renderer');
 
-process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
-  ? path.join(process.env.APP_ROOT, 'public')
-  : RENDERER_DIST;
+process.env.VITE_PUBLIC = app.isPackaged
+  ? RENDERER_DIST
+  : path.join(process.env.APP_ROOT, 'public');
 
 // DB設定
-if (!VITE_DEV_SERVER_URL) {
+if (app.isPackaged) {
   const dbName = 'app.db'; // TODO: できれば共通化
   const dbPath = path.join(app.getPath('userData'), dbName);
 
@@ -59,13 +59,13 @@ let win: BrowserWindow | null;
 
 function createWindow() {
   win = new BrowserWindow({
-    width: VITE_DEV_SERVER_URL ? 1200 : undefined, // 開発者ツールでコンテンツが潰れないよう横幅を広げる
+    width: app.isPackaged ? undefined : 1200, // 開発者ツールでコンテンツが潰れないよう横幅を広げる
     minWidth: 800,
     minHeight: 600,
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
-      devTools: !!VITE_DEV_SERVER_URL,
+      devTools: !app.isPackaged,
     },
     autoHideMenuBar: true,
     show: false, // ページがロードされるまではウィンドウを非表示にする
@@ -82,10 +82,10 @@ function createWindow() {
   statsApi.initialize();
   presetApi.initialize();
   noticeApi.initialize({ sendMessage });
-  fileApi.initialize({ isDev: Boolean(VITE_DEV_SERVER_URL) });
+  fileApi.initialize();
   updateApi.initialize({ sendMessage })
 
-  if (VITE_DEV_SERVER_URL) {
+  if (!app.isPackaged) {
     win.webContents.openDevTools();
   }
 
@@ -96,8 +96,8 @@ function createWindow() {
   // 各種ショートカットの無効化
   win.webContents.on('before-input-event', (event, input) => {
     const disabledShortcuts = [
-      !VITE_DEV_SERVER_URL && input.control && input.code === 'KeyR',
-      !VITE_DEV_SERVER_URL && input.shift && input.control && input.code === 'KeyI',
+      app.isPackaged && input.control && input.code === 'KeyR',
+      app.isPackaged && input.shift && input.control && input.code === 'KeyI',
       input.code === 'F5',
       input.code === 'F12',
       input.alt,
@@ -117,7 +117,8 @@ function createWindow() {
 
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL);
-  } else {
+  }
+  else {
     // win.loadFile('dist/index.html')
     win.loadFile(path.join(RENDERER_DIST, 'index.html'));
   }
