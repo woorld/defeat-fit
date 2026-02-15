@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue';
 import type { PresetWithMenus } from '@common/types';
 import type { Menu } from '@prisma-generated-client';
-import PresetMenuEditor from '@src/components/PresetMenuEditor.vue';
+import PresetMenuEditor from './components/PresetMenuEditor.vue';
 import ConfirmDialog from '@src/components/ConfirmDialog.vue';
 import ItemEmptyCard from '@src/components/ItemEmptyCard.vue';
 import ItemEmptyCardWithNav from '@src/components/ItemEmptyCardWithNav.vue';
