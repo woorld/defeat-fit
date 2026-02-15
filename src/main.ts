@@ -13,7 +13,7 @@ import MenuEditView from '@src/views/MenuEditView.vue';
 import MenuPresetView from '@src/views/MenuPresetView.vue';
 import StatsView from '@src/views/StatsView.vue';
 import SettingView from '@src/views/SettingView.vue';
-import AboutView from '@src/views/AboutView.vue';
+import AboutView from '@src/views/about/AboutView.vue';
 import { createPinia } from 'pinia';
 
 const colorTheme = await window.setting.getSetting('colorTheme');
