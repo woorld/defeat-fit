@@ -6,7 +6,7 @@ import * as components from 'vuetify/components';
 import * as directives from 'vuetify/directives';
 import '@mdi/font/css/materialdesignicons.css';
 import { createMemoryHistory, createRouter } from 'vue-router';
-import HomeView from '@src/views/HomeView.vue';
+import HomeView from '@src/views/home/HomeView.vue';
 import TimerView from '@src/views/TimerView.vue';
 import MenuView from '@src/views/MenuView.vue';
 import MenuEditView from '@src/views/MenuEditView.vue';
