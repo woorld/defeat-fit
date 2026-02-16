@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import type { License } from '@common/types';
-import AppLogo from '@src/components/logo/AppLogo.vue';
-import WooooorldLogo from '@src/components/logo/WooooorldLogo.vue';
+import AppLogo from './components/AppLogo.vue';
+import WooooorldLogo from './components/WooooorldLogo.vue';
 import LinkWithIcon from './components/LinkWithIcon.vue';
 import ViewHeading from '@src/components/common/ViewHeading.vue';
 import { useTheme } from 'vuetify';
