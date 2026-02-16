@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import BaseDialog from '@src/components/BaseDialog.vue';
+import BaseDialog from '@src/components/common/BaseDialog.vue';
 import CopiableCodeArea from '@src/components/CopiableCodeArea.vue';
 
 const model = defineModel<boolean>({ required: true });

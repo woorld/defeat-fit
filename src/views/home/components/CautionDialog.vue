@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import BaseDialog from '@src/components/BaseDialog.vue';
+import BaseDialog from '@src/components/common/BaseDialog.vue';
 
 const isVisible = ref(false);
 const dontShowAgain = ref(false);

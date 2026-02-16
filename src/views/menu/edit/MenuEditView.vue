@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import MenuTableRow from './components/MenuTableRow.vue';
 import type { Menu } from '@prisma-generated-client';
-import ItemEmptyCard from '@src/components/ItemEmptyCard.vue';
+import ItemEmptyCard from '@src/components/common/ItemEmptyCard.vue';
 
 const menuList = ref<Menu[]>([]);
 const editingMenuId = ref<null | number>(null); // 0の場合は新規追加

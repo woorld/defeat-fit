@@ -8,7 +8,7 @@ import DoneBtn from './components/DoneBtn.vue';
 import CautionDialog from './components/CautionDialog.vue';
 import { menuUnitMap } from '@common/util';
 import type { MenuIdWithMultiplier, PresetWithMenus } from '@common/types';
-import ItemEmptyCardWithNav from '@src/components/ItemEmptyCardWithNav.vue';
+import ItemEmptyCardWithNav from '@src/components/common/ItemEmptyCardWithNav.vue';
 
 const defeatCount = useDefeatCountStore();
 

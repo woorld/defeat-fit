@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import ConfirmDialog from '@src/components/ConfirmDialog.vue';
+import ConfirmDialog from '@src/components/common/ConfirmDialog.vue';
 import { useDefeatCountStore } from '@src/stores/defeat-count';
 import type { MenuIdWithMultiplier } from '@common/types';
 

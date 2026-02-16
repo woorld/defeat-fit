@@ -4,7 +4,7 @@ import type { License } from '@common/types';
 import AppLogo from '@src/components/logo/AppLogo.vue';
 import WooooorldLogo from '@src/components/logo/WooooorldLogo.vue';
 import LinkWithIcon from './components/LinkWithIcon.vue';
-import ViewHeading from '@src/components/ViewHeading.vue';
+import ViewHeading from '@src/components/common/ViewHeading.vue';
 import { useTheme } from 'vuetify';
 
 const theme = useTheme();

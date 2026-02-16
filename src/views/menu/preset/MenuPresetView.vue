@@ -3,9 +3,9 @@ import { ref, computed } from 'vue';
 import type { PresetWithMenus } from '@common/types';
 import type { Menu } from '@prisma-generated-client';
 import PresetMenuEditor from './components/PresetMenuEditor.vue';
-import ConfirmDialog from '@src/components/ConfirmDialog.vue';
-import ItemEmptyCard from '@src/components/ItemEmptyCard.vue';
-import ItemEmptyCardWithNav from '@src/components/ItemEmptyCardWithNav.vue';
+import ConfirmDialog from '@src/components/common/ConfirmDialog.vue';
+import ItemEmptyCard from '@src/components/common/ItemEmptyCard.vue';
+import ItemEmptyCardWithNav from '@src/components/common/ItemEmptyCardWithNav.vue';
 
 const presetName = ref('');
 const presetList = ref<PresetWithMenus[]>([]);

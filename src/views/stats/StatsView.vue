@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import ViewHeading from '@src/components/ViewHeading.vue';
+import ViewHeading from '@src/components/common/ViewHeading.vue';
 import StatsCard from './components/StatsCard.vue';
 import type { StatsWithMenus, TotalStats } from '@common/types';
-import ItemEmptyCard from '@src/components/ItemEmptyCard.vue';
+import ItemEmptyCard from '@src/components/common/ItemEmptyCard.vue';
 
 const statsList = ref<StatsWithMenus[]>([]);
 const totalStats = ref<TotalStats | undefined>(undefined);
