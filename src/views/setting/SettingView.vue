@@ -2,15 +2,15 @@
 import { computed, ref, toRaw } from 'vue';
 import { SETTING_DEFAULT_VALUE } from '@common/constants';
 import type { Setting, TargetOscMessageSetting } from '@common/types';
-import SettingSlider from '@src/components/SettingSlider.vue';
-import ConfirmDialog from '@src/components/ConfirmDialog.vue';
-import ViewHeading from '@src/components/ViewHeading.vue';
+import SettingSlider from './components/SettingSlider.vue';
+import ConfirmDialog from '@src/components/common/ConfirmDialog.vue';
+import ViewHeading from '@src/components/common/ViewHeading.vue';
 import { useOscStore } from '@src/stores/osc';
 import { onBeforeRouteLeave, useRouter } from 'vue-router';
-import ColorThemeSelect from '@src/components/ColorThemeSelect.vue';
+import ColorThemeSelect from './components/ColorThemeSelect.vue';
 import { useTheme } from 'vuetify';
-import TargetOscMessageList from '@src/components/TargetOscMessageList.vue';
-import OscReceivedSoundSelect from '@src/components/OscReceivedSoundSelect.vue';
+import TargetOscMessageList from './components/TargetOscMessageList.vue';
+import OscReceivedSoundSelect from './components/OscReceivedSoundSelect.vue';
 
 let nextPagePath = '';
 const router = useRouter();

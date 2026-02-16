@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, toRaw } from 'vue';
 import type { Menu, MenuUnit } from '@prisma-generated-client';
-import ConfirmDialog from '@src/components/ConfirmDialog.vue';
+import ConfirmDialog from '@src/components/common/ConfirmDialog.vue';
 import { menuUnitMap } from '@common/util';
 
 type UnitSelectItem = {

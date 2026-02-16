@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { TargetOscMessageSetting } from '@common/types';
-import OscMessageSelectDialog from '@src/components/OscMessageSelectDialog.vue';
-import ItemEmptyCard from '@src/components/ItemEmptyCard.vue';
+import OscMessageSelectDialog from './OscMessageSelectDialog.vue';
+import ItemEmptyCard from '@src/components/common/ItemEmptyCard.vue';
 
 const addressValidator = [
   (v: string) => v.length >= 1,
