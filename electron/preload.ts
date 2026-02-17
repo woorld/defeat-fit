@@ -1,14 +1,14 @@
 import { ipcRenderer, contextBridge } from 'electron';
-import type { License, MenuIdWithMultiplier, Notice, OscStatus, PresetWithMenus, Setting, StatsWithMenus, TotalStats } from '../common/types';
-import type { Menu, Stats, Preset } from '../prisma/generated/client';
-import type { UpdatePreset } from './api/preset';
+import type { License, MenuIdWithMultiplier, Notice, OscStatus, PresetWithMenus, Setting, StatsWithMenus, TotalStats } from '@common/types';
+import type { Menu, Stats, Preset } from '@prisma-generated-client';
+import type { UpdatePreset } from '@electron/api/preset';
 
 const defeatCountApi = {
   onUpdateDefeatCount: (callback: (defeatCount: number) => void) =>
     ipcRenderer.on('update-defeat-count', (_, defeatCount: number) => callback(defeatCount)),
-  getDefeatCount: () =>
+  getDefeatCount: (): Promise<number> =>
     ipcRenderer.invoke('get-defeat-count'),
-  decrementDefeatCount: () =>
+  decrementDefeatCount: (): Promise<number> =>
     ipcRenderer.invoke('decrement-defeat-count'),
   resetDefeatCount: () =>
     ipcRenderer.send('reset-defeat-count'),
@@ -45,7 +45,7 @@ const settingApi = {
     ipcRenderer.invoke('get-setting', settingName),
   getAllSetting: (): Promise<Setting> =>
     ipcRenderer.invoke('get-all-setting'),
-  setSetting: <K extends keyof Setting>(settingName: K, value: Setting[K]) =>
+  setSetting: <K extends keyof Setting>(settingName: K, value: Setting[K]): Promise<void> =>
     ipcRenderer.invoke('set-setting', settingName, value),
   setAllSetting: (setting: Setting) =>
     ipcRenderer.send('set-all-setting', setting),
@@ -69,7 +69,7 @@ const presetApi = {
     ipcRenderer.invoke('get-preset-list'),
   addPreset: (name: string, presetMenuList: MenuIdWithMultiplier[]): Promise<Preset> =>
     ipcRenderer.invoke('add-preset', name, presetMenuList),
-  updatePreset: (preset: Preset, menuIdWithMultiplierList: MenuIdWithMultiplier[]): UpdatePreset =>
+  updatePreset: (preset: Preset, menuIdWithMultiplierList: MenuIdWithMultiplier[]): Promise<UpdatePreset> =>
     ipcRenderer.invoke('update-preset', preset, menuIdWithMultiplierList),
   deletePreset: (id: number): Promise<Preset> =>
     ipcRenderer.invoke('delete-preset', id),

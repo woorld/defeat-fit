@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
-import type { OscStatus } from '../../common/types';
-import { useDefeatCountStore } from './defeat-count';
+import type { OscStatus } from '@common/types';
+import { useDefeatCountStore } from '@src/stores/defeat-count';
 
 export const useOscStore = defineStore('osc', () => {
   const defeatCountStore = useDefeatCountStore();

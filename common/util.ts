@@ -1,4 +1,4 @@
-import type { MenuUnit } from '../prisma/generated/client';
+import type { MenuUnit } from '@prisma-generated-client';
 
 export const menuUnitMap: Record<MenuUnit, string> = {
   COUNT: '回',

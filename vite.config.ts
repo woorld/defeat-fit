@@ -3,6 +3,7 @@ import path from 'node:path';
 import electron from 'vite-plugin-electron/simple';
 import vue from '@vitejs/plugin-vue';
 import license from 'rollup-plugin-license';
+import { fileURLToPath, URL } from 'node:url';
 
 const outDirRoot = 'dist';
 const outDirMain = path.join(outDirRoot, 'main');
@@ -32,6 +33,13 @@ const getLicenseConfig = (filename: string) => license({
   },
 });
 
+const getAliasPath = (path: string) => fileURLToPath(new URL(path, import.meta.url));
+
+const commonAliases = {
+  '@common': getAliasPath('./common'),
+  '@prisma-generated-client': getAliasPath('./prisma/generated/client.ts'),
+};
+
 const electronViteConfig = {
   plugins: [
     getLicenseConfig('license.main'),
@@ -39,6 +47,12 @@ const electronViteConfig = {
   build: {
     outDir: outDirMain,
     target: 'ESNext',
+  },
+  resolve: {
+    alias: {
+      '@electron': getAliasPath('./electron'),
+      ...commonAliases,
+    },
   },
 };
 
@@ -67,5 +81,11 @@ export default defineConfig({
   define: {
     // NOTE: JSON.stringifyは"を付与するため
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
+  },
+  resolve: {
+    alias: {
+      '@src': getAliasPath('./src'),
+      ...commonAliases,
+    },
   },
 });

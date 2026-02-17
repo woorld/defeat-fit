@@ -1,4 +1,4 @@
-import OSC from "osc-js";
+import OSC from 'osc-js';
 
 export type OscPayload = {
   offset: number,

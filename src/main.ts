@@ -1,19 +1,19 @@
 import { createApp } from 'vue';
-import App from './App.vue';
+import App from '@src/App.vue';
 import 'vuetify/styles';
 import { createVuetify } from 'vuetify';
 import * as components from 'vuetify/components';
 import * as directives from 'vuetify/directives';
 import '@mdi/font/css/materialdesignicons.css';
 import { createMemoryHistory, createRouter } from 'vue-router';
-import HomeView from './views/HomeView.vue';
-import TimerView from './views/TimerView.vue';
-import MenuView from './views/MenuView.vue';
-import MenuEditView from './views/MenuEditView.vue';
-import MenuPresetView from './views/MenuPresetView.vue';
-import StatsView from './views/StatsView.vue';
-import SettingView from './views/SettingView.vue';
-import AboutView from './views/AboutView.vue';
+import HomeView from '@src/views/home/HomeView.vue';
+import TimerView from '@src/views/timer/TimerView.vue';
+import MenuView from '@src/views/menu/MenuView.vue';
+import MenuEditView from '@src/views/menu/edit/MenuEditView.vue';
+import MenuPresetView from '@src/views/menu/preset/MenuPresetView.vue';
+import StatsView from '@src/views/stats/StatsView.vue';
+import SettingView from '@src/views/setting/SettingView.vue';
+import AboutView from '@src/views/about/AboutView.vue';
 import { createPinia } from 'pinia';
 
 const colorTheme = await window.setting.getSetting('colorTheme');

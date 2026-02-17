@@ -1,9 +1,9 @@
 import Store from 'electron-store';
-import { Schema } from './schema';
+import { Schema } from '@electron/store/schema';
 import path from 'node:path';
 import fs from 'node:fs';
 import { app } from 'electron';
-import { ELECTRON_STORE_DEFAULT_VALUE } from '../../common/constants';
+import { ELECTRON_STORE_DEFAULT_VALUE } from '@common/constants';
 
 const userDataPath = app.getPath('userData');
 const settingFileName = 'config';

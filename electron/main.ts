@@ -2,19 +2,19 @@ import { app, BrowserWindow, shell } from 'electron';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import fs from 'node:fs';
-import { defeatCountApi } from './api/defeat-count';
-import { oscApi } from './api/osc';
-import { menuApi } from './api/menu';
-import { settingApi } from './api/setting';
-import { statsApi } from './api/stats';
-import { presetApi } from './api/preset';
+import { defeatCountApi } from '@electron/api/defeat-count';
+import { oscApi } from '@electron/api/osc';
+import { menuApi } from '@electron/api/menu';
+import { settingApi } from '@electron/api/setting';
+import { statsApi } from '@electron/api/stats';
+import { presetApi } from '@electron/api/preset';
 import 'dotenv/config'; // エントリポイントでのみロードすればOK
-import type { SendMessage } from '../common/types';
-import { noticeApi } from './api/notice';
-import { ALLOWED_EXTERNAL_LINKS } from '../common/constants';
-import { fileApi } from './api/file';
-import { updateApi } from './api/update';
-import { migrateStore } from './store/migrate';
+import type { SendMessage } from '@common/types';
+import { noticeApi } from '@electron/api/notice';
+import { ALLOWED_EXTERNAL_LINKS } from '@common/constants';
+import { fileApi } from '@electron/api/file';
+import { updateApi } from '@electron/api/update';
+import { migrateStore } from '@electron/store/migrate';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -29,16 +29,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 process.env.APP_ROOT = path.join(__dirname, '../..');
 
 // 🚧 Use ['ENV_NAME'] avoid vite:define plugin - Vite@2.x
-export const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL'];
-export const MAIN_DIST = path.join(process.env.APP_ROOT, 'dist', 'main');
-export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist', 'renderer');
+const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL'];
+const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist', 'renderer');
 
-process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
-  ? path.join(process.env.APP_ROOT, 'public')
-  : RENDERER_DIST;
+process.env.VITE_PUBLIC = app.isPackaged
+  ? RENDERER_DIST
+  : path.join(process.env.APP_ROOT, 'public');
 
 // DB設定
-if (!VITE_DEV_SERVER_URL) {
+if (app.isPackaged) {
   const dbName = 'app.db'; // TODO: できれば共通化
   const dbPath = path.join(app.getPath('userData'), dbName);
 
@@ -59,13 +58,13 @@ let win: BrowserWindow | null;
 
 function createWindow() {
   win = new BrowserWindow({
-    width: VITE_DEV_SERVER_URL ? 1200 : undefined, // 開発者ツールでコンテンツが潰れないよう横幅を広げる
+    width: app.isPackaged ? undefined : 1200, // 開発者ツールでコンテンツが潰れないよう横幅を広げる
     minWidth: 800,
     minHeight: 600,
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
-      devTools: !!VITE_DEV_SERVER_URL,
+      devTools: !app.isPackaged,
     },
     autoHideMenuBar: true,
     show: false, // ページがロードされるまではウィンドウを非表示にする
@@ -82,10 +81,10 @@ function createWindow() {
   statsApi.initialize();
   presetApi.initialize();
   noticeApi.initialize({ sendMessage });
-  fileApi.initialize({ isDev: Boolean(VITE_DEV_SERVER_URL) });
+  fileApi.initialize();
   updateApi.initialize({ sendMessage })
 
-  if (VITE_DEV_SERVER_URL) {
+  if (!app.isPackaged) {
     win.webContents.openDevTools();
   }
 
@@ -96,8 +95,8 @@ function createWindow() {
   // 各種ショートカットの無効化
   win.webContents.on('before-input-event', (event, input) => {
     const disabledShortcuts = [
-      !VITE_DEV_SERVER_URL && input.control && input.code === 'KeyR',
-      !VITE_DEV_SERVER_URL && input.shift && input.control && input.code === 'KeyI',
+      app.isPackaged && input.control && input.code === 'KeyR',
+      app.isPackaged && input.shift && input.control && input.code === 'KeyI',
       input.code === 'F5',
       input.code === 'F12',
       input.alt,
@@ -117,7 +116,8 @@ function createWindow() {
 
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL);
-  } else {
+  }
+  else {
     // win.loadFile('dist/index.html')
     win.loadFile(path.join(RENDERER_DIST, 'index.html'));
   }

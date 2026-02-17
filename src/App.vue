@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import BottomNav from './components/BottomNav.vue';
-import { useNoticeStore } from './stores/notice';
-import UpdateDialog from './components/UpdateDialog.vue';
+import BottomNav from '@src/components/BottomNav.vue';
+import { useNoticeStore } from '@src/stores/notice';
+import UpdateDialog from '@src/components/UpdateDialog.vue';
 
 const noticeStore = useNoticeStore();
 

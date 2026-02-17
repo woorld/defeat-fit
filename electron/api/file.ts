@@ -1,25 +1,23 @@
-import { ipcMain, shell } from 'electron';
+import { app, ipcMain, shell } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';
-import type { License } from '../../common/types';
-import { noticeApi } from './notice';
+import type { License } from '@common/types';
+import { noticeApi } from '@electron/api/notice';
 
 let isInitialized = false;
-let isDev = false;
 let licenseDir = '';
 
 export const fileApi = {
-  initialize(deps: { isDev: boolean }) {
+  initialize() {
     if (isInitialized) {
       return;
     }
 
-    isDev = deps.isDev;
     licenseDir = path.join(
       // TODO: ビルド済みを見越してる開発用パス設定なんとかならんか
-      isDev
-        ? path.join(process.env.APP_ROOT, 'dist')
-        : process.resourcesPath,
+      app.isPackaged
+        ? process.resourcesPath
+        : path.join(process.env.APP_ROOT, 'dist'),
       'license'
     );
 
