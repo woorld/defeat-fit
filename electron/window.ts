@@ -1,4 +1,3 @@
-import '@electron/path/user-data';
 import { app, BrowserWindow, shell } from 'electron';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
