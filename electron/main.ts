@@ -4,12 +4,15 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { oscApi } from '@electron/api/osc';
 import { migrateStore } from '@electron/store/migrate';
-import { createWindow } from './window';
+import { createWindow } from '@electron/window';
+import { getUserDataPath } from '@electron/path/user-data';
+
+app.setPath('userData', getUserDataPath());
 
 // DB設定
 if (app.isPackaged) {
   const dbName = 'app.db'; // TODO: できれば共通化
-  const dbPath = path.join(app.getPath('userData'), dbName);
+  const dbPath = path.join(getUserDataPath(), dbName);
 
   process.env.DATABASE_URL = `file:${dbPath}`;
 
