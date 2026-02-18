@@ -1,5 +1,5 @@
 import 'dotenv/config'; // エントリポイントでのみロードすればOK
-import { app, BrowserWindow } from 'electron';
+import { app, type BrowserWindow } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs';
 import { oscApi } from '@electron/api/osc';
