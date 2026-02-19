@@ -54,7 +54,7 @@ const {
         @click="timerSeconds -= 1"
       />
       <span
-        class="timer-seconds text-h2"
+        class="timer-seconds text-h2 text-center"
         :class="{ 'text-green': timerStatus === 'BREAK_TIME' }"
       >{{ timerDisplay }}</span>
       <VBtn
@@ -74,3 +74,9 @@ const {
     >{{ canStart ? 'START' : 'STOP' }}</VBtn>
   </VContainer>
 </template>
+
+<style scoped>
+.timer-seconds {
+  min-width: 180px;
+}
+</style>

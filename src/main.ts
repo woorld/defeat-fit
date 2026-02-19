@@ -7,7 +7,9 @@ import * as directives from 'vuetify/directives';
 import '@mdi/font/css/materialdesignicons.css';
 import { createMemoryHistory, createRouter } from 'vue-router';
 import HomeView from '@src/views/home/HomeView.vue';
-import TimerView from '@src/views/timer/TimerView.vue';
+import TimerCounterView from './views/timer-counter/TimerCounterView.vue';
+import TimerView from '@src/views/timer-counter/timer/TimerView.vue';
+import CounterView from '@src/views/timer-counter/counter/CounterView.vue';
 import MenuView from '@src/views/menu/MenuView.vue';
 import MenuEditView from '@src/views/menu/edit/MenuEditView.vue';
 import MenuPresetView from '@src/views/menu/preset/MenuPresetView.vue';
@@ -33,9 +35,21 @@ const routes = [
     component: HomeView
   },
   {
-    path: '/timer/:seconds/:setCount',
-    name: 'timer',
-    component: TimerView
+    path: '/timer-counter',
+    name: 'timer-counter',
+    component: TimerCounterView,
+    children: [
+      {
+        path: 'timer/:seconds/:setCount',
+        name: 'timer',
+        component: TimerView,
+      },
+      {
+        path: 'counter/:count/:setCount',
+        name: 'counter',
+        component: CounterView,
+      },
+    ],
   },
   {
     path: '/menu',
