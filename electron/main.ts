@@ -30,12 +30,18 @@ if (app.isPackaged) {
 let win: BrowserWindow | null = null;
 void win; // HACK: 未使用でコンパイルエラーになるのを回避
 
-app.on('window-all-closed', () => {
-  app.quit();
-  win = null;
-
-  oscApi.stopDiscovery();
-  oscApi.closeServer();
+app.on('window-all-closed', async () => {
+  try {
+    oscApi.stopDiscovery();
+    await oscApi.closeServer();
+  }
+  catch (e) {
+    console.error('DefeatFit: Error while closing OSC server on shutdown: ', e);
+  }
+  finally {
+    app.quit();
+    win = null;
+  }
 });
 
 app.whenReady().then(() => {
