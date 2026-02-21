@@ -21,7 +21,7 @@ const {
 
 <template>
   <VContainer class="d-flex justify-center align-center flex-column ga-8 h-100">
-    <div class="d-flex justify-space-between align-center ga-4">
+    <div class="d-flex justify-space-between align-center ga-4" v-if="!isLockControl">
       <VLabel>セット数</VLabel>
       <VNumberInput
         class="flex-grow-0"

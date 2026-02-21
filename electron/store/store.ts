@@ -2,10 +2,10 @@ import Store from 'electron-store';
 import { Schema } from '@electron/store/schema';
 import path from 'node:path';
 import fs from 'node:fs';
-import { app } from 'electron';
 import { ELECTRON_STORE_DEFAULT_VALUE } from '@common/constants';
+import { getUserDataPath } from '@electron/path/user-data';
 
-const userDataPath = app.getPath('userData');
+const userDataPath = getUserDataPath();
 const settingFileName = 'config';
 const settingPath = path.join(userDataPath, `${settingFileName}.json`);
 const storePathOption = {
