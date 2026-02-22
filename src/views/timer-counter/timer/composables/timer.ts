@@ -1,10 +1,9 @@
-import { ref, computed, onUnmounted } from 'vue';
-import type { Ref } from 'vue';
+import { ref, computed, onUnmounted, type Ref } from 'vue';
+import { SETTING_DEFAULT_VALUE } from '@common/constants';
 import timerStartCountdownSound from '@src/assets/sound/timer/start-countdown.mp3';
 import timerStartSound from '@src/assets/sound/timer/start.mp3';
 import timerEndSound from '@src/assets/sound/timer/end.mp3';
-import { SETTING_DEFAULT_VALUE } from '@common/constants';
-import type { Setting } from '@common/types';
+import { useTimerUtil } from '../../composables/timer-util';
 
 export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>) {
   let recentTimerSeconds = 0;
@@ -12,32 +11,22 @@ export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>) {
   let audioPlayCount = 0;
   let breakTimeSeconds = SETTING_DEFAULT_VALUE.breakTimeSecBetweenSets;
 
-  const soundTimerStartCountdown = new Audio(timerStartCountdownSound);
-  const soundTimerStart = new Audio(timerStartSound);
-  const soundTimerEnd = new Audio(timerEndSound);
+  const timerStartCountdownAudio = new Audio(timerStartCountdownSound);
+  const timerStartAudio = new Audio(timerStartSound);
+  const timerEndAudio = new Audio(timerEndSound);
 
-  const applySetting = async () => {
-    const setting: Setting = await window.setting.getAllSetting();
-
-    soundTimerStartCountdown.volume = setting.soundVolume;
-    soundTimerStart.volume = setting.soundVolume;
-    soundTimerEnd.volume = setting.soundVolume;
-    breakTimeSeconds = setting.breakTimeSecBetweenSets;
-  };
-
-  applySetting();
-
-  const timerId = ref<number | null>(null);
   const timerStatus = ref<'STANDBY' | 'COUNTDOWN' | 'PROGRESS' | 'BREAK_TIME' |'END'>('STANDBY');
+  const timerId = ref<number | null>(null);
 
-  const timerDisplay = computed(() => {
-    const minutes = String(Math.floor(timerSeconds.value / 60)).padStart(2, '0');
-    const seconds = String(timerSeconds.value % 60).padStart(2, '0');
-    return `${minutes} : ${seconds}`;
-  });
   const isLockControl = computed(() => timerStatus.value !== 'STANDBY');
   const isLockStartStop = computed(() => timerStatus.value === 'END' || timerSeconds.value <= 0);
   const canStart = computed(() => timerStatus.value === 'STANDBY');
+
+  const {
+    timerDisplay,
+    playAudio,
+    clearTimer,
+  } = useTimerUtil(timerSeconds, timerId);
 
   const startTimer = () => {
     timerStatus.value = 'COUNTDOWN';
@@ -47,71 +36,6 @@ export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>) {
 
     timerLoop(); // NOTE: 最初の1回は即時実行したいためここで呼び出す
     timerId.value = window.setInterval(timerLoop, 1000);
-  };
-
-  const timerLoop = () => {
-    switch(timerStatus.value) {
-      case 'STANDBY':
-        return;
-      case 'COUNTDOWN':
-        if (audioPlayCount >= 5) {
-          playAudio(soundTimerStart);
-          audioPlayCount = 0;
-          timerStatus.value = 'PROGRESS';
-        }
-        else {
-          playAudio(soundTimerStartCountdown);
-          audioPlayCount++;
-        }
-        return;
-      case 'PROGRESS':
-        timerSeconds.value--;
-
-        if (timerSeconds.value >= 1) {
-          return;
-        }
-
-        setCount.value--;
-        playAudio(soundTimerEnd); // NOTE: 最初の1回は即時実行したいためここで呼び出す
-        audioPlayCount++;
-
-        if (setCount.value <= 0) {
-          timerStatus.value = 'END';
-          return;
-        }
-
-        audioPlayCount = 0;
-        timerStatus.value = 'BREAK_TIME';
-        timerSeconds.value = breakTimeSeconds;
-        return;
-      case 'BREAK_TIME':
-        timerSeconds.value--;
-
-        if (timerSeconds.value <= 0) {
-          playAudio(soundTimerStart);
-          timerSeconds.value = recentTimerSeconds;
-          timerStatus.value = 'PROGRESS';
-          return;
-        }
-
-        if (timerSeconds.value <= 5) {
-          playAudio(soundTimerStartCountdown);
-          return;
-        }
-        return;
-      case 'END':
-        if (setCount.value <= 0 && audioPlayCount < 3) {
-          // セットが0になった場合、効果音を追加で2回（合計3回）鳴らす
-          playAudio(soundTimerEnd);
-          audioPlayCount++;
-          return;
-        }
-        audioPlayCount = 0;
-        stopTimer();
-        return;
-      default:
-        return;
-    }
   };
 
   const stopTimer = () => {
@@ -127,24 +51,89 @@ export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>) {
       timerSeconds.value = recentTimerSeconds;
     }
 
-    window.clearInterval(timerId.value);
-    timerId.value = null;
+    clearTimer();
     timerStatus.value = 'STANDBY';
   };
 
-  const playAudio = (audio: HTMLAudioElement) => {
-    audio.currentTime = 0;
-    audio.play();
+  const timerLoop = () => {
+    switch(timerStatus.value) {
+      case 'STANDBY':
+        return;
+      case 'COUNTDOWN':
+        if (audioPlayCount >= 5) {
+          playAudio(timerStartAudio);
+          audioPlayCount = 0;
+          timerStatus.value = 'PROGRESS';
+        }
+        else {
+          playAudio(timerStartCountdownAudio);
+          audioPlayCount++;
+        }
+        return;
+      case 'PROGRESS':
+        timerSeconds.value--;
+
+        if (timerSeconds.value >= 1) {
+          return;
+        }
+
+        setCount.value--;
+        playAudio(timerEndAudio); // NOTE: 最初の1回は即時実行したいためここで呼び出す
+        audioPlayCount++;
+
+        if (setCount.value <= 0) {
+          timerStatus.value = 'END';
+          return;
+        }
+
+        audioPlayCount = 0;
+        timerStatus.value = 'BREAK_TIME';
+        timerSeconds.value = breakTimeSeconds;
+        return;
+      case 'BREAK_TIME':
+        timerSeconds.value--;
+
+        if (timerSeconds.value <= 0) {
+          playAudio(timerStartAudio);
+          timerSeconds.value = recentTimerSeconds;
+          timerStatus.value = 'PROGRESS';
+          return;
+        }
+
+        if (timerSeconds.value <= 5) {
+          playAudio(timerStartCountdownAudio);
+          return;
+        }
+        return;
+      case 'END':
+        if (setCount.value <= 0 && audioPlayCount < 3) {
+          // セットが0になった場合、効果音を追加で2回（合計3回）鳴らす
+          playAudio(timerEndAudio);
+          audioPlayCount++;
+          return;
+        }
+        audioPlayCount = 0;
+        stopTimer();
+        return;
+      default:
+        return;
+    }
   };
 
-  onUnmounted(() => {
-    if (timerId.value) {
-      clearInterval(timerId.value);
-    }
+  (async () => {
+    const setting = await window.setting.getAllSetting();
 
-    soundTimerStartCountdown.pause();
-    soundTimerStart.pause();
-    soundTimerEnd.pause();
+    timerStartCountdownAudio.volume = setting.soundVolume;
+    timerStartAudio.volume = setting.soundVolume;
+    timerEndAudio.volume = setting.soundVolume;
+    breakTimeSeconds = setting.breakTimeSecBetweenSets;
+  })();
+
+  onUnmounted(() => {
+    clearTimer();
+    timerStartCountdownAudio.pause();
+    timerStartAudio.pause();
+    timerEndAudio.pause();
   });
 
   return {
@@ -156,4 +145,4 @@ export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>) {
     startTimer,
     stopTimer,
   };
-};
+}

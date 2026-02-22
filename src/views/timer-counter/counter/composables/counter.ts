@@ -2,6 +2,7 @@ import { computed, onUnmounted, ref, type Ref } from 'vue';
 import { SETTING_DEFAULT_VALUE } from '@common/constants';
 import setStartSound from '@src/assets/sound/timer/start.mp3';
 import setEndSound from '@src/assets/sound/timer/end.mp3';
+import { useTimerUtil } from '../../composables/timer-util';
 
 export function useCounter(count: Ref<number>, setCount: Ref<number>) {
   // TODO: OVR連携の自動カウント機能実装時にrecentCountの追加が必要
@@ -17,12 +18,12 @@ export function useCounter(count: Ref<number>, setCount: Ref<number>) {
 
   const isLockControl = computed(() => counterStatus.value !== 'STANDBY');
   const canStart = computed(() => count.value >= 1);
-  // TODO: 共通化
-  const timerDisplay = computed(() => {
-    const minutes = String(Math.floor(timerSeconds.value / 60)).padStart(2, '0');
-    const seconds = String(timerSeconds.value % 60).padStart(2, '0');
-    return `${minutes} : ${seconds}`;
-  });
+
+  const {
+    timerDisplay,
+    playAudio,
+    clearTimer,
+  } = useTimerUtil(timerSeconds, timerId);
 
   const startCount = () => {
     playAudio(setStartAudio);
@@ -33,6 +34,17 @@ export function useCounter(count: Ref<number>, setCount: Ref<number>) {
   const stopCount = () => {
     clearTimer();
     counterStatus.value = 'STANDBY';
+  };
+
+  const timerLoop = () => {
+    timerSeconds.value--;
+    if (timerSeconds.value >= 1) {
+      return;
+    }
+
+    playAudio(setStartAudio);
+    clearTimer();
+    onNext();
   };
 
   const onNext = () => {
@@ -58,31 +70,6 @@ export function useCounter(count: Ref<number>, setCount: Ref<number>) {
     counterStatus.value = 'BREAK_TIME';
   };
 
-  const timerLoop = () => {
-    timerSeconds.value--;
-    if (timerSeconds.value >= 1) {
-      return;
-    }
-
-    playAudio(setStartAudio);
-    clearTimer();
-    onNext();
-  };
-
-  // TODO: 共通化
-  const playAudio = (audio: HTMLAudioElement) => {
-    audio.currentTime = 0;
-    audio.play();
-  };
-
-  const clearTimer = () => {
-    if (!timerId.value) {
-      return;
-    }
-    window.clearInterval(timerId.value);
-    timerId.value = null;
-  }
-
   (async () => {
     const setting = await window.setting.getAllSetting();
 
@@ -106,4 +93,4 @@ export function useCounter(count: Ref<number>, setCount: Ref<number>) {
     stopCount,
     onNext,
   };
-};
+}
