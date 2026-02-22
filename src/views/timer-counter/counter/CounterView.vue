@@ -4,6 +4,7 @@ import { computed, onUnmounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import setStartSound from '@src/assets/sound/timer/start.mp3';
 import setEndSound from '@src/assets/sound/timer/end.mp3';
+import CountControl from '../components/CountControl.vue';
 
 const route = useRoute();
 const setStartAudio = new Audio(setStartSound);
@@ -103,57 +104,19 @@ onUnmounted(() => {
 
 <template>
   <VContainer class="d-flex justify-center align-center flex-column ga-8 h-100">
-    <div class="d-flex justify-space-between align-center ga-4" v-if="!isLockControl">
-      <VLabel>セット数</VLabel>
-      <VNumberInput
-        class="flex-grow-0"
-        v-model="setCount"
-        hide-details
-        inset
-        :min="1"
-        :disabled="isLockControl"
-      />
-    </div>
-    <!-- NOTE: VDividerが中央に来るようにtext-align, widthを設定 -->
-    <div class="d-flex justify-center align-center ga-4 w-100" v-if="counterStatus !== 'STANDBY'">
-      <div class="w-50" :class="counterStatus === 'BREAK_TIME' ? 'text-right' : 'text-center'">
-        あと <span class="text-h4 ma-3">{{ setCount }}</span> セット
-      </div>
-      <template v-if="counterStatus === 'BREAK_TIME'">
-        <VDivider vertical />
-        <span class="text-h5 text-green w-50">休憩中</span>
-      </template>
-    </div>
-    <div class="d-flex justify-center align-center ga-4">
-      <VBtn
-        icon="mdi-chevron-double-left"
-        :disabled="count < 10 || isLockControl"
-        @click="count -= 10"
-      />
-      <VBtn
-        icon="mdi-chevron-left"
-        :disabled="count < 1 || isLockControl"
-        @click="count -= 1"
-      />
-      <div
-        class="counter-counts d-flex justify-space-between align-baseline"
-        :class="{ 'text-green': counterStatus === 'BREAK_TIME' }"
-      >
+    <CountControl
+      v-model:count="count"
+      v-model:setCount="setCount"
+      :isStandby="counterStatus === 'STANDBY'"
+      :isBreakTime="counterStatus === 'BREAK_TIME'"
+      :isLockControl
+    >
+      <div class="d-flex w-100 justify-space-between align-baseline">
         <span v-show="counterStatus === 'PROGRESS'">あと</span>
         <span class="text-h2 flex-grow-1 text-center">{{ counterStatus === 'BREAK_TIME' ? timerDisplay : count }}</span>
         <span v-show="counterStatus === 'PROGRESS'">回</span>
       </div>
-      <VBtn
-        icon="mdi-chevron-right"
-        :disabled="isLockControl"
-        @click="count += 1"
-      />
-      <VBtn
-        icon="mdi-chevron-double-right"
-        :disabled="isLockControl"
-        @click="count += 10"
-      />
-    </div>
+    </CountControl>
     <div class="d-flex justify-center align-center ga-4">
       <VBtn
         :disabled="!canStart"
@@ -175,9 +138,3 @@ onUnmounted(() => {
     </VAlert>
   </VContainer>
 </template>
-
-<style scoped>
-.counter-counts {
-  min-width: 180px;
-}
-</style>
