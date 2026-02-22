@@ -1,7 +1,7 @@
 {
   "name": "defeat-fit",
   "private": true,
-  "version": "0.2.1-ultrabeta",
+  "version": "0.2.2-ultrabeta",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -29,7 +29,7 @@
     "@vitejs/plugin-vue": "^5.0.4",
     "bufferutil": "^4.1.0",
     "cross-env": "^10.1.0",
-    "electron": "^30.0.1",
+    "electron": "^40.6.0",
     "electron-builder": "^26.0.12",
     "electron-store": "^10.1.0",
     "prettier": "^3.6.2",

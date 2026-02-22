@@ -48,7 +48,15 @@ export function createWindow() {
   });
 
   const sendMessage: SendMessage = (channel, ...args) => {
-    win?.webContents.send(channel, ...args);
+    try {
+      if (!win || win.isDestroyed() || !win.webContents || win.webContents.isDestroyed()) {
+        return;
+      }
+      win.webContents.send(channel, ...args);
+    }
+    catch (e) {
+      console.warn('DefeatFit: sendMessage failed: ', e);
+    }
   }
 
   defeatCountApi.initialize({ sendMessage });
