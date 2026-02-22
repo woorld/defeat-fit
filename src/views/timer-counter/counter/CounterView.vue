@@ -1,105 +1,23 @@
 <script setup lang="ts">
-import { SETTING_DEFAULT_VALUE } from '@common/constants';
-import { computed, onUnmounted, ref } from 'vue';
+import { ref } from 'vue';
 import { useRoute } from 'vue-router';
-import setStartSound from '@src/assets/sound/timer/start.mp3';
-import setEndSound from '@src/assets/sound/timer/end.mp3';
+import { useCounter } from './composables/counter';
 import CountControl from '../components/CountControl.vue';
 
 const route = useRoute();
-const setStartAudio = new Audio(setStartSound);
-const setEndAudio = new Audio(setEndSound);
 
-// TODO: OVR連携の自動カウント機能実装時にrecentCountの追加が必要
-let recentSetCount = 1;
-let breakTimeSeconds = SETTING_DEFAULT_VALUE.breakTimeSecBetweenSets;
-
-const counterStatus = ref<'STANDBY' | 'PROGRESS' | 'BREAK_TIME'>('STANDBY');
 const count = ref(Number(route.params.count) || 0);
 const setCount = ref(Number(route.params.setCount) || 1);
-const timerId = ref<number | null>(null);
-const timerSeconds = ref(0);
 
-const isLockControl = computed(() => counterStatus.value !== 'STANDBY');
-const canStart = computed(() => count.value >= 1);
-const timerDisplay = computed(() => {
-  const minutes = String(Math.floor(timerSeconds.value / 60)).padStart(2, '0');
-  const seconds = String(timerSeconds.value % 60).padStart(2, '0');
-  return `${minutes} : ${seconds}`;
-});
-
-const startCount = () => {
-  playAudio(setStartAudio);
-  recentSetCount = setCount.value;
-  counterStatus.value = 'PROGRESS';
-};
-
-const stopCount = () => {
-  clearTimer();
-  counterStatus.value = 'STANDBY';
-};
-
-const onNext = () => {
-  if (counterStatus.value === 'BREAK_TIME') {
-    // 休憩終了、次のセット開始
-    clearTimer();
-    counterStatus.value = 'PROGRESS';
-    return;
-  }
-
-  // 1セット完了
-  playAudio(setEndAudio);
-  setCount.value--;
-
-  if (setCount.value <= 0) {
-    setCount.value = recentSetCount;
-    counterStatus.value = 'STANDBY';
-    return;
-  }
-
-  timerSeconds.value = breakTimeSeconds;
-  timerId.value = window.setInterval(timerLoop, 1000);
-  counterStatus.value = 'BREAK_TIME';
-};
-
-const timerLoop = () => {
-  timerSeconds.value--;
-  if (timerSeconds.value >= 1) {
-    return;
-  }
-
-  playAudio(setStartAudio);
-  clearTimer();
-  onNext();
-};
-
-// TODO: 共通化
-const playAudio = (audio: HTMLAudioElement) => {
-  audio.currentTime = 0;
-  audio.play();
-};
-
-const clearTimer = () => {
-  if (!timerId.value) {
-    return;
-  }
-  window.clearInterval(timerId.value);
-  timerId.value = null;
-}
-
-(async () => {
-  const setting = await window.setting.getAllSetting();
-
-  breakTimeSeconds = setting.breakTimeSecBetweenSets;
-  setStartAudio.volume = setting.soundVolume;
-  setEndAudio.volume = setting.soundVolume;
-})();
-
-onUnmounted(() => {
-  clearTimer();
-  setStartAudio.pause();
-  setEndAudio.pause();
-});
+const {
+  counterStatus,
+  isLockControl,
+  canStart,
+  timerDisplay,
+  startCount,
+  stopCount,
+  onNext,
+} = useCounter(count, setCount);
 </script>
 
 <template>
