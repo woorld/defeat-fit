@@ -8,6 +8,8 @@ import { defeatCountApi } from '@electron/api/defeat-count';
 import { noticeApi } from '@electron/api/notice';
 import { useOscServer, type OscPayload } from '@electron/osc/osc-server';
 
+type ListeningType = 'TARGET' | 'ALL' | 'UPRIGHT';
+
 const basePort = 11337;
 const minDiscoveryWaitMs = 3000;
 const oscQueryPathWhenListenAllMessage = '/avatar/parameters/AngularY';
@@ -45,17 +47,22 @@ export const oscApi = {
     sendMessage = deps.sendMessage;
 
     ipcMain.handle('get-osc-status', () => this.getOscStatus());
-    ipcMain.handle('start-listening', () => this.openServer());
-    ipcMain.handle('start-listening-all', () => this.openServer(true));
+    ipcMain.handle('start-listening', () => this.openServer('TARGET'));
+    ipcMain.handle('start-listening-all', () => this.openServer('ALL'));
+    ipcMain.handle('start-listening-upright', () => this.openServer('UPRIGHT'));
     ipcMain.handle('stop-listening', () => this.closeServer());
 
     isInitialized = true;
   },
 
-  async openServer(listenAllMessage = false) {
-    const targetAddresses = listenAllMessage
-      ? ['*']
-      : (await settingApi.getSetting('targetOscMessage')).filter(m => m.enabled).map(m => m.address);
+  async openServer(listeningType: ListeningType) {
+    const targetAddresses = {
+      'TARGET': (await settingApi.getSetting('targetOscMessage'))
+        .filter(m => m.enabled)
+        .map(m => m.address),
+      'ALL': ['*'],
+      'UPRIGHT': ['/avatar/parameters/Upright'],
+    }[listeningType];
 
     if (targetAddresses.length <= 0 || oscQueryServer !== null || oscServer !== null || oscStatus === 'PENDING') {
       // 対象のOSCメッセージが空配列か、OSCサーバのどちらかが開始中か開始済の場合
@@ -83,16 +90,32 @@ export const oscApi = {
 
     const onListen = (payload: OscPayload) => {
       // TODO: 対象メッセージだけでなく対象の値も設定できるようにする
-      if (!payload.args[0]) {
+      // NOTE: Uprightの受信を妨げないため0は通す
+      if (!payload.args[0] && payload.args[0] !== 0) {
         return;
       }
-      listenAllMessage
-        ? sendMessageIfNotNull('listen-any-message', payload.address)
-        : updateDefeatCount();
+      switch (listeningType) {
+        case 'TARGET':
+          updateDefeatCount();
+          break;
+        case 'ALL':
+          sendMessageIfNotNull('listen-any-message', payload.address);
+          break;
+        case 'UPRIGHT':
+          // TODO: Uprightの更新処理
+          sendMessageIfNotNull('listen-upright-value', payload.args[0]);
+          break;
+      }
     };
 
     const onOpen = () => {
-      changeOscStatus(listenAllMessage ? 'OPEN_ALL' : 'OPEN');
+      const listeningTypeToOscStatus: Record<ListeningType, OscStatus> = {
+        'TARGET': 'OPEN',
+        'ALL': 'OPEN_ALL',
+        'UPRIGHT': 'OPEN_UPRIGHT',
+      } as const
+      changeOscStatus(listeningTypeToOscStatus[listeningType]);
+
       noticeApi.createNotice({
         text: 'OSCメッセージの受信を開始しました',
         color: 'success',
@@ -126,7 +149,7 @@ export const oscApi = {
         httpPort: usingPort,
       });
 
-      if (listenAllMessage) {
+      if (listeningType === 'ALL') {
         // HACK: 全メッセージを表すパスがないため、VRChatから送信されるパスの1つを登録する
         oscQueryServer.addMethod(oscQueryPathWhenListenAllMessage, { access: OSCQAccess.WRITEONLY });
       }
@@ -159,7 +182,12 @@ export const oscApi = {
   },
 
   async closeServer() {
-    if (oscServer === null || oscQueryServer === null || oscStatus === 'PENDING') {
+    const rejectStatus: OscStatus[] = ['PENDING', 'CLOSE'];
+    if (
+      oscServer === null ||
+      oscQueryServer === null ||
+      rejectStatus.includes(oscStatus)
+    ) {
       return;
     }
 
