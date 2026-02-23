@@ -16,9 +16,10 @@ const isDecimalVisible = ref(false);
 const setCount = ref(1);
 
 const totalReps = computed(() => Math.ceil(props.presetMenuWithMenu.multiplier * defeatCount.count));
-const secondsPerSet = computed(
+const secondsOrCountPerSet = computed(
   () => Math.floor(totalReps.value / setCount.value * 1000) / 1000 // 表示用に小数第4位以下を切り捨て
 );
+const isSecondsMenu = computed(() => props.presetMenuWithMenu.menu.unit === 'SECOND');
 
 const stepSetCount = (addValue: 1 | -1) => {
   if (isDecimalVisible.value) {
@@ -35,7 +36,7 @@ const stepSetCount = (addValue: 1 | -1) => {
 };
 
 const restoreIntegerTotalReps = () => {
-  if (Number.isInteger(secondsPerSet.value) || setCount.value <= 1) {
+  if (Number.isInteger(secondsOrCountPerSet.value) || setCount.value <= 1) {
     return;
   }
   stepSetCount(-1);
@@ -71,7 +72,7 @@ const restoreIntegerTotalReps = () => {
           <VIcon size="32">mdi-chevron-down</VIcon>
           <div class="d-flex justify-center align-baseline ga-2">
             <span class="text-body">{{ totalReps }} {{ menuUnitMap[props.presetMenuWithMenu.menu.unit] }} ÷ {{ setCount }} セット =</span>
-            <span class="text-h4 text-green">{{ secondsPerSet }}</span>
+            <span class="text-h4 text-green">{{ secondsOrCountPerSet }}</span>
             <span class="text-body">{{ menuUnitMap[props.presetMenuWithMenu.menu.unit] }} / セット</span>
           </div>
           <VCheckbox
@@ -82,13 +83,12 @@ const restoreIntegerTotalReps = () => {
           />
         </div>
         <VBtn
-          v-show="props.presetMenuWithMenu.menu.unit === 'SECOND'"
           append-icon="mdi-chevron-right"
           color="green"
-          :to="`/timer/${Math.ceil(secondsPerSet)}/${setCount}`"
+          :to="`/timer-counter/${isSecondsMenu ? 'timer' : 'counter'}/${Math.ceil(secondsOrCountPerSet)}/${setCount}`"
           :disabled="!setCount"
         >
-          タイマー画面へ
+          {{ isSecondsMenu ? 'タイマー' : 'カウンター' }}画面へ
           <VTooltip
             v-if="isDecimalVisible"
             text="小数は切り上げ"

@@ -30,6 +30,7 @@ const addMessage = (address: string) => {
         icon-size="24"
         density="compact"
         color="info"
+        variant="tonal"
       >チェックボックスで受信のオンオフを切り替えられます。<br>重複・未入力・空白のみの設定は、保存時に削除されます。</VAlert>
       <VList>
         <VListItem
