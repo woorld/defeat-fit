@@ -1,13 +1,21 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onUnmounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useCounter } from './composables/counter';
+import { useOscStore } from '@src/stores/osc';
 import CountControl from '../components/CountControl.vue';
+import UprightIndicator from './components/UprightIndicator.vue';
 
 const route = useRoute();
+const oscStore = useOscStore();
+
+// TODO: 設定で変更できるようにする
+const uprightAdjust = 0.01;
 
 const count = ref(Number(route.params.count) || 0);
 const setCount = ref(Number(route.params.setCount) || 1);
+const maxUpright = ref(1);
+const minUpright = ref(0);
 
 const {
   counterStatus,
@@ -17,11 +25,27 @@ const {
   startCount,
   stopCount,
   onNext,
-} = useCounter(count, setCount);
+} = useCounter(count, setCount, maxUpright, minUpright, uprightAdjust);
+
+oscStore.startListeningUpright();
+
+onUnmounted(() => {
+  // FIXME: リッスン開始中に別画面に移動すると別画面でUprightの受信が始まる
+  if (oscStore.oscStatus !== 'OPEN_UPRIGHT') {
+    return;
+  }
+  window.osc.stopListening();
+});
 </script>
 
 <template>
   <VContainer class="d-flex justify-center align-center flex-column ga-8 h-100">
+    <UprightIndicator
+      :currentUpright="oscStore.upright"
+      :maxUpright
+      :minUpright
+      :uprightAdjust
+    />
     <CountControl
       v-model:count="count"
       v-model:setCount="setCount"
@@ -44,15 +68,9 @@ const {
         v-show="counterStatus !== 'STANDBY'"
         @click="onNext"
       >NEXT</VBtn>
+      <!-- FIXME: テスト用ボタン MAX, MIN設定処理実装後に削除 -->
+      <VBtn @click="maxUpright = oscStore.upright">MAX: {{ maxUpright }}</VBtn>
+      <VBtn @click="minUpright = oscStore.upright">MIN: {{ minUpright }}</VBtn>
     </div>
-    <VAlert
-      class="position-fixed bottom-0 mb-16"
-      type="info"
-      variant="tonal"
-    >
-      <VKbd>START</VKbd>押下後に「あと○回」のカウントが変わらないのは仕様です。<br>
-      表示されている回数分の筋トレが終わったら<VKbd>NEXT</VKbd>を押してください。<br>
-      今後のアップデートで自動カウント機能を実装予定です。
-    </VAlert>
   </VContainer>
 </template>
