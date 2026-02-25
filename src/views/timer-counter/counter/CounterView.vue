@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { onUnmounted, ref } from 'vue';
+import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useCounter } from './composables/counter';
+import { useAutoCount } from './composables/auto-count';
 import { useOscStore } from '@src/stores/osc';
 import CountControl from '../components/CountControl.vue';
 import UprightIndicator from './components/UprightIndicator.vue';
@@ -9,18 +10,10 @@ import UprightIndicator from './components/UprightIndicator.vue';
 const route = useRoute();
 const oscStore = useOscStore();
 
-// TODO: 設定で変更できるようにする
-const uprightAdjust = 0.01;
-let setupTimerId: number | null = null;
-
 const count = ref(Number(route.params.count) || 0);
 const setCount = ref(Number(route.params.setCount) || 1);
-const maxUpright = ref(1);
-const minUpright = ref(0);
-const useAutoCount = ref(true);
+const enableAutoCount = ref(true);
 const isAutoCountSetupOverlayVisible = ref(false);
-const autoCountSetupStatus = ref<'MAX' | 'MIN' | 'DONE'>('MAX');
-const autoCountSetupProgress = ref(0);
 
 const {
   counterStatus,
@@ -30,12 +23,21 @@ const {
   startCount,
   stopCount,
   onNext,
-} = useCounter(count, setCount, maxUpright, minUpright, uprightAdjust);
+  decrementCount,
+} = useCounter(count, setCount);
+
+const {
+  autoCountSetupStatus,
+  maxUpright,
+  minUpright,
+  uprightAdjust,
+  autoCountSetupProgress,
+  setupAutoCount,
+  cancelAutoCountSetup,
+} = useAutoCount({ counterStatus, onNext, decrementCount });
 
 const onClickStart = async () => {
-  autoCountSetupStatus.value = 'MAX';
-
-  if (!useAutoCount.value) {
+  if (!enableAutoCount.value) {
     startCount();
     return;
   }
@@ -50,66 +52,10 @@ const onClickStart = async () => {
   startCount();
 };
 
-const getThreshold = (): Promise<number> => new Promise(resolve => {
-  let recentUpright = oscStore.upright;
-
-  // TODO: タイマーがリセットされない導線のチェック
-  // TODO: 効果音を鳴らす
-  setupTimerId = window.setInterval(() => {
-    const currentUpright = oscStore.upright;
-    const withinAcceptableRange =
-      currentUpright <= recentUpright + uprightAdjust &&
-      currentUpright >= recentUpright - uprightAdjust;
-    recentUpright = currentUpright;
-
-    if (!withinAcceptableRange) {
-      autoCountSetupProgress.value = 0;
-      return;
-    }
-
-    autoCountSetupProgress.value++;
-
-    if (autoCountSetupProgress.value < 5) {
-      return;
-    }
-
-    clearSetupTimer();
-    autoCountSetupProgress.value = 0;
-    return resolve(currentUpright);
-  }, 500);
-});
-
-const setupAutoCount = async (): Promise<void> => {
-  maxUpright.value = await getThreshold();
-  autoCountSetupStatus.value = 'MIN';
-
-  minUpright.value = await getThreshold();
-  autoCountSetupStatus.value = 'DONE';
-
-  autoCountSetupProgress.value = 0;
-  return Promise.resolve();
-};
-
-const clearSetupTimer = () => {
-  if (setupTimerId === null) {
-    return;
-  }
-  window.clearInterval(setupTimerId);
-  setupTimerId = null;
-}
-
 const onClickAutoCountSetupCancel = () => {
-  autoCountSetupStatus.value = 'MAX';
-  clearSetupTimer();
+  cancelAutoCountSetup();
   isAutoCountSetupOverlayVisible.value = false;
 }
-
-onUnmounted(() => {
-  clearSetupTimer();
-  if (oscStore.oscStatus === 'OPEN_UPRIGHT') {
-    window.osc.stopListening();
-  }
-});
 </script>
 
 <template>
@@ -144,7 +90,7 @@ onUnmounted(() => {
       >NEXT</VBtn>
       <!-- TODO: レイアウトどうにかならんか -->
       <VSwitch
-        v-model="useAutoCount"
+        v-model="enableAutoCount"
         color="green"
         label="自動カウント"
         inset
@@ -165,11 +111,11 @@ onUnmounted(() => {
         <div v-else class="d-flex flex-column justify-center align-center ga-4">
           <div>
             <template v-if="autoCountSetupStatus === 'MAX'">
-              最大値を設定します。<br />
-              今から行う筋トレの<strong>待機状態の姿勢</strong>で止まってください。
+              頭の位置の最大値を設定します。<br />
+              今から行う筋トレの中で<strong>一番高い姿勢</strong>で止まってください。
             </template>
             <template v-else-if="autoCountSetupStatus === 'MIN'">
-              最小値を設定します。<br />
+              頭の位置の最小値を設定します。<br />
               今から行う筋トレの中で<strong>一番低い姿勢</strong>で止まってください。
             </template>
             <VProgressLinear

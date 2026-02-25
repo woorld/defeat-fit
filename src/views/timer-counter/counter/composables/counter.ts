@@ -1,35 +1,30 @@
-import { computed, onUnmounted, ref, watch, type Ref } from 'vue';
+import { computed, onUnmounted, ref, type Ref } from 'vue';
 import { SETTING_DEFAULT_VALUE } from '@common/constants';
 import setStartSound from '@src/assets/sound/timer/start.mp3';
 import setEndSound from '@src/assets/sound/timer/end.mp3';
 import countDecrementSound from '@src/assets/sound/timer/start-countdown.mp3';
 import { useTimerUtil } from '../../composables/timer-util';
-import { useOscStore } from '@src/stores/osc';
 
-// TODO: 自動カウント完了後、カウントのリセット処理が必要
+export type CounterStatus = 'STANDBY' | 'PROGRESS' | 'BREAK_TIME';
 
 export function useCounter(
   count: Ref<number>,
   setCount: Ref<number>,
-  uprightMax: Ref<number>,
-  uprightMin: Ref<number>,
-  uprightAdjust: number
 ) {
-  const oscStore = useOscStore();
 
   let recentCount = 0;
   let recentSetCount = 1;
   let breakTimeSeconds = SETTING_DEFAULT_VALUE.breakTimeSecBetweenSets;
-  let hasReachedMin = false;
 
   const setStartAudio = new Audio(setStartSound);
   const setEndAudio = new Audio(setEndSound);
   const countDecrementAudio = new Audio(countDecrementSound);
 
-  const counterStatus = ref<'STANDBY' | 'PROGRESS' | 'BREAK_TIME'>('STANDBY');
+  const counterStatus = ref<CounterStatus>('STANDBY');
   const timerId = ref<number | null>(null);
   const timerSeconds = ref(0);
 
+  // TODO: ここらへん必要？
   const isLockControl = computed(() => counterStatus.value !== 'STANDBY');
   const canStart = computed(() => count.value >= 1);
 
@@ -86,6 +81,15 @@ export function useCounter(
     counterStatus.value = 'BREAK_TIME';
   };
 
+  const decrementCount = () => {
+    count.value--;
+    if (count.value <= 0) {
+      return 0;
+    }
+    playAudio(countDecrementAudio);
+    return count.value;
+  };
+
   (async () => {
     const setting = await window.setting.getAllSetting();
 
@@ -102,31 +106,6 @@ export function useCounter(
     countDecrementAudio.pause();
   });
 
-  watch(() => oscStore.upright, (newValue) => {
-    if (counterStatus.value !== 'PROGRESS') {
-      return;
-    }
-
-    if (!hasReachedMin && newValue <= uprightMin.value + uprightAdjust) {
-      // 中間点(min)を通過
-      hasReachedMin = true;
-      return;
-    }
-
-    if (hasReachedMin && newValue >= uprightMax.value - uprightAdjust) {
-      // 中間点(min)を通過後、初期位置(max)を通過
-      count.value--;
-      hasReachedMin = false;
-
-      if (count.value <= 0) {
-        onNext();
-        return;
-      }
-
-      playAudio(countDecrementAudio);
-    }
-  });
-
   return {
     counterStatus,
     isLockControl,
@@ -135,5 +114,6 @@ export function useCounter(
     startCount,
     stopCount,
     onNext,
+    decrementCount,
   };
 }
