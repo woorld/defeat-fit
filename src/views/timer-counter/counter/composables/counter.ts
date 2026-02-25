@@ -29,7 +29,6 @@ export function useCounter(
   const counterStatus = ref<'STANDBY' | 'PROGRESS' | 'BREAK_TIME'>('STANDBY');
   const timerId = ref<number | null>(null);
   const timerSeconds = ref(0);
-  const isOrikaeshi = ref(false);
 
   const isLockControl = computed(() => counterStatus.value !== 'STANDBY');
   const canStart = computed(() => count.value >= 1);

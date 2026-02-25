@@ -96,6 +96,7 @@ $indicator-inner-height: 1%;
   top: $margin-y;
   bottom: $margin-y + $navbar-height;
   right: 32px;
+  z-index: 3000; // NOTE: セットアップオーバーレイ(2000)より手前に表示するため
 }
 
 .upright-threshold-bubble {
