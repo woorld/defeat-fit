@@ -69,6 +69,7 @@ const onClickAutoCountSetupCancel = () => {
     <CountControl
       v-model:count="count"
       v-model:setCount="setCount"
+      v-model:enableAutoCount="enableAutoCount"
       :isStandby="counterStatus === 'STANDBY'"
       :isBreakTime="counterStatus === 'BREAK_TIME'"
       :isLockControl
@@ -88,14 +89,6 @@ const onClickAutoCountSetupCancel = () => {
         v-show="counterStatus !== 'STANDBY'"
         @click="onNext"
       >NEXT</VBtn>
-      <!-- TODO: レイアウトどうにかならんか -->
-      <VSwitch
-        v-model="enableAutoCount"
-        color="green"
-        label="自動カウント"
-        inset
-        hide-details
-      />
     </div>
     <VOverlay
       v-model="isAutoCountSetupOverlayVisible"
