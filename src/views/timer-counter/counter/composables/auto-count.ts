@@ -2,6 +2,8 @@ import { useOscStore } from '@src/stores/osc';
 import { ref, onUnmounted, watch, type Ref } from 'vue';
 import type { CounterStatus } from './counter';
 
+export type AutoCountSetupStatus = typeof autoCountSetupStage[keyof typeof autoCountSetupStage];
+
 // NOTE: STANDBY→DONEまでの順番が決まっているため、文字列ではなく数値にして大小を比較できるようにする
 export const autoCountSetupStage = {
   'STANDBY': 0,
@@ -12,7 +14,7 @@ export const autoCountSetupStage = {
 
 export function useAutoCount(args: {
   counterStatus: Ref<CounterStatus>,
-  onNext: () => void,
+  onNext: () => CounterStatus,
   decrementCount: () => number,
 }) {
   const oscStore = useOscStore();
@@ -20,9 +22,7 @@ export function useAutoCount(args: {
   let setupTimerId: number | null = null;
   let hasReachedMin = false;
 
-  const autoCountSetupStatus = ref<
-    typeof autoCountSetupStage[keyof typeof autoCountSetupStage]
-  >(autoCountSetupStage.STANDBY);
+  const autoCountSetupStatus = ref<AutoCountSetupStatus>(autoCountSetupStage.STANDBY);
   const maxUpright = ref(1);
   const minUpright = ref(0);
   const uprightAdjust = ref(0.01); // TODO: 設定で変更できるようにする
@@ -76,7 +76,7 @@ export function useAutoCount(args: {
     return Promise.resolve();
   };
 
-  const cancelAutoCountSetup = () => {
+  const resetAutoCountSetupStatus = () => {
     autoCountSetupStatus.value = autoCountSetupStage.STANDBY;
     autoCountSetupProgress.value = 0;
     clearSetupTimer();
@@ -90,6 +90,7 @@ export function useAutoCount(args: {
   });
 
   watch(() => oscStore.upright, (newValue) => {
+    // TODO: autoCountSetupStatusでよさそう
     if (args.counterStatus.value !== 'PROGRESS') {
       return;
     }
@@ -106,7 +107,10 @@ export function useAutoCount(args: {
       hasReachedMin = false;
 
       if (newCount <= 0) {
-        args.onNext();
+        const newCounterStatus = args.onNext();
+        if (newCounterStatus === 'STANDBY') {
+          resetAutoCountSetupStatus();
+        }
         return;
       }
     }
@@ -119,6 +123,6 @@ export function useAutoCount(args: {
     uprightAdjust,
     autoCountSetupProgress,
     setupAutoCount,
-    cancelAutoCountSetup,
+    resetAutoCountSetupStatus,
   };
 }

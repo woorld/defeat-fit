@@ -33,7 +33,7 @@ const {
   uprightAdjust,
   autoCountSetupProgress,
   setupAutoCount,
-  cancelAutoCountSetup,
+  resetAutoCountSetupStatus,
 } = useAutoCount({ counterStatus, onNext, decrementCount });
 
 const onClickStart = async () => {
@@ -52,8 +52,13 @@ const onClickStart = async () => {
   startCount();
 };
 
+const onClickStop = () => {
+  stopCount();
+  resetAutoCountSetupStatus();
+};
+
 const onClickAutoCountSetupCancel = () => {
-  cancelAutoCountSetup();
+  resetAutoCountSetupStatus();
   isAutoCountSetupOverlayVisible.value = false;
 }
 </script>
@@ -61,10 +66,13 @@ const onClickAutoCountSetupCancel = () => {
 <template>
   <VContainer class="d-flex justify-center align-center flex-column ga-8 h-100">
     <UprightIndicator
+      v-show="enableAutoCount"
       :currentUpright="oscStore.upright"
       :maxUpright
       :minUpright
       :uprightAdjust
+      :autoCountSetupStatus
+      :isPointerVisible="oscStore.oscStatus === 'OPEN_UPRIGHT'"
     />
     <CountControl
       v-model:count="count"
@@ -83,7 +91,7 @@ const onClickAutoCountSetupCancel = () => {
     <div class="d-flex justify-center align-center ga-4">
       <VBtn
         :disabled="!canStart"
-        @click="counterStatus === 'STANDBY' ? onClickStart() : stopCount()"
+        @click="counterStatus === 'STANDBY' ? onClickStart() : onClickStop()"
       >{{ counterStatus === 'STANDBY' ? 'START' : 'STOP' }}</VBtn>
       <VBtn
         v-show="counterStatus !== 'STANDBY'"

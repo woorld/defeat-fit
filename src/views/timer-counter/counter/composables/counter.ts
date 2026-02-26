@@ -57,12 +57,12 @@ export function useCounter(
     onNext();
   };
 
-  const onNext = () => {
+  const onNext = (): CounterStatus => {
     if (counterStatus.value === 'BREAK_TIME') {
       // 休憩終了、次のセット開始
       clearTimer();
       counterStatus.value = 'PROGRESS';
-      return;
+      return counterStatus.value;
     }
 
     // 1セット完了
@@ -73,15 +73,16 @@ export function useCounter(
     if (setCount.value <= 0) {
       setCount.value = recentSetCount;
       counterStatus.value = 'STANDBY';
-      return;
+      return counterStatus.value;
     }
 
     timerSeconds.value = breakTimeSeconds;
     timerId.value = window.setInterval(timerLoop, 1000);
     counterStatus.value = 'BREAK_TIME';
+    return counterStatus.value;
   };
 
-  const decrementCount = () => {
+  const decrementCount = (): number => {
     count.value--;
     if (count.value <= 0) {
       return 0;

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useTheme } from 'vuetify';
+import { autoCountSetupStage, type AutoCountSetupStatus } from '../composables/auto-count';
 
 const theme = useTheme();
 
@@ -9,9 +10,15 @@ const props = defineProps<{
   maxUpright: number,
   minUpright: number,
   uprightAdjust: number,
+  autoCountSetupStatus: AutoCountSetupStatus,
+  isPointerVisible: boolean,
 }>();
 
+// NOTE: 要素の表示・非表示やスタイリングは<style>で行うよう統一する
 const colorClass = computed(() => theme.current.value.dark ? 'dark' : 'light');
+const indicatorPointerDisplay = computed(() => props.isPointerVisible ? 'visible' : 'hidden');
+const minThresholdDisplay = computed(() => props.autoCountSetupStatus > autoCountSetupStage.MIN ? 'visible' : 'hidden');
+const maxThresholdDisplay = computed(() => props.autoCountSetupStatus > autoCountSetupStage.MAX ? 'visible' : 'hidden');
 </script>
 
 <template>
@@ -19,8 +26,8 @@ const colorClass = computed(() => theme.current.value.dark ? 'dark' : 'light');
     <div class="upright-indicator" :class="colorClass">
       <div class="upright-indicator__threshold-area" />
     </div>
-    <div class="upright-threshold-bubble max" :class="colorClass">MAX</div>
     <div class="upright-threshold-bubble min" :class="colorClass">MIN</div>
+    <div class="upright-threshold-bubble max" :class="colorClass">MAX</div>
   </div>
 </template>
 
@@ -80,10 +87,10 @@ $indicator-inner-height: 1%;
     }
 
     &::before {
-      bottom: binded-bottom(v-bind(maxUpright), $threshold-area-height);
+      bottom: binded-bottom(v-bind(minUpright), $threshold-area-height);
     }
     &::after {
-      bottom: binded-bottom(v-bind(minUpright), $threshold-area-height);
+      bottom: binded-bottom(v-bind(maxUpright), $threshold-area-height);
     }
   }
 }
@@ -125,11 +132,11 @@ $indicator-inner-height: 1%;
     border-bottom: solid calc($bubble-height / 2) transparent;
   }
 
-  &.max{
-    bottom: binded-bottom(v-bind(maxUpright), $bubble-height);
-  }
   &.min{
     bottom: binded-bottom(v-bind(minUpright), $bubble-height);
+  }
+  &.max{
+    bottom: binded-bottom(v-bind(maxUpright), $bubble-height);
   }
 
   &.light {
@@ -148,5 +155,20 @@ $indicator-inner-height: 1%;
       border-left-color: $bg-color;
     }
   }
+}
+
+// 表示状態の管理
+.upright-indicator::before {
+  visibility: v-bind(indicatorPointerDisplay);
+}
+
+.upright-threshold-bubble.min,
+.upright-indicator__threshold-area::before {
+  visibility: v-bind(minThresholdDisplay);
+}
+
+.upright-threshold-bubble.max,
+.upright-indicator__threshold-area::after {
+  visibility: v-bind(maxThresholdDisplay);
 }
 </style>
