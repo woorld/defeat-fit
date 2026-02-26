@@ -12,7 +12,7 @@ export function useAutoCount(args: {
   let setupTimerId: number | null = null;
   let hasReachedMin = false;
 
-  const autoCountSetupStatus = ref<'MAX' | 'MIN' | 'DONE'>('MAX');
+  const autoCountSetupStatus = ref<'MIN' | 'MAX' | 'DONE'>('MIN');
   const maxUpright = ref(1);
   const minUpright = ref(0);
   const uprightAdjust = ref(0.01); // TODO: 設定で変更できるようにする
@@ -55,14 +55,13 @@ export function useAutoCount(args: {
   });
 
   const setupAutoCount = async (): Promise<void> => {
-    autoCountSetupStatus.value = 'MAX';
-
-    maxUpright.value = await getThreshold();
     autoCountSetupStatus.value = 'MIN';
-
     minUpright.value = await getThreshold();
-    autoCountSetupStatus.value = 'DONE';
 
+    autoCountSetupStatus.value = 'MAX';
+    maxUpright.value = await getThreshold();
+
+    autoCountSetupStatus.value = 'DONE';
     autoCountSetupProgress.value = 0;
     return Promise.resolve();
   };
