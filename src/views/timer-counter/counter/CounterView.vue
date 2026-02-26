@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useCounter } from './composables/counter';
-import { useAutoCount } from './composables/auto-count';
+import { autoCountSetupStage, useAutoCount } from './composables/auto-count';
 import { useOscStore } from '@src/stores/osc';
 import CountControl from '../components/CountControl.vue';
 import UprightIndicator from './components/UprightIndicator.vue';
@@ -103,11 +103,11 @@ const onClickAutoCountSetupCancel = () => {
         </div>
         <div v-else class="d-flex flex-column justify-center align-center ga-4">
           <div>
-            <template v-if="autoCountSetupStatus === 'MIN'">
+            <template v-if="autoCountSetupStatus <= autoCountSetupStage.MIN">
               頭の位置の最小値を設定します。<br />
               今から行う筋トレの中で<strong>一番低い姿勢</strong>で止まってください。
             </template>
-            <template v-else-if="autoCountSetupStatus === 'MAX'">
+            <template v-else-if="autoCountSetupStatus >= autoCountSetupStage.MAX">
               頭の位置の最大値を設定します。<br />
               今から行う筋トレの中で<strong>一番高い姿勢</strong>で止まってください。
             </template>

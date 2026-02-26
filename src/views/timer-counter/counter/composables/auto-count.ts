@@ -2,6 +2,14 @@ import { useOscStore } from '@src/stores/osc';
 import { ref, onUnmounted, watch, type Ref } from 'vue';
 import type { CounterStatus } from './counter';
 
+// NOTE: STANDBY→DONEまでの順番が決まっているため、文字列ではなく数値にして大小を比較できるようにする
+export const autoCountSetupStage = {
+  'STANDBY': 0,
+  'MIN': 1,
+  'MAX': 2,
+  'DONE': 3,
+} as const;
+
 export function useAutoCount(args: {
   counterStatus: Ref<CounterStatus>,
   onNext: () => void,
@@ -12,7 +20,9 @@ export function useAutoCount(args: {
   let setupTimerId: number | null = null;
   let hasReachedMin = false;
 
-  const autoCountSetupStatus = ref<'MIN' | 'MAX' | 'DONE'>('MIN');
+  const autoCountSetupStatus = ref<
+    typeof autoCountSetupStage[keyof typeof autoCountSetupStage]
+  >(autoCountSetupStage.STANDBY);
   const maxUpright = ref(1);
   const minUpright = ref(0);
   const uprightAdjust = ref(0.01); // TODO: 設定で変更できるようにする
@@ -55,19 +65,19 @@ export function useAutoCount(args: {
   });
 
   const setupAutoCount = async (): Promise<void> => {
-    autoCountSetupStatus.value = 'MIN';
+    autoCountSetupStatus.value = autoCountSetupStage.MIN;
     minUpright.value = await getThreshold();
 
-    autoCountSetupStatus.value = 'MAX';
+    autoCountSetupStatus.value = autoCountSetupStage.MAX;
     maxUpright.value = await getThreshold();
 
-    autoCountSetupStatus.value = 'DONE';
+    autoCountSetupStatus.value = autoCountSetupStage.DONE;
     autoCountSetupProgress.value = 0;
     return Promise.resolve();
   };
 
   const cancelAutoCountSetup = () => {
-    autoCountSetupStatus.value = 'MAX';
+    autoCountSetupStatus.value = autoCountSetupStage.STANDBY;
     autoCountSetupProgress.value = 0;
     clearSetupTimer();
   };
