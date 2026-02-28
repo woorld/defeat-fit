@@ -56,13 +56,15 @@ export const oscApi = {
   },
 
   async openServer(listeningType: ListeningType) {
-    const targetAddresses = {
-      'TARGET': (await settingApi.getSetting('targetOscMessage'))
+    const typeAddressMap = {
+      TARGET: (await settingApi.getSetting('targetOscMessage'))
         .filter(m => m.enabled)
         .map(m => m.address),
-      'ALL': ['*'],
-      'UPRIGHT': ['/avatar/parameters/Upright'],
-    }[listeningType];
+      ALL: ['*'],
+      UPRIGHT: ['/avatar/parameters/Upright'],
+    } as const satisfies Record<ListeningType, string[]>
+
+    const targetAddresses = typeAddressMap[listeningType];
 
     if (targetAddresses.length <= 0 || oscQueryServer !== null || oscServer !== null || oscStatus === 'PENDING') {
       // 対象のOSCメッセージが空配列か、OSCサーバのどちらかが開始中か開始済の場合
@@ -94,27 +96,24 @@ export const oscApi = {
       if (!payload.args[0] && payload.args[0] !== 0) {
         return;
       }
-      switch (listeningType) {
-        case 'TARGET':
-          updateDefeatCount();
-          break;
-        case 'ALL':
-          sendMessageIfNotNull('listen-any-message', payload.address);
-          break;
-        case 'UPRIGHT':
-          // TODO: Uprightの更新処理
-          sendMessageIfNotNull('listen-upright-value', payload.args[0]);
-          break;
-      }
+
+      const handlers = {
+        TARGET: () => updateDefeatCount(),
+        ALL: () => sendMessageIfNotNull('listen-any-message', payload.address),
+        UPRIGHT: () => sendMessageIfNotNull('listen-upright-value', payload.args[0]),
+      } as const satisfies Record<ListeningType, () => void>;
+
+      handlers[listeningType]();
     };
 
     const onOpen = () => {
-      const listeningTypeToOscStatus: Record<ListeningType, OscStatus> = {
-        'TARGET': 'OPEN',
-        'ALL': 'OPEN_ALL',
-        'UPRIGHT': 'OPEN_UPRIGHT',
-      } as const
-      changeOscStatus(listeningTypeToOscStatus[listeningType]);
+      const typeStatusMap = {
+        TARGET: 'OPEN',
+        ALL: 'OPEN_ALL',
+        UPRIGHT: 'OPEN_UPRIGHT',
+      } as const satisfies Record<ListeningType, OscStatus>;
+
+      changeOscStatus(typeStatusMap[listeningType]);
 
       noticeApi.createNotice({
         text: 'OSCメッセージの受信を開始しました',
