@@ -109,8 +109,8 @@ const onClickAutoCountSetupCancel = () => {
           OSCサーバーを開始しています…
           <VProgressCircular indeterminate />
         </div>
-        <div v-else class="d-flex flex-column justify-center align-center ga-4">
-          <div>
+        <div v-else class="d-flex flex-column justify-center align-center ga-6">
+          <p>
             <template v-if="autoCountSetupStatus <= autoCountSetupStage.MIN">
               頭の位置の最小値を設定します。<br />
               今から行う筋トレの中で<strong>一番低い姿勢</strong>で止まってください。
@@ -119,13 +119,12 @@ const onClickAutoCountSetupCancel = () => {
               頭の位置の最大値を設定します。<br />
               今から行う筋トレの中で<strong>一番高い姿勢</strong>で止まってください。
             </template>
-            <VProgressLinear
-              v-model="autoCountSetupProgress"
-              class="mt-4"
-              :min="0"
-              :max="5"
-            />
-          </div>
+          </p>
+          <VProgressLinear
+            v-model="autoCountSetupProgress"
+            :min="0"
+            :max="5"
+          />
           <VBtn variant="outlined" @click="onClickAutoCountSetupCancel">キャンセル</VBtn>
         </div>
       </VSheet>

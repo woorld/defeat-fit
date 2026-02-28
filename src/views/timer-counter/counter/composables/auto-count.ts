@@ -1,6 +1,9 @@
 import { useOscStore } from '@src/stores/osc';
 import { ref, onUnmounted, watch, type Ref } from 'vue';
 import type { CounterStatus } from './counter';
+import { useTimerUtil } from '../../composables/timer-util';
+import setupProgressSound from '@src/assets/sound/timer/start-countdown.mp3';
+import thresholdSetupCompleteSound from '@src/assets/sound/timer/start.mp3';
 
 export type AutoCountSetupStatus = typeof autoCountSetupStage[keyof typeof autoCountSetupStage];
 
@@ -18,6 +21,10 @@ export function useAutoCount(args: {
   decrementCount: () => number,
 }) {
   const oscStore = useOscStore();
+  const { playAudio } = useTimerUtil(ref(0), ref(null)); // TODO: ごり押しの仮対応 Issue#172 で改善予定
+
+  const setupProgressAudio = new Audio(setupProgressSound);
+  const thresholdSetupCompleteAudio = new Audio(thresholdSetupCompleteSound);
 
   let setupTimerId: number | null = null;
   let hasReachedMin = false;
@@ -54,7 +61,11 @@ export function useAutoCount(args: {
 
       autoCountSetupProgress.value++;
 
-      if (autoCountSetupProgress.value < 5) {
+      if (autoCountSetupProgress.value >= 3 && autoCountSetupProgress.value <= 5) {
+        playAudio(setupProgressAudio);
+      }
+
+      if (autoCountSetupProgress.value < 6) {
         return;
       }
 
@@ -67,9 +78,11 @@ export function useAutoCount(args: {
   const setupAutoCount = async (): Promise<void> => {
     autoCountSetupStatus.value = autoCountSetupStage.MIN;
     minUpright.value = await getThreshold();
+    playAudio(thresholdSetupCompleteAudio);
 
     autoCountSetupStatus.value = autoCountSetupStage.MAX;
     maxUpright.value = await getThreshold();
+    // NOTE: カウンター開始時の効果音と被るため、MAX設定時は効果音を鳴らさない
 
     autoCountSetupStatus.value = autoCountSetupStage.DONE;
     autoCountSetupProgress.value = 0;
@@ -81,6 +94,12 @@ export function useAutoCount(args: {
     autoCountSetupProgress.value = 0;
     clearSetupTimer();
   };
+
+  (async () => {
+    const volume = await window.setting.getSetting('soundVolume');
+    thresholdSetupCompleteAudio.volume = volume;
+    setupProgressAudio.volume = volume;
+  })();
 
   onUnmounted(() => {
     clearSetupTimer();

@@ -11,7 +11,6 @@ export function useCounter(
   count: Ref<number>,
   setCount: Ref<number>,
 ) {
-
   let recentCount = 0;
   let recentSetCount = 1;
   let breakTimeSeconds = SETTING_DEFAULT_VALUE.breakTimeSecBetweenSets;
