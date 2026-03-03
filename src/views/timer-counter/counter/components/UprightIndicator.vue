@@ -16,7 +16,7 @@ const props = defineProps<{
 
 // NOTE: 要素の表示・非表示やスタイリングは<style>で行うよう統一する
 const colorClass = computed(() => theme.current.value.dark ? 'dark' : 'light');
-const indicatorPointerDisplay = computed(() => props.isPointerVisible ? 'visible' : 'hidden');
+const pointerDisplay = computed(() => props.isPointerVisible ? 'visible' : 'hidden');
 const minThresholdDisplay = computed(() => props.autoCountSetupStatus > autoCountSetupStage.MIN ? 'visible' : 'hidden');
 const maxThresholdDisplay = computed(() => props.autoCountSetupStatus > autoCountSetupStage.MAX ? 'visible' : 'hidden');
 </script>
@@ -159,7 +159,7 @@ $indicator-inner-height: 1%;
 
 // 表示状態の管理
 .upright-indicator::before {
-  visibility: v-bind(indicatorPointerDisplay);
+  visibility: v-bind(pointerDisplay);
 }
 
 .upright-threshold-bubble.min,

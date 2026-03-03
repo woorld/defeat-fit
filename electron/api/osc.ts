@@ -62,7 +62,7 @@ export const oscApi = {
         .map(m => m.address),
       ALL: ['*'],
       UPRIGHT: ['/avatar/parameters/Upright'],
-    } as const satisfies Record<ListeningType, string[]>
+    } as const satisfies Record<ListeningType, string[]>;
 
     const targetAddresses = typeAddressMap[listeningType];
 

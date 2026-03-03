@@ -21,7 +21,7 @@ const enableAutoCount = defineModel<boolean>('enableAutoCount', { default: null 
         hide-details
         inset
         :min="1"
-        :disabled="isLockControl"
+        :disabled="props.isLockControl"
       />
     </div>
     <VSwitch
@@ -31,7 +31,7 @@ const enableAutoCount = defineModel<boolean>('enableAutoCount', { default: null 
       label="自動カウント"
       inset
       hide-details
-      :disabled="isLockControl"
+      :disabled="props.isLockControl"
     />
   </div>
   <!-- NOTE: VDividerが中央に来るようにtext-align, widthを設定 -->

@@ -9,10 +9,10 @@ export type AutoCountSetupStatus = typeof autoCountSetupStage[keyof typeof autoC
 
 // NOTE: STANDBY→DONEまでの順番が決まっているため、文字列ではなく数値にして大小を比較できるようにする
 export const autoCountSetupStage = {
-  'STANDBY': 0,
-  'MIN': 1,
-  'MAX': 2,
-  'DONE': 3,
+  STANDBY: 0,
+  MIN: 1,
+  MAX: 2,
+  DONE: 3,
 } as const;
 
 export function useAutoCount(args: {
@@ -41,12 +41,11 @@ export function useAutoCount(args: {
     }
     window.clearInterval(setupTimerId);
     setupTimerId = null;
-  }
+  };
 
   const getThreshold = (): Promise<number> => new Promise(resolve => {
     let recentUpright = oscStore.upright;
 
-    // TODO: 効果音を鳴らす
     setupTimerId = window.setInterval(() => {
       const currentUpright = oscStore.upright;
       const withinAcceptableRange =
@@ -55,6 +54,7 @@ export function useAutoCount(args: {
       recentUpright = currentUpright;
 
       if (!withinAcceptableRange) {
+        // Uprightのブレが一定以上の場合
         autoCountSetupProgress.value = 0;
         return;
       }
@@ -109,8 +109,7 @@ export function useAutoCount(args: {
   });
 
   watch(() => oscStore.upright, (newValue) => {
-    // TODO: autoCountSetupStatusでよさそう
-    if (args.counterStatus.value !== 'PROGRESS') {
+    if (autoCountSetupStatus.value !== autoCountSetupStage.DONE) {
       return;
     }
 
@@ -125,12 +124,13 @@ export function useAutoCount(args: {
       const newCount = args.decrementCount();
       hasReachedMin = false;
 
-      if (newCount <= 0) {
-        const newCounterStatus = args.onNext();
-        if (newCounterStatus === 'STANDBY') {
-          resetAutoCountSetupStatus();
-        }
+      if (newCount >= 1) {
         return;
+      }
+
+      const newCounterStatus = args.onNext();
+      if (newCounterStatus === 'STANDBY') {
+        resetAutoCountSetupStatus();
       }
     }
   });
