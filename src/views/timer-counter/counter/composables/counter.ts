@@ -1,4 +1,4 @@
-import { computed, onUnmounted, ref, type Ref } from 'vue';
+import { onUnmounted, ref, type Ref } from 'vue';
 import { SETTING_DEFAULT_VALUE } from '@common/constants';
 import setStartSound from '@src/assets/sound/timer/start.mp3';
 import setEndSound from '@src/assets/sound/timer/end.mp3';
@@ -7,10 +7,7 @@ import { useTimerUtil } from '../../composables/timer-util';
 
 export type CounterStatus = 'STANDBY' | 'PROGRESS' | 'BREAK_TIME';
 
-export function useCounter(
-  count: Ref<number>,
-  setCount: Ref<number>,
-) {
+export function useCounter(count: Ref<number>, setCount: Ref<number>) {
   let recentCount = 0;
   let recentSetCount = 1;
   let breakTimeSeconds = SETTING_DEFAULT_VALUE.breakTimeSecBetweenSets;
@@ -22,10 +19,6 @@ export function useCounter(
   const counterStatus = ref<CounterStatus>('STANDBY');
   const timerId = ref<number | null>(null);
   const timerSeconds = ref(0);
-
-  // TODO: ここらへん必要？
-  const isLockControl = computed(() => counterStatus.value !== 'STANDBY');
-  const canStart = computed(() => count.value >= 1);
 
   const {
     timerDisplay,
@@ -108,8 +101,6 @@ export function useCounter(
 
   return {
     counterStatus,
-    isLockControl,
-    canStart,
     timerDisplay,
     startCount,
     stopCount,

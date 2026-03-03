@@ -17,8 +17,6 @@ const isAutoCountSetupOverlayVisible = ref(false);
 
 const {
   counterStatus,
-  isLockControl,
-  canStart,
   timerDisplay,
   startCount,
   stopCount,
@@ -80,7 +78,7 @@ const onClickAutoCountSetupCancel = () => {
       v-model:enableAutoCount="enableAutoCount"
       :isStandby="counterStatus === 'STANDBY'"
       :isBreakTime="counterStatus === 'BREAK_TIME'"
-      :isLockControl
+      :isLockControl="counterStatus !== 'STANDBY'"
     >
       <div class="d-flex w-100 justify-space-between align-baseline">
         <span v-show="counterStatus === 'PROGRESS'">あと</span>
@@ -90,7 +88,7 @@ const onClickAutoCountSetupCancel = () => {
     </CountControl>
     <div class="d-flex justify-center align-center ga-4">
       <VBtn
-        :disabled="!canStart"
+        :disabled="count <= 0"
         @click="counterStatus === 'STANDBY' ? onClickStart() : onClickStop()"
       >{{ counterStatus === 'STANDBY' ? 'START' : 'STOP' }}</VBtn>
       <VBtn
