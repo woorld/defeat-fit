@@ -6,9 +6,10 @@ const oscStore = useOscStore();
 
 const isTargetOscMessageEmpty = ref(false);
 
-const label = computed(() => oscStore.isListening ? 'OSC受信中' : 'OSC受信停止中');
-const color = computed(() => oscStore.isListening ? 'green' : 'yellow');
-const icon = computed(() => oscStore.isListening ? 'mdi-wifi' : 'mdi-wifi-strength-off');
+const isListeningTarget = computed(() => oscStore.oscStatus === 'OPEN');
+const label = computed(() => isListeningTarget.value ? 'OSC受信中' : 'OSC受信停止中');
+const color = computed(() => isListeningTarget.value ? 'green' : 'yellow');
+const icon = computed(() => isListeningTarget.value ? 'mdi-wifi' : 'mdi-wifi-strength-off');
 const isTooltipVisible = computed(() => isTargetOscMessageEmpty.value && !oscStore.isListening);
 
 (async () => {
