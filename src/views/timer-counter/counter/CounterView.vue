@@ -142,6 +142,15 @@ else {
           </div>
         </VSheet>
       </VOverlay>
+    <VAlert
+      class="position-fixed bottom-0 mb-16"
+      type="info"
+      variant="tonal"
+    >
+      自動カウント機能は、<strong>頭が上下に移動するトレーニング</strong>に対応しています。<br />
+      頭が左右に移動するトレーニングおよび<br />
+      手足のみを動かすトレーニングには現在対応していません。
+    </VAlert>
     </template>
     <VProgressCircular v-else indeterminate />
   </VContainer>
