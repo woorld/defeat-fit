@@ -4,6 +4,7 @@ import type { CounterStatus } from './counter';
 import { useTimerUtil } from '../../composables/timer-util';
 import setupProgressSound from '@src/assets/sound/timer/start-countdown.mp3';
 import thresholdSetupCompleteSound from '@src/assets/sound/timer/start.mp3';
+import reachedMinSound from '@src/assets/sound/timer/reach-min.mp3';
 
 export type AutoCountSetupStatus = typeof autoCountSetupStage[keyof typeof autoCountSetupStage];
 
@@ -25,6 +26,7 @@ export function useAutoCount(args: {
 
   const setupProgressAudio = new Audio(setupProgressSound);
   const thresholdSetupCompleteAudio = new Audio(thresholdSetupCompleteSound);
+  const reachedMinAudio = new Audio(reachedMinSound);
 
   let setupTimerId: number | null = null;
   let hasReachedMin = false;
@@ -99,23 +101,30 @@ export function useAutoCount(args: {
     const volume = await window.setting.getSetting('soundVolume');
     thresholdSetupCompleteAudio.volume = volume;
     setupProgressAudio.volume = volume;
+    reachedMinAudio.volume = volume;
   })();
 
   onUnmounted(() => {
     clearSetupTimer();
+
+    thresholdSetupCompleteAudio.pause();
+    setupProgressAudio.pause();
+    reachedMinAudio.pause();
+
     if (oscStore.oscStatus === 'OPEN_UPRIGHT') {
       window.osc.stopListening();
     }
   });
 
   watch(() => oscStore.upright, (newValue) => {
-    if (autoCountSetupStatus.value !== autoCountSetupStage.DONE) {
+    if (args.counterStatus.value !== 'PROGRESS' || autoCountSetupStatus.value !== autoCountSetupStage.DONE) {
       return;
     }
 
     if (!hasReachedMin && newValue <= minUpright.value + uprightAdjust.value) {
       // 中間点(min)を通過
       hasReachedMin = true;
+      playAudio(reachedMinAudio);
       return;
     }
 
