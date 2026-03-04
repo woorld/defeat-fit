@@ -1,8 +1,8 @@
 import { ref, onUnmounted, type Ref } from 'vue';
 import { SETTING_DEFAULT_VALUE } from '@common/constants';
-import timerStartCountdownSound from '@src/assets/sound/timer/start-countdown.mp3';
-import timerStartSound from '@src/assets/sound/timer/start.mp3';
-import timerEndSound from '@src/assets/sound/timer/end.mp3';
+import timerStartCountdownSound from '@src/assets/sound/timer-counter/start-countdown.mp3';
+import timerStartSound from '@src/assets/sound/timer-counter/start.mp3';
+import timerEndSound from '@src/assets/sound/timer-counter/end.mp3';
 import { useTimerUtil } from '../../composables/timer-util';
 
 export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>) {

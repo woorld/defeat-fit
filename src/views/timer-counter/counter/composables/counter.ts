@@ -1,8 +1,8 @@
 import { onUnmounted, ref, type Ref } from 'vue';
 import { SETTING_DEFAULT_VALUE } from '@common/constants';
-import setStartSound from '@src/assets/sound/timer/start.mp3';
-import setEndSound from '@src/assets/sound/timer/end.mp3';
-import countDecrementSound from '@src/assets/sound/timer/start-countdown.mp3';
+import setStartSound from '@src/assets/sound/timer-counter/start.mp3';
+import setEndSound from '@src/assets/sound/timer-counter/end.mp3';
+import countDecrementSound from '@src/assets/sound/timer-counter/start-countdown.mp3';
 import { useTimerUtil } from '../../composables/timer-util';
 
 export type CounterStatus = 'STANDBY' | 'PROGRESS' | 'BREAK_TIME';

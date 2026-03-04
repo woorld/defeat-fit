@@ -2,9 +2,9 @@ import { useOscStore } from '@src/stores/osc';
 import { ref, onUnmounted, watch, type Ref } from 'vue';
 import type { CounterStatus } from './counter';
 import { useTimerUtil } from '../../composables/timer-util';
-import setupProgressSound from '@src/assets/sound/timer/start-countdown.mp3';
-import thresholdSetupCompleteSound from '@src/assets/sound/timer/start.mp3';
-import reachedMinSound from '@src/assets/sound/timer/reach-min.mp3';
+import setupProgressSound from '@src/assets/sound/timer-counter/start-countdown.mp3';
+import thresholdSetupCompleteSound from '@src/assets/sound/timer-counter/start.mp3';
+import reachedMinSound from '@src/assets/sound/timer-counter/reach-min.mp3';
 
 export type AutoCountSetupStatus = typeof autoCountSetupStage[keyof typeof autoCountSetupStage];
 
