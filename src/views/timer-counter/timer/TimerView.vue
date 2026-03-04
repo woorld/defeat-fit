@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useTimer } from './composables/timer';
 import CountControl from '../components/CountControl.vue';
@@ -12,12 +12,11 @@ const setCount = ref(Number(route.params.setCount) || 1);
 const {
   timerStatus,
   timerDisplay,
-  isLockControl,
-  isLockStartStop,
-  canStart,
   startTimer,
   stopTimer,
 } = useTimer(timerSeconds, setCount);
+
+const canStart = computed(() => timerStatus.value === 'STANDBY');
 </script>
 
 <template>
@@ -27,12 +26,12 @@ const {
       v-model:setCount="setCount"
       :isStandby="timerStatus === 'STANDBY'"
       :isBreakTime="timerStatus === 'BREAK_TIME'"
-      :isLockControl
+      :isLockControl="timerStatus !== 'STANDBY'"
     >
       <div class="text-h2 w-100 text-center">{{ timerDisplay }}</div>
     </CountControl>
     <VBtn
-      :disabled="isLockStartStop"
+      :disabled="timerStatus === 'END' || timerSeconds <= 0"
       @click="canStart ? startTimer() : stopTimer()"
     >{{ canStart ? 'START' : 'STOP' }}</VBtn>
   </VContainer>

@@ -5,10 +5,15 @@ import { useDefeatCountStore } from '@src/stores/defeat-count';
 
 export const useOscStore = defineStore('osc', () => {
   const defeatCountStore = useDefeatCountStore();
+
   const oscStatus = ref<OscStatus>('CLOSE');
   const listenedMessageList = ref(new Set<string>());
+  const upright = ref(0);
 
-  const isListening = computed(() => ['OPEN', 'OPEN_ALL'].includes(oscStatus.value));
+  const isListening = computed(() => {
+    const listeningStatus: OscStatus[] = ['OPEN', 'OPEN_ALL', 'OPEN_UPRIGHT'];
+    return listeningStatus.includes(oscStatus.value);
+  })
   const pending = computed(() => oscStatus.value === 'PENDING');
 
   const toggleListeningStatus = async () => {
@@ -27,6 +32,12 @@ export const useOscStore = defineStore('osc', () => {
     return window.osc.startListeningAll();
   };
 
+  const startListeningUpright = async () => {
+    upright.value = 0;
+    await window.osc.stopListening();
+    return window.osc.startListeningUpright();
+  };
+
   (async () => {
     oscStatus.value = await window.osc.getOscStatus();
 
@@ -39,6 +50,9 @@ export const useOscStore = defineStore('osc', () => {
     window.osc.onListenAnyMessage((listenedMessage) => {
       listenedMessageList.value.add(listenedMessage);
     });
+    window.osc.onListenUprightValue((uprightValue) => {
+      upright.value = uprightValue;
+    });
 
     window.osc.startListening();
   })();
@@ -46,9 +60,11 @@ export const useOscStore = defineStore('osc', () => {
   return {
     oscStatus,
     listenedMessageList,
+    upright,
     isListening,
     pending,
     toggleListeningStatus,
     startListeningAll,
+    startListeningUpright,
   };
 });

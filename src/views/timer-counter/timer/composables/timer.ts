@@ -1,8 +1,8 @@
-import { ref, computed, onUnmounted, type Ref } from 'vue';
+import { ref, onUnmounted, type Ref } from 'vue';
 import { SETTING_DEFAULT_VALUE } from '@common/constants';
-import timerStartCountdownSound from '@src/assets/sound/timer/start-countdown.mp3';
-import timerStartSound from '@src/assets/sound/timer/start.mp3';
-import timerEndSound from '@src/assets/sound/timer/end.mp3';
+import timerStartCountdownSound from '@src/assets/sound/timer-counter/start-countdown.mp3';
+import timerStartSound from '@src/assets/sound/timer-counter/start.mp3';
+import timerEndSound from '@src/assets/sound/timer-counter/end.mp3';
 import { useTimerUtil } from '../../composables/timer-util';
 
 export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>) {
@@ -17,10 +17,6 @@ export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>) {
 
   const timerStatus = ref<'STANDBY' | 'COUNTDOWN' | 'PROGRESS' | 'BREAK_TIME' |'END'>('STANDBY');
   const timerId = ref<number | null>(null);
-
-  const isLockControl = computed(() => timerStatus.value !== 'STANDBY');
-  const isLockStartStop = computed(() => timerStatus.value === 'END' || timerSeconds.value <= 0);
-  const canStart = computed(() => timerStatus.value === 'STANDBY');
 
   const {
     timerDisplay,
@@ -139,9 +135,6 @@ export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>) {
   return {
     timerStatus,
     timerDisplay,
-    isLockControl,
-    isLockStartStop,
-    canStart,
     startTimer,
     stopTimer,
   };

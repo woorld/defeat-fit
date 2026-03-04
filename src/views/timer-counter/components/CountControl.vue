@@ -8,18 +8,30 @@ const props = defineProps<{
 
 const count = defineModel<number>('count', { required: true });
 const setCount = defineModel<number>('setCount', { required: true });
+const enableAutoCount = defineModel<boolean>('enableAutoCount', { default: null });
 </script>
 
 <template>
-  <div class="d-flex justify-space-between align-center ga-4" v-if="!props.isLockControl">
-    <VLabel>セット数</VLabel>
-    <VNumberInput
-      class="flex-grow-0"
-      v-model="setCount"
-      hide-details
+  <div class="d-flex justify-space-between align-center ga-6" v-if="!props.isLockControl">
+    <div class="d-flex justify-space-between align-center ga-4">
+      <VLabel>セット数</VLabel>
+      <VNumberInput
+        class="flex-grow-0"
+        v-model="setCount"
+        hide-details
+        inset
+        :min="1"
+        :disabled="props.isLockControl"
+      />
+    </div>
+    <VSwitch
+      v-model="enableAutoCount"
+      v-if="enableAutoCount != null"
+      color="green"
+      label="自動カウント"
       inset
-      :min="1"
-      :disabled="isLockControl"
+      hide-details
+      :disabled="props.isLockControl"
     />
   </div>
   <!-- NOTE: VDividerが中央に来るようにtext-align, widthを設定 -->
