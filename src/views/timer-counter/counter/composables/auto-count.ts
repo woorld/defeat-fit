@@ -34,7 +34,7 @@ export function useAutoCount(args: {
   const autoCountSetupStatus = ref<AutoCountSetupStatus>(autoCountSetupStage.STANDBY);
   const maxUpright = ref(1);
   const minUpright = ref(0);
-  const uprightAdjust = ref(0.01); // TODO: 設定で変更できるようにする
+  const uprightAdjust = ref(0.02); // TODO: 設定で変更できるようにする
   const autoCountSetupProgress = ref(0);
 
   const clearSetupTimer = () => {
