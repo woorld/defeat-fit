@@ -4,6 +4,7 @@ import timerStartCountdownSound from '@src/assets/sound/timer-counter/start-coun
 import timerStartSound from '@src/assets/sound/timer-counter/start.mp3';
 import timerEndSound from '@src/assets/sound/timer-counter/end.mp3';
 import { useTimerUtil } from '../../composables/timer-util';
+import { useAudio } from '@src/composables/common/audio';
 
 export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>) {
   let recentTimerSeconds = 0;
@@ -11,18 +12,19 @@ export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>) {
   let audioPlayCount = 0;
   let breakTimeSeconds = SETTING_DEFAULT_VALUE.breakTimeSecBetweenSets;
 
-  const timerStartCountdownAudio = new Audio(timerStartCountdownSound);
-  const timerStartAudio = new Audio(timerStartSound);
-  const timerEndAudio = new Audio(timerEndSound);
-
   const timerStatus = ref<'STANDBY' | 'COUNTDOWN' | 'PROGRESS' | 'BREAK_TIME' |'END'>('STANDBY');
   const timerId = ref<number | null>(null);
 
   const {
     timerDisplay,
-    playAudio,
     clearTimer,
   } = useTimerUtil(timerSeconds, timerId);
+
+  const { playAudio } = useAudio({
+    timerStartCountdown: timerStartCountdownSound,
+    timerStart: timerStartSound,
+    timerEnd: timerEndSound,
+  });
 
   const startTimer = () => {
     timerStatus.value = 'COUNTDOWN';
@@ -57,12 +59,12 @@ export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>) {
         return;
       case 'COUNTDOWN':
         if (audioPlayCount >= 5) {
-          playAudio(timerStartAudio);
+          playAudio('timerStart');
           audioPlayCount = 0;
           timerStatus.value = 'PROGRESS';
         }
         else {
-          playAudio(timerStartCountdownAudio);
+          playAudio('timerStartCountdown');
           audioPlayCount++;
         }
         return;
@@ -74,7 +76,7 @@ export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>) {
         }
 
         setCount.value--;
-        playAudio(timerEndAudio); // NOTE: 最初の1回は即時実行したいためここで呼び出す
+        playAudio('timerEnd'); // NOTE: 最初の1回は即時実行したいためここで呼び出す
         audioPlayCount++;
 
         if (setCount.value <= 0) {
@@ -90,21 +92,21 @@ export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>) {
         timerSeconds.value--;
 
         if (timerSeconds.value <= 0) {
-          playAudio(timerStartAudio);
+          playAudio('timerStart');
           timerSeconds.value = recentTimerSeconds;
           timerStatus.value = 'PROGRESS';
           return;
         }
 
         if (timerSeconds.value <= 5) {
-          playAudio(timerStartCountdownAudio);
+          playAudio('timerStartCountdown');
           return;
         }
         return;
       case 'END':
         if (setCount.value <= 0 && audioPlayCount < 3) {
           // セットが0になった場合、効果音を追加で2回（合計3回）鳴らす
-          playAudio(timerEndAudio);
+          playAudio('timerEnd');
           audioPlayCount++;
           return;
         }
@@ -117,19 +119,11 @@ export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>) {
   };
 
   (async () => {
-    const setting = await window.setting.getAllSetting();
-
-    timerStartCountdownAudio.volume = setting.soundVolume;
-    timerStartAudio.volume = setting.soundVolume;
-    timerEndAudio.volume = setting.soundVolume;
-    breakTimeSeconds = setting.breakTimeSecBetweenSets;
+    breakTimeSeconds = await window.setting.getSetting('breakTimeSecBetweenSets');
   })();
 
   onUnmounted(() => {
     clearTimer();
-    timerStartCountdownAudio.pause();
-    timerStartAudio.pause();
-    timerEndAudio.pause();
   });
 
   return {

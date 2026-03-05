@@ -7,11 +7,6 @@ export function useTimerUtil(timerSeconds: Ref<number>, timerId: Ref<number | nu
     return `${minutes} : ${seconds}`;
   });
 
-  const playAudio = (audio: HTMLAudioElement) => {
-    audio.currentTime = 0;
-    audio.play();
-  };
-
   const clearTimer = () => {
     if (!timerId.value) {
       return;
@@ -22,7 +17,6 @@ export function useTimerUtil(timerSeconds: Ref<number>, timerId: Ref<number | nu
 
   return {
     timerDisplay,
-    playAudio,
     clearTimer,
   };
 }
