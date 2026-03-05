@@ -1,10 +1,10 @@
 import { useOscStore } from '@src/stores/osc';
 import { ref, onUnmounted, watch, type Ref } from 'vue';
 import type { CounterStatus } from './counter';
-import { useTimerUtil } from '../../composables/timer-util';
 import setupProgressSound from '@src/assets/sound/timer-counter/start-countdown.mp3';
 import thresholdSetupCompleteSound from '@src/assets/sound/timer-counter/start.mp3';
 import reachedMinSound from '@src/assets/sound/timer-counter/reach-min.mp3';
+import { useAudio } from '@src/composables/common/audio';
 
 export type AutoCountSetupStatus = typeof autoCountSetupStage[keyof typeof autoCountSetupStage];
 
@@ -22,11 +22,11 @@ export function useAutoCount(args: {
   decrementCount: () => number,
 }) {
   const oscStore = useOscStore();
-  const { playAudio } = useTimerUtil(ref(0), ref(null)); // TODO: ごり押しの仮対応 Issue#172 で改善予定
-
-  const setupProgressAudio = new Audio(setupProgressSound);
-  const thresholdSetupCompleteAudio = new Audio(thresholdSetupCompleteSound);
-  const reachedMinAudio = new Audio(reachedMinSound);
+  const { playAudio } = useAudio({
+    setupProgress: setupProgressSound,
+    thresholdSetupComplete: thresholdSetupCompleteSound,
+    reachedMin: reachedMinSound,
+  });
 
   let setupTimerId: number | null = null;
   let hasReachedMin = false;
@@ -64,7 +64,7 @@ export function useAutoCount(args: {
       autoCountSetupProgress.value++;
 
       if (autoCountSetupProgress.value >= 3 && autoCountSetupProgress.value <= 5) {
-        playAudio(setupProgressAudio);
+        playAudio('setupProgress');
       }
 
       if (autoCountSetupProgress.value < 6) {
@@ -80,7 +80,7 @@ export function useAutoCount(args: {
   const setupAutoCount = async (): Promise<void> => {
     autoCountSetupStatus.value = autoCountSetupStage.MIN;
     minUpright.value = await getThreshold();
-    playAudio(thresholdSetupCompleteAudio);
+    playAudio('thresholdSetupComplete');
 
     autoCountSetupStatus.value = autoCountSetupStage.MAX;
     maxUpright.value = await getThreshold();
@@ -97,19 +97,8 @@ export function useAutoCount(args: {
     clearSetupTimer();
   };
 
-  (async () => {
-    const volume = await window.setting.getSetting('soundVolume');
-    thresholdSetupCompleteAudio.volume = volume;
-    setupProgressAudio.volume = volume;
-    reachedMinAudio.volume = volume;
-  })();
-
   onUnmounted(() => {
     clearSetupTimer();
-
-    thresholdSetupCompleteAudio.pause();
-    setupProgressAudio.pause();
-    reachedMinAudio.pause();
 
     if (oscStore.oscStatus === 'OPEN_UPRIGHT') {
       window.osc.stopListening();
@@ -124,7 +113,7 @@ export function useAutoCount(args: {
     if (!hasReachedMin && newValue <= minUpright.value + uprightAdjust.value) {
       // 中間点(min)を通過
       hasReachedMin = true;
-      playAudio(reachedMinAudio);
+      playAudio('reachedMin');
       return;
     }
 
