@@ -20,6 +20,7 @@ const oscReceivedSounds: Record<Exclude<OscReceivedSoundSetting, null>, string> 
 };
 
 export const useDefeatCountStore = defineStore('defeat-count', () => {
+  // NOTE: useAudioは動的にソース・音量が変更されるケースに向かないため使用しない
   const audio = new Audio();
   let shouldPlayAudio = false;
 
