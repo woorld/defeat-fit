@@ -1,7 +1,7 @@
-import { onUnmounted } from "vue";
+import { onUnmounted } from 'vue';
 
 export function useAudio<T extends string>(namePathRecord: Record<T, string>) {
-  const audios: Record<T, HTMLAudioElement> = {} as any; // NOTE: こうしないと型チェックが通らないし型が壊れることもないのでOK
+  const audios: Record<T, HTMLAudioElement> = {} as any; // NOTE: 型が壊れることはないので型アサーションしてOK
 
   const playAudio = (name: T) => {
     audios[name].currentTime = 0;
