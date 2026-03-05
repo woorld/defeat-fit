@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import TransitionRouterView from '@src/components/common/TransitionRouterView.vue';
 import ViewToggle from '@src/components/common/ViewToggle.vue';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
@@ -25,10 +26,6 @@ const viewOptions = [
 <template>
   <VContainer class="h-100">
     <ViewToggle class="position-fixed left-0 right-0" :viewOptions />
-    <RouterView v-slot="{Component}">
-      <Transition mode="out-in">
-        <Component :is="Component" />
-      </Transition>
-    </RouterView>
+    <TransitionRouterView />
   </VContainer>
 </template>
