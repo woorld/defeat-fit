@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import BottomNav from '@src/components/BottomNav.vue';
 import { useNoticeStore } from '@src/stores/notice';
 import UpdateDialog from '@src/components/UpdateDialog.vue';
+import TransitionRouterView from './components/common/TransitionRouterView.vue';
 
 const noticeStore = useNoticeStore();
 
@@ -12,11 +13,7 @@ const isUpdateDialogVisible = ref(false);
 <template>
   <VApp>
     <VMain>
-      <RouterView v-slot="{Component}">
-        <Transition mode="out-in">
-          <Component :is="Component" />
-        </Transition>
-      </RouterView>
+      <TransitionRouterView />
     </VMain>
     <BottomNav />
     <!-- HACK: 閉じるボタンをmdi-closeにしようとすると割とめんどくさい -->
@@ -41,15 +38,5 @@ const isUpdateDialogVisible = ref(false);
 
 html {
   overflow-y: auto !important;
-}
-
-.v-enter-active,
-.v-leave-active {
-  transition: .15s ease;
-}
-
-.v-enter-from,
-.v-leave-to {
-  opacity: 0;
 }
 </style>

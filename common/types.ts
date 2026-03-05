@@ -43,7 +43,7 @@ export type MenuIdWithMultiplier = {
   multiplier: PresetMenu['multiplier'],
 };
 
-export type OscStatus = 'OPEN'| 'OPEN_ALL' | 'CLOSE' | 'PENDING';
+export type OscStatus = 'OPEN'| 'OPEN_ALL' | 'OPEN_UPRIGHT' | 'CLOSE' | 'PENDING';
 
 export type Notice = {
   text: string,

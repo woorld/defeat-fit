@@ -6,6 +6,7 @@ import { useOscStore } from '@src/stores/osc';
 const route = useRoute();
 const oscStore = useOscStore();
 
+const isInTimerCounterView = computed(() => route.path.startsWith('/timer-counter'));
 const isInMenuView = computed(() => route.path.startsWith('/menu'));
 </script>
 
@@ -14,7 +15,7 @@ const isInMenuView = computed(() => route.path.startsWith('/menu'));
     <VBtn to="/">
       <VIcon>mdi-home</VIcon>
     </VBtn>
-    <VBtn to="/timer/0/1">
+    <VBtn to="/timer-counter/timer/0/1" :active="isInTimerCounterView">
       <VIcon>mdi-timer</VIcon>
     </VBtn>
     <VBtn to="/menu/edit" :active="isInMenuView">

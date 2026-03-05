@@ -1,16 +1,22 @@
 <script setup lang="ts">
+import TransitionRouterView from '@src/components/common/TransitionRouterView.vue';
+import ViewToggle from '@src/components/common/ViewToggle.vue';
+
+const viewOptions = [
+  {
+    label: 'メニュー編集',
+    path: '/menu/edit',
+  },
+  {
+    label: 'プリセット編集',
+    path: '/menu/preset',
+  },
+];
 </script>
 
 <template>
   <VContainer>
-    <VBtnToggle class="d-flex justify-center mt-6 mb-10 rounded-xl" density="comfortable">
-      <VBtn border to="/menu/edit">メニュー編集</VBtn>
-      <VBtn border to="/menu/preset">プリセット編集</VBtn>
-    </VBtnToggle>
-    <RouterView v-slot="{Component}">
-      <Transition mode="out-in">
-        <Component :is="Component" />
-      </Transition>
-    </RouterView>
+    <ViewToggle :viewOptions />
+    <TransitionRouterView />
   </VContainer>
 </template>

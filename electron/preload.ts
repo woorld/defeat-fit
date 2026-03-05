@@ -21,10 +21,14 @@ const oscApi = {
     ipcRenderer.invoke('start-listening'),
   startListeningAll: (): Promise<void> =>
     ipcRenderer.invoke('start-listening-all'),
+  startListeningUpright: (): Promise<void> =>
+    ipcRenderer.invoke('start-listening-upright'),
   stopListening: (): Promise<void> =>
     ipcRenderer.invoke('stop-listening'),
   onListenAnyMessage: (callback: (listenedMessage: string) => void) =>
     ipcRenderer.on('listen-any-message', (_, listenedMessage: string) => callback(listenedMessage)),
+  onListenUprightValue: (callback: (uprightValue: number) => void) =>
+    ipcRenderer.on('listen-upright-value', (_, uprightValue: number) => callback(uprightValue)),
   onChangeOscStatus: (callback: (oscStatus: OscStatus) => void) =>
     ipcRenderer.on('change-osc-status', (_, oscStatus: OscStatus) => callback(oscStatus)),
 } as const;
