@@ -3,9 +3,15 @@ import { onUnmounted } from 'vue';
 export function useAudio<T extends string>(namePathRecord: Record<T, string>) {
   const audios: Record<T, HTMLAudioElement> = {} as any; // NOTE: 型が壊れることはないので型アサーションしてOK
 
-  const playAudio = (name: T) => {
+  const playAudio = async (name: T): Promise<void> => {
     audios[name].currentTime = 0;
-    audios[name].play();
+    await audios[name].play();
+
+    return new Promise<void>(resolve => {
+      audios[name].onended = () => {
+        resolve();
+      };
+    });
   };
 
   // NOTE: playAudio()呼び出し時に音量設定が反映されている保証はないため、

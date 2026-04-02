@@ -55,6 +55,12 @@ export function useAutoCount(args: {
     let recentUpright = oscStore.upright;
 
     setupTimerId = window.setInterval(() => {
+      // NOTE: ボイス再生中にキャンセルした場合の中断処理
+      if (autoCountSetupStatus.value <= autoCountSetupStage.STANDBY) {
+        clearSetupTimer();
+        return;
+      }
+
       const currentUpright = oscStore.upright;
       const withinAcceptableRange =
         currentUpright <= recentUpright + uprightAdjust.value &&
@@ -83,22 +89,17 @@ export function useAutoCount(args: {
     }, 500);
   });
 
-  const wait = (ms: number) => new Promise(res => setTimeout(res, ms));
-
   const setupAutoCount = async (): Promise<void> => {
     autoCountSetupStatus.value = autoCountSetupStage.MIN;
-    playAudio('setupStartMin');
-    await wait(2000);
+    await playAudio('setupStartMin');
     minUpright.value = await getThreshold();
 
     autoCountSetupStatus.value = autoCountSetupStage.MAX;
-    playAudio('setupStartMax');
-    await wait(2000);
+    await playAudio('setupStartMax');
     maxUpright.value = await getThreshold();
 
     autoCountSetupStatus.value = autoCountSetupStage.DONE;
-    playAudio('setupComplete');
-    await wait(2000);
+    await playAudio('setupComplete');
 
     autoCountSetupProgress.value = 0;
     return Promise.resolve();
