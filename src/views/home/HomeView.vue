@@ -63,18 +63,18 @@ const onSelectPreset = (presetId: number) => {
 <template>
   <VContainer class="py-2">
     <VRow>
-      <VCol cols="4" class="column d-flex flex-column justify-center align-center ga-6">
-        <div class="d-flex align-center ga-4">
-          <OscControlBtn />
-          <DecrementBtn />
-        </div>
+      <VCol cols="4" class=" d-flex flex-column justify-center align-center ga-4">
         <div class="d-flex justify-center align-center">
           <VIcon class="text-h2">mdi-coffin</VIcon>
           <span class="text-h5">×</span>
           <span class="ml-3 text-h3 mb-2 mr-2">{{ defeatCount.count }}</span>
         </div>
+        <div class="d-flex align-center ga-4">
+          <OscControlBtn />
+          <DecrementBtn />
+        </div>
       </VCol>
-      <VCol cols="8" class="column d-flex flex-column ga-8">
+      <VCol cols="8" class="column-right d-flex flex-column ga-8">
         <ItemEmptyCardWithNav
           v-if="presetList.length <= 0"
           class="my-auto"
@@ -95,7 +95,7 @@ const onSelectPreset = (presetId: number) => {
             />
             <DoneBtn :menuIdWithMultiplierList="selectedPresetMenuIdWithMultiplierList" />
           </div>
-          <div class="overflow-y-auto my-auto">
+          <div class="overflow-y-auto flex-grow-1 border rounded">
             <VTable hover v-if="selectedPresetId !== null">
               <tbody>
                 <tr v-for="presetMenu of selectedPresetMenuList">
@@ -121,7 +121,7 @@ const onSelectPreset = (presetId: number) => {
 </template>
 
 <style scoped>
-.column {
+.column-right {
   /* HACK: BottomNavの高さをべた書き */
   height: calc(100vh - 56px);
 }
