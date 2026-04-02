@@ -61,51 +61,68 @@ const onSelectPreset = (presetId: number) => {
 </script>
 
 <template>
-  <VContainer>
-    <div class="d-flex justify-center align-center mt-8 mb-13">
-      <VIcon class="text-h2">mdi-coffin</VIcon>
-      <span class="text-h5">×</span>
-      <span class="ml-3 text-h3 mb-2">{{ defeatCount.count }}</span>
-    </div>
-    <ItemEmptyCardWithNav
-      v-if="presetList.length <= 0"
-      title="プリセットがありません"
-      text="負けカウントから筋トレ回数を算出するには、メニューとプリセットが必要です"
-      showPresetNav
-    />
-    <template v-else>
-      <VSelect
-        v-model="selectedPresetId"
-        class="mb-6"
-        label="プリセット"
-        rounded
-        variant="outlined"
-        hide-details
-        :items="presetSelect"
-        @update:model-value="onSelectPreset"
-      />
-      <VTable hover v-if="selectedPresetId !== null">
-        <tbody>
-          <tr v-for="presetMenu of selectedPresetMenuList">
-            <td>{{ presetMenu.menu.name }}</td>
-            <td>× {{ presetMenu.multiplier }} {{ menuUnitMap[presetMenu.menu.unit] }}</td>
-            <td class="text-right">
-              <span
-                class="pt-1 pb-1 pr-2 pl-2 rounded"
-              >{{ Math.ceil(presetMenu.multiplier * defeatCount.count) }} {{ menuUnitMap[presetMenu.menu.unit] }}</span>
-            </td>
-            <td class="text-right">
-              <DoMenuBtn :presetMenuWithMenu="presetMenu" />
-            </td>
-          </tr>
-        </tbody>
-      </VTable>
-      <div class="w-100 mt-8 d-flex justify-center align-center ga-4">
-        <DecrementBtn class="flex-1-1-0" />
-        <DoneBtn class="flex-1-1-0" :menuIdWithMultiplierList="selectedPresetMenuIdWithMultiplierList" />
-      </div>
-    </template>
-    <OscControlBtn />
+  <VContainer class="py-2">
+    <VRow>
+      <VCol cols="4" class=" d-flex flex-column justify-center align-center ga-4">
+        <div class="d-flex justify-center align-center">
+          <VIcon class="text-h2">mdi-coffin</VIcon>
+          <span class="text-h5">×</span>
+          <span class="ml-3 text-h3 mb-2 mr-2">{{ defeatCount.count }}</span>
+        </div>
+        <div class="d-flex align-center ga-4">
+          <OscControlBtn />
+          <DecrementBtn />
+        </div>
+      </VCol>
+      <VCol cols="8" class="column-right d-flex flex-column ga-8">
+        <ItemEmptyCardWithNav
+          v-if="presetList.length <= 0"
+          class="my-auto"
+          title="プリセットがありません"
+          text="負けカウントから筋トレ回数を算出するには、メニューとプリセットが必要です"
+          showPresetNav
+        />
+        <template v-else>
+          <div class="w-100 d-flex align-center ga-4 mt-4">
+            <VSelect
+              v-model="selectedPresetId"
+              label="プリセット"
+              rounded
+              variant="outlined"
+              hide-details
+              :items="presetSelect"
+              @update:model-value="onSelectPreset"
+            />
+            <DoneBtn :menuIdWithMultiplierList="selectedPresetMenuIdWithMultiplierList" />
+          </div>
+          <div class="overflow-y-auto flex-grow-1 border rounded">
+            <VTable hover v-if="selectedPresetId !== null">
+              <tbody>
+                <tr v-for="presetMenu of selectedPresetMenuList">
+                  <td>{{ presetMenu.menu.name }}</td>
+                  <td>× {{ presetMenu.multiplier }} {{ menuUnitMap[presetMenu.menu.unit] }}</td>
+                  <td class="text-right">
+                    <span
+                      class="pt-1 pb-1 pr-2 pl-2 rounded"
+                    >{{ Math.ceil(presetMenu.multiplier * defeatCount.count) }} {{ menuUnitMap[presetMenu.menu.unit] }}</span>
+                  </td>
+                  <td class="text-right">
+                    <DoMenuBtn :presetMenuWithMenu="presetMenu" />
+                  </td>
+                </tr>
+              </tbody>
+            </VTable>
+          </div>
+        </template>
+      </VCol>
+    </VRow>
     <CautionDialog />
   </VContainer>
 </template>
+
+<style scoped>
+.column-right {
+  /* HACK: BottomNavの高さをべた書き */
+  height: calc(100vh - 56px);
+}
+</style>

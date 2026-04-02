@@ -13,17 +13,20 @@ const onDecrement = async () => {
 </script>
 
 <template>
-  <VBtn color="red" :disabled="defeatCount.count <= 0">
-    今のなし
-    <ConfirmDialog
-      v-model="isShowDialog"
-      title="カウントの修正"
-      explanation="本当にカウントを-1しますか？"
-      yesBtnColor="red"
-      reverseYesNoPosition
-      activateByParent
-      @click-yes="onDecrement"
-      @click-no="isShowDialog = false"
-    />
-  </VBtn>
+  <VBtn
+    color="red"
+    :disabled="defeatCount.count <= 0"
+    icon="mdi-minus"
+    size="36"
+    @click="isShowDialog = true"
+  />
+  <ConfirmDialog
+    v-model="isShowDialog"
+    title="カウントの修正"
+    explanation="本当にカウントを-1しますか？"
+    yesBtnColor="red"
+    reverseYesNoPosition
+    @click-yes="onDecrement"
+    @click-no="isShowDialog = false"
+  />
 </template>
