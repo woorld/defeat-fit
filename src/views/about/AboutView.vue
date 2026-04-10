@@ -75,7 +75,7 @@ const openLicenseFolder = () => {
         </VExpansionPanel>
       </VExpansionPanels>
     </template>
-    <div v-else class="text-center">
+    <VSheet v-else class="text-center pa-4">
       <p>OSSライセンスの読み込みに失敗しました。</p>
       <VBtn
         class="mt-4"
@@ -85,7 +85,11 @@ const openLicenseFolder = () => {
         elevation="0"
         @click="openLicenseFolder"
       >OSSライセンスフォルダを開く</VBtn>
-    </div>
+    </VSheet>
+    <h3 class="text-h5 text-center mt-12">Other Credits</h3>
+    <VList class="mt-4">
+      <VListItem>VOICEVOX:四国めたん</VListItem>
+    </VList>
   </VContainer>
 </template>
 

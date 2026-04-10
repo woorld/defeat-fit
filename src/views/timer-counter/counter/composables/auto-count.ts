@@ -4,6 +4,9 @@ import type { CounterStatus } from './counter';
 import setupProgressSound from '@src/assets/sound/timer-counter/start-countdown.mp3';
 import thresholdSetupCompleteSound from '@src/assets/sound/timer-counter/start.mp3';
 import reachedMinSound from '@src/assets/sound/timer-counter/reach-min.mp3';
+import setupStartMinSound from '@src/assets/sound/timer-counter/auto-count-setup-start-min.mp3';
+import setupStartMaxSound from '@src/assets/sound/timer-counter/auto-count-setup-start-max.mp3';
+import setupCompleteSound from '@src/assets/sound/timer-counter/auto-count-setup-complete.mp3';
 import { useAudio } from '@src/composables/common/audio';
 
 export type AutoCountSetupStatus = typeof autoCountSetupStage[keyof typeof autoCountSetupStage];
@@ -26,6 +29,9 @@ export function useAutoCount(args: {
     setupProgress: setupProgressSound,
     thresholdSetupComplete: thresholdSetupCompleteSound,
     reachedMin: reachedMinSound,
+    setupStartMin: setupStartMinSound,
+    setupStartMax: setupStartMaxSound,
+    setupComplete: setupCompleteSound,
   });
 
   let setupTimerId: number | null = null;
@@ -49,6 +55,12 @@ export function useAutoCount(args: {
     let recentUpright = oscStore.upright;
 
     setupTimerId = window.setInterval(() => {
+      // NOTE: ボイス再生中にキャンセルした場合の中断処理
+      if (autoCountSetupStatus.value <= autoCountSetupStage.STANDBY) {
+        clearSetupTimer();
+        return;
+      }
+
       const currentUpright = oscStore.upright;
       const withinAcceptableRange =
         currentUpright <= recentUpright + uprightAdjust.value &&
@@ -79,14 +91,16 @@ export function useAutoCount(args: {
 
   const setupAutoCount = async (): Promise<void> => {
     autoCountSetupStatus.value = autoCountSetupStage.MIN;
+    playAudio('setupStartMin');
     minUpright.value = await getThreshold();
-    playAudio('thresholdSetupComplete');
 
     autoCountSetupStatus.value = autoCountSetupStage.MAX;
+    playAudio('setupStartMax');
     maxUpright.value = await getThreshold();
-    // NOTE: カウンター開始時の効果音と被るため、MAX設定時は効果音を鳴らさない
 
     autoCountSetupStatus.value = autoCountSetupStage.DONE;
+    await playAudio('setupComplete');
+
     autoCountSetupProgress.value = 0;
     return Promise.resolve();
   };
