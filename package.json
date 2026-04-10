@@ -32,6 +32,7 @@
     "electron": "^40.6.0",
     "electron-builder": "^26.0.12",
     "electron-store": "^10.1.0",
+    "osc-tester": "github:woorld/osc-tester",
     "prettier": "^3.6.2",
     "prisma": "^6.18.0",
     "rollup-plugin-license": "^3.6.0",
