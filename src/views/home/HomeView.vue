@@ -3,12 +3,11 @@ import { ref, computed } from 'vue';
 import { useDefeatCountStore } from '@src/stores/defeat-count';
 import DecrementBtn from './components/DecrementBtn.vue';
 import OscControlBtn from './components/OscControlBtn.vue';
-import DoMenuBtn from './components/DoMenuBtn.vue';
 import DoneBtn from './components/DoneBtn.vue';
 import CautionDialog from './components/CautionDialog.vue';
-import { menuUnitMap } from '@common/util';
 import type { MenuIdWithMultiplier, PresetWithMenus } from '@common/types';
 import ItemEmptyCardWithNav from '@src/components/common/ItemEmptyCardWithNav.vue';
+import DoMenuTableRow from './components/DoMenuTableRow.vue';
 
 const defeatCount = useDefeatCountStore();
 
@@ -98,18 +97,7 @@ const onSelectPreset = (presetId: number) => {
           <div class="overflow-y-auto flex-grow-1 border rounded">
             <VTable hover v-if="selectedPresetId !== null">
               <tbody>
-                <tr v-for="presetMenu of selectedPresetMenuList">
-                  <td>{{ presetMenu.menu.name }}</td>
-                  <td>× {{ presetMenu.multiplier }} {{ menuUnitMap[presetMenu.menu.unit] }}</td>
-                  <td class="text-right">
-                    <span
-                      class="pt-1 pb-1 pr-2 pl-2 rounded"
-                    >{{ Math.ceil(presetMenu.multiplier * defeatCount.count) }} {{ menuUnitMap[presetMenu.menu.unit] }}</span>
-                  </td>
-                  <td class="text-right">
-                    <DoMenuBtn :presetMenuWithMenu="presetMenu" />
-                  </td>
-                </tr>
+                <DoMenuTableRow v-for="presetMenu of selectedPresetMenuList" :presetMenu />
               </tbody>
             </VTable>
           </div>
