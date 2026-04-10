@@ -91,11 +91,11 @@ export function useAutoCount(args: {
 
   const setupAutoCount = async (): Promise<void> => {
     autoCountSetupStatus.value = autoCountSetupStage.MIN;
-    await playAudio('setupStartMin');
+    playAudio('setupStartMin');
     minUpright.value = await getThreshold();
 
     autoCountSetupStatus.value = autoCountSetupStage.MAX;
-    await playAudio('setupStartMax');
+    playAudio('setupStartMax');
     maxUpright.value = await getThreshold();
 
     autoCountSetupStatus.value = autoCountSetupStage.DONE;
