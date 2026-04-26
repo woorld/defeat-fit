@@ -16,16 +16,16 @@ const isDialogVisible = ref(false);
 
 <template>
   <tr class="cursor-pointer" @click="isDialogVisible = true">
-    <td>{{ presetMenu.menu.name }}</td>
-    <td>× {{ presetMenu.multiplier }} {{ menuUnitMap[presetMenu.menu.unit] }}</td>
+    <td>{{ props.presetMenu.menu.name }}</td>
+    <td>× {{ props.presetMenu.multiplier }} {{ menuUnitMap[props.presetMenu.menu.unit] }}</td>
     <td class="text-right">
       <span
         class="pt-1 pb-1 pr-2 pl-2 rounded"
-      >{{ Math.ceil(presetMenu.multiplier * defeatCount.count) }} {{ menuUnitMap[presetMenu.menu.unit] }}</span>
+      >{{ Math.ceil(props.presetMenu.multiplier * defeatCount.count) }} {{ menuUnitMap[props.presetMenu.menu.unit] }}</span>
     </td>
     <td class="text-right">
       <VIcon>mdi-chevron-right</VIcon>
     </td>
   </tr>
-  <DoMenuDialog v-model="isDialogVisible" :presetMenu />
+  <DoMenuDialog v-model="isDialogVisible" :presetMenu="props.presetMenu" />
 </template>
