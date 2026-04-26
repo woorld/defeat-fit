@@ -27,5 +27,5 @@ const isDialogVisible = ref(false);
       <VIcon>mdi-chevron-right</VIcon>
     </td>
   </tr>
-  <DoMenuDialog v-model="isDialogVisible" :presetMenu />
+  <DoMenuDialog v-model="isDialogVisible" :presetMenu="props.presetMenu" />
 </template>
