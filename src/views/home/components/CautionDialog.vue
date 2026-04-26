@@ -19,20 +19,34 @@ const saveDialogSetting = () => {
 
 <template>
   <BaseDialog v-model="isVisible" @close="saveDialogSetting">
-    <h3 class="text-h5 mb-6 text-yellow">戦いやめるな！筋トレやめろ！</h3>
-    <div class="d-flex justify-center align-center flex-column ga-4">
-      <div class="text-left">
-        <p>負けによる筋トレは<em class="bg-yellow rounded mx-1 px-1">義務ではありません</em>。</p>
-        <p>本来楽しむべき対戦を、筋トレが嫌でやめてしまっては本末転倒です。</p>
-        <p><em class="bg-yellow rounded mr-1 px-1">気負わず無理せず</em>やりましょう！</p>
+    <div class="d-flex flex-column justify-center align-center ga-8">
+      <h3 class="text-h5">ご注意</h3>
+      <div class="d-flex justify-center align-start ga-4">
+        <section class="w-100 h-100">
+          <h4 class="text-h6 mb-4">無理せずやろう！</h4>
+          <div class="text-left">
+            <p>負けによる筋トレは<em class="bg-yellow rounded mx-1 px-1">義務ではありません</em>。</p>
+            <p>本来楽しむべき対戦を、筋トレが嫌でやめてしまっては本末転倒です。</p>
+            <p><em class="bg-yellow rounded mr-1 px-1">気負わず無理せず</em>やりましょう！</p>
+          </div>
+        </section>
+        <VDivider vertical />
+        <section class="w-100 h-100">
+          <h4 class="text-h6 mb-4">首をいたわろう！</h4>
+          <div class="text-left">
+            <p>HMDを付けた状態で行う筋トレは、<em class="bg-yellow rounded mx-1 px-1">首への負担が増加します</em>。</p>
+            <p>首を労わったメニュー調整を行いましょう！</p>
+          </div>
+        </section>
       </div>
-      <VCheckbox
-        class="text-center"
-        v-model="dontShowAgain"
-        label="次回以降表示しない"
-        hide-details
-      />
+      <div>
+        <VCheckbox
+          v-model="dontShowAgain"
+          label="次回以降表示しない"
+          hide-details
+        />
+        <VBtn color="green" @click="isVisible = false">わかった</VBtn>
+      </div>
     </div>
-    <VBtn color="green" @click="isVisible = false">わかった</VBtn>
   </BaseDialog>
 </template>

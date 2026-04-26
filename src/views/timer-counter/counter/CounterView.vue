@@ -122,7 +122,7 @@ else {
             OSCサーバーを開始しています…
             <VProgressCircular indeterminate />
           </div>
-          <div v-else class="d-flex flex-column justify-center align-center ga-6">
+          <div v-else-if="autoCountSetupStatus < autoCountSetupStage.DONE" class="d-flex flex-column justify-center align-center ga-6">
             <p>
               <template v-if="autoCountSetupStatus <= autoCountSetupStage.MIN">
                 頭の位置の最小値を設定します。<br />
@@ -140,6 +140,7 @@ else {
             />
             <VBtn variant="outlined" @click="onClickAutoCountSetupCancel">キャンセル</VBtn>
           </div>
+          <template v-else>設定が完了しました。</template>
         </VSheet>
       </VOverlay>
     <VAlert
