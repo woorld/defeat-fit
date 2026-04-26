@@ -8,7 +8,8 @@
     "build": "cross-env DATABASE_URL=file:../dist/app.db prisma db push --skip-generate --force-reset && vue-tsc && vite build && electron-builder",
     "preview": "vite preview",
     "format": "prettier -w .",
-    "osc:send": "osc-tester send /defeatfit/count true"
+    "osc:send": "osc-tester send /defeatfit/count true",
+    "osc:listen": "osc-tester listen -p 9001"
   },
   "dependencies": {
     "@prisma/client": "^6.18.0",
