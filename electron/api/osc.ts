@@ -1,4 +1,3 @@
-import type OSC from 'osc-js';
 import { settingApi } from '@electron/api/setting';
 import { OSCQAccess, OSCQueryDiscovery, OSCQueryServer } from 'oscquery';
 import { setTimeout } from 'node:timers/promises';
@@ -6,7 +5,7 @@ import type { OscStatus, SendMessage } from '@common/types';
 import { ipcMain } from 'electron';
 import { defeatCountApi } from '@electron/api/defeat-count';
 import { noticeApi } from '@electron/api/notice';
-import { useOscServer, type OscPayload } from '@electron/osc/osc-server';
+import { useOscServer, type OscServer } from '@electron/osc/osc-server';
 
 type ListeningType = 'TARGET' | 'ALL' | 'UPRIGHT';
 
@@ -17,7 +16,7 @@ const oscQueryDiscovery = new OSCQueryDiscovery();
 
 let discoveryStartAt = 0;
 let oscQueryServer: OSCQueryServer | null = null;
-let oscServer: OSC | null = null;
+let oscServer: OscServer | null = null;
 let oscStatus: OscStatus = 'CLOSE';
 let isInitialized = false;
 let sendMessage: SendMessage | null = null;
@@ -26,17 +25,17 @@ const sendMessageIfNotNull: SendMessage = (channel, ...args) => {
   if (sendMessage !== null) {
     sendMessage(channel, ...args);
   }
-}
+};
 
 const changeOscStatus = (newOscStatus: OscStatus) => {
   oscStatus = newOscStatus;
   sendMessageIfNotNull('change-osc-status', newOscStatus);
-}
+};
 
 const updateDefeatCount = () => {
   const newCount = defeatCountApi.incrementDefeatCount();
   sendMessageIfNotNull('update-defeat-count', newCount);
-}
+};
 
 export const oscApi = {
   initialize(deps: { sendMessage: SendMessage }) {
@@ -60,7 +59,7 @@ export const oscApi = {
       TARGET: (await settingApi.getSetting('targetOscMessage'))
         .filter(m => m.enabled)
         .map(m => m.address),
-      ALL: ['*'],
+      ALL: ['message'], // NOTE: 全メッセージを受信する場合はアドレスではなくServer.onに渡すイベント名を指定
       UPRIGHT: ['/avatar/parameters/Upright'],
     } as const satisfies Record<ListeningType, string[]>;
 
@@ -90,17 +89,17 @@ export const oscApi = {
         .map(service => service.hostInfo.oscPort as number) // 手前でundefinedを弾いているので型アサーションしてOK
     ];
 
-    const onListen = (payload: OscPayload) => {
+    const onListen: Parameters<typeof useOscServer>[1]['onListen'] = (address, value) => {
       // TODO: 対象メッセージだけでなく対象の値も設定できるようにする
       // NOTE: Uprightの受信を妨げないため0は通す
-      if (!payload.args[0] && payload.args[0] !== 0) {
+      if (!value && value !== 0) {
         return;
       }
 
       const handlers = {
         TARGET: () => updateDefeatCount(),
-        ALL: () => sendMessageIfNotNull('listen-any-message', payload.address),
-        UPRIGHT: () => sendMessageIfNotNull('listen-upright-value', payload.args[0]),
+        ALL: () => sendMessageIfNotNull('listen-any-message', address),
+        UPRIGHT: () => sendMessageIfNotNull('listen-upright-value', Number(value)),
       } as const satisfies Record<ListeningType, () => void>;
 
       handlers[listeningType]();

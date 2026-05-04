@@ -1,35 +1,34 @@
-import OSC from 'osc-js';
+import { Server } from 'node-osc';
 
-export type OscPayload = {
-  offset: number,
-  address: string,
-  types: string,
-  args: unknown[],
+export type OscServer = {
+  server: null | Server,
+  open: (args: { host: string, port: number }) => void,
+  close: () => void,
 };
 
 export const useOscServer = (targetAddresses: string[], handlers: {
   onOpen: () => void,
   onClose: () => void,
-  onListen: (payload: OscPayload) => void,
+  onListen: (address: string, value: unknown) => void,
 }) => {
   const { onOpen, onClose, onListen } = handlers;
-  const oscServer = new OSC({ plugin: new OSC.DatagramPlugin() });
   let lastListenedAt = 0;
   let lastListenedAddress = '';
 
-  oscServer.on('open', () => {
+  const serverOpenCallback = () => {
     onOpen();
     console.log('DefeatFit: Start listening: ' + targetAddresses.join(', '));
-  });
+  };
 
-  oscServer.on('close', () => {
+  const serverCloseCallback = () => {
     lastListenedAt = 0;
     lastListenedAddress = '';
     onClose();
     console.log('DefeatFit: closed');
-  });
+  };
 
-  const listenedCallback = (payload: OscPayload) => {
+  const listenedCallback = (message: [string, unknown]) => {
+    const [ address, value ] = message;
     /* HACK:
     * ネットワーク環境によってはOSCサービスが2つ以上登録され、同じメッセージが同タイミングで複数受信されることがある
     * 1回のOSC送信で多重にカウントされるのを防止するため、前回の受信から10ms以下で同じメッセージが来た場合は無視する
@@ -37,20 +36,35 @@ export const useOscServer = (targetAddresses: string[], handlers: {
     const nowDate = Date.now();
     const elapsedSinceLastListen = nowDate - lastListenedAt;
 
-    if (payload.address === lastListenedAddress && elapsedSinceLastListen <= 10) {
+    if (address === lastListenedAddress && elapsedSinceLastListen <= 10) {
       return;
     }
 
     lastListenedAt = nowDate;
-    lastListenedAddress = payload.address;
+    lastListenedAddress = address;
 
-    onListen(payload);
-    console.log('DefeatFit: listened: ' + `${payload.address},${payload.args.join(',')}`);
+    onListen(address, value);
+    console.log('DefeatFit: listened: ' + `${address},${value}`);
   };
 
-  for (const address of targetAddresses) {
-    oscServer.on(address, listenedCallback);
-  }
+  const oscServer: OscServer = {
+    server: null,
+
+    open(args) {
+      this.server = new Server(args.port, args.host, serverOpenCallback);
+      for (const address of targetAddresses) {
+        this.server.on(address, listenedCallback);
+      }
+    },
+
+    close() {
+      if (this.server == null) {
+        return;
+      }
+      this.server.close(serverCloseCallback);
+      this.server = null;
+    },
+  };
 
   return oscServer;
 };
