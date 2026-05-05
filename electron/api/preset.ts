@@ -37,7 +37,7 @@ export const presetApi = {
     );
     ipcMain.handle('delete-preset', (_, id: number) => this.deletePreset(id));
     ipcMain.handle('get-last-selected-preset-id', () => this.getLastSelectedPresetId());
-    ipcMain.on('set-last-selected-preset-id', (_, id: number | null) => this.setLastSelectedPresetId(id));
+    ipcMain.on('set-last-selected-preset-id', (_, id: Schema['lastSelectedPresetId']) => this.setLastSelectedPresetId(id));
 
     isInitialized = true;
   },
@@ -148,7 +148,7 @@ export const presetApi = {
       : store.get('lastSelectedPresetId', ELECTRON_STORE_DEFAULT_VALUE.lastSelectedPresetId);
   },
 
-  setLastSelectedPresetId(id: number | null) {
+  setLastSelectedPresetId(id: Schema['lastSelectedPresetId']) {
     if (store === null) {
       store = getStore();
     }
