@@ -3,7 +3,8 @@ import { ref } from 'vue';
 import BottomNav from '@src/components/BottomNav.vue';
 import { useNoticeStore } from '@src/stores/notice';
 import UpdateDialog from '@src/components/UpdateDialog.vue';
-import TransitionRouterView from './components/common/TransitionRouterView.vue';
+import TransitionRouterView from '@src/components/common/TransitionRouterView.vue';
+import AppCloseConfirmDialog from '@src/components/AppCloseConfirmDialog.vue';
 
 const noticeStore = useNoticeStore();
 
@@ -26,6 +27,7 @@ const isUpdateDialogVisible = ref(false);
       timer
     />
     <UpdateDialog v-model="isUpdateDialogVisible" />
+    <AppCloseConfirmDialog />
   </VApp>
 </template>
 
