@@ -2,9 +2,14 @@ import { ipcMain } from 'electron';
 import type { MenuIdWithMultiplier } from '@common/types';
 import { Preset, PrismaClient } from '@prisma-generated-client';
 import { noticeApi } from '@electron/api/notice';
+import { getStore } from '@electron/store/store';
+import { ELECTRON_STORE_DEFAULT_VALUE } from '@common/constants';
+import type { Schema } from '@electron/store/schema';
+import Store from 'electron-store';
 
 const prisma = new PrismaClient();
 
+let store: Store<Schema> | null = null;
 let isInitialized = false;
 
 export const presetApi = {
@@ -12,6 +17,8 @@ export const presetApi = {
     if (isInitialized) {
       return;
     }
+
+    store = getStore();
 
     ipcMain.handle('get-preset-list', () => this.getPresetList());
     ipcMain.handle(
@@ -29,6 +36,8 @@ export const presetApi = {
       ) => this.updatePreset(preset, menuIdWithMultiplierList)
     );
     ipcMain.handle('delete-preset', (_, id: number) => this.deletePreset(id));
+    ipcMain.handle('get-last-selected-preset-id', () => this.getLastSelectedPresetId());
+    ipcMain.on('set-last-selected-preset-id', (_, id: number | null) => this.setLastSelectedPresetId(id));
 
     isInitialized = true;
   },
@@ -128,6 +137,25 @@ export const presetApi = {
     });
 
     return result;
+  },
+
+  getLastSelectedPresetId() {
+    if (store === null) {
+      store = getStore();
+    }
+    return store === null
+      ? ELECTRON_STORE_DEFAULT_VALUE.lastSelectedPresetId
+      : store.get('lastSelectedPresetId', ELECTRON_STORE_DEFAULT_VALUE.lastSelectedPresetId);
+  },
+
+  setLastSelectedPresetId(id: number | null) {
+    if (store === null) {
+      store = getStore();
+    }
+    if (store === null) {
+      return;
+    }
+    store.set('lastSelectedPresetId', id);
   },
 } as const;
 

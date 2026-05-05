@@ -77,6 +77,10 @@ const presetApi = {
     ipcRenderer.invoke('update-preset', preset, menuIdWithMultiplierList),
   deletePreset: (id: number): Promise<Preset> =>
     ipcRenderer.invoke('delete-preset', id),
+  getLastSelectedPresetId: (): Promise<number | null> =>
+    ipcRenderer.invoke('get-last-selected-preset-id'),
+  setLastSelectedPresetId: (id: number | null) =>
+    ipcRenderer.send('set-last-selected-preset-id', id),
 } as const;
 
 const noticeApi = {
