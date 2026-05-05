@@ -7,14 +7,14 @@ export const SETTING_DEFAULT_VALUE: Setting = {
   breakTimeSecBetweenSets: 60,
   showCautionDialog: true,
   dayBoundaryOffsetHours: 0,
-  lastSelectedPresetId: null,
   colorTheme: 'system',
   oscReceivedSound: 'slash',
 } as const;
 
 export const ELECTRON_STORE_DEFAULT_VALUE: Schema = {
-  SCHEMA_VERSION: 2,
+  SCHEMA_VERSION: 3, // NOTE: number型のためバージョンと他の値が食い違っていても型エラーにならないため注意
   setting: SETTING_DEFAULT_VALUE,
+  lastSelectedPresetId: null,
 } as const;
 
 export const ALLOWED_EXTERNAL_LINKS: { [key: string]: string} = {

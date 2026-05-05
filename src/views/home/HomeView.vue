@@ -34,7 +34,7 @@ const selectedPresetMenuIdWithMultiplierList = computed<MenuIdWithMultiplier[]>(
 );
 
 const onSelectPreset = (presetId: number) => {
-  window.setting.setSetting('lastSelectedPresetId', presetId);
+  window.preset.setLastSelectedPresetId(presetId);
 }
 
 (async () => {
@@ -44,7 +44,7 @@ const onSelectPreset = (presetId: number) => {
   }
 
   // 以前選択したプリセットの復元処理（IDがnullのプリセットの存在は考慮しない）
-  const lastSelectedPresetId = await window.setting.getSetting('lastSelectedPresetId');
+  const lastSelectedPresetId = await window.preset.getLastSelectedPresetId();
   const targetPreset = presetList.value.find(preset => preset.id === lastSelectedPresetId);
 
   if (targetPreset !== undefined) {
@@ -55,7 +55,7 @@ const onSelectPreset = (presetId: number) => {
   // 以前選択していたプリセットが存在しない場合、配列の先頭のプリセットを選択・保存
   const headPresetId = presetList.value[0].id;
   selectedPresetId.value = headPresetId;
-  window.setting.setSetting('lastSelectedPresetId', headPresetId);
+  window.preset.setLastSelectedPresetId(headPresetId);
 })();
 </script>
 

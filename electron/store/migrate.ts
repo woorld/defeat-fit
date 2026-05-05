@@ -1,5 +1,5 @@
 import Store from 'electron-store';
-import type { SchemaV1 } from '@electron/store/schema';
+import type { SchemaV1, SchemaV2 } from '@electron/store/schema';
 import type { TargetOscMessageSetting } from '@common/types';
 import { getStore, regenerateSettingFile } from '@electron/store/store';
 import { SETTING_DEFAULT_VALUE } from '@common/constants';
@@ -21,6 +21,9 @@ export const migrateStore = () => {
   try {
     if (currentVersion <= 1) {
       migrateV1ToV2(store as unknown as Store<SchemaV1>);
+    }
+    if (currentVersion <= 2) {
+      migrateV2ToV3(store as unknown as Store<SchemaV2>);
     }
   }
   catch (e) {
@@ -47,4 +50,16 @@ const migrateV1ToV2 = (store: Store<SchemaV1>) => {
   store.set('setting.targetOscMessage', targetOscMessageSetting);
   store.set('setting.oscReceivedSound', SETTING_DEFAULT_VALUE.oscReceivedSound);
   store.set('SCHEMA_VERSION', 2);
+};
+
+const migrateV2ToV3 = (store: Store<SchemaV2>) => {
+  const lastSelectedPresetId = store.get('setting.lastSelectedPresetId');
+
+  if (lastSelectedPresetId !== null && typeof lastSelectedPresetId !== 'number') {
+    throw Error('設定のスキーマが不正です');
+  }
+
+  store.set('lastSelectedPresetId', lastSelectedPresetId);
+  store.delete('setting.lastSelectedPresetId');
+  store.set('SCHEMA_VERSION', 3);
 };
