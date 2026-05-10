@@ -65,7 +65,7 @@ export function createWindow() {
   settingApi.initialize();
   statsApi.initialize();
   presetApi.initialize();
-  noticeApi.initialize({ sendMessage });
+  noticeApi.initialize({ sendMessage, closeWindow: () => win.close() });
   fileApi.initialize();
   updateApi.initialize({ sendMessage })
 
@@ -75,6 +75,16 @@ export function createWindow() {
 
   win.on('ready-to-show', () => {
     win?.show();
+  });
+
+  win.on('close', (e) => {
+    const defeatCount = defeatCountApi.getDefeatCount();
+    if (defeatCount <= 0) {
+      return;
+    }
+
+    e.preventDefault();
+    noticeApi.showAppCloseConfirmDialog('未登録のカウントおよび筋トレがあります。統計に登録せず終了しますか？');
   });
 
   // 各種ショートカットの無効化

@@ -5,7 +5,18 @@ import { ref } from 'vue';
 export const useNoticeStore = defineStore('notice', () => {
   const noticeList = ref<Notice[]>([]);
 
-  window.notice.onCreateNotice(notice => noticeList.value.push(notice));
+  const isAppCloseConfirmDialogVisible = ref(false);
+  const appCloseConfirmDialogText = ref('');
 
-  return { noticeList };
+  window.notice.onCreateNotice(notice => noticeList.value.push(notice));
+  window.notice.onShowAppCloseConfirmDialog(text => {
+    appCloseConfirmDialogText.value = text;
+    isAppCloseConfirmDialogVisible.value = true;
+  });
+
+  return {
+    noticeList,
+    isAppCloseConfirmDialogVisible,
+    appCloseConfirmDialogText,
+  };
 });
