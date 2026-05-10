@@ -88,7 +88,7 @@ const noticeApi = {
   onCreateNotice: (callback: (notice: Notice) => void) =>
     ipcRenderer.on('create-notice', (_, notice: Notice) => callback(notice)),
   onShowAppCloseConfirmDialog: (callback: (text: string) => void) =>
-    ipcRenderer.on('show-close-confirm-dialog', (_, text: string) => callback(text)),
+    ipcRenderer.on('show-app-close-confirm-dialog', (_, text: string) => callback(text)),
   acceptClose: () =>
     ipcRenderer.send('accept-close'),
 } as const;

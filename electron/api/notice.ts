@@ -31,7 +31,7 @@ export const noticeApi = {
   },
 
   showAppCloseConfirmDialog(text: string) {
-    sendMessageIfNotNull('show-close-confirm-dialog', text);
+    sendMessageIfNotNull('show-app-close-confirm-dialog', text);
   },
 
   acceptClose() {
