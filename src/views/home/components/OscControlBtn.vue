@@ -33,7 +33,7 @@ const isTooltipVisible = computed(() => isTargetOscMessageEmpty.value && !oscSto
     {{ label }}
     <VTooltip
       activator="parent"
-      location="left"
+      location="bottom right"
       no-click-animation
       interactive
       :model-value="isTooltipVisible"
@@ -41,9 +41,13 @@ const isTooltipVisible = computed(() => isTargetOscMessageEmpty.value && !oscSto
       :open-on-focus="false"
       :open-on-hover="false"
     >
-      <div class="d-flex justify-center align-center ga-2">
-        対象のOSCメッセージが設定されていません
-        <VBtn append-icon="mdi-chevron-right" to="/setting">設定する</VBtn>
+      <div class="text-center">
+        <p>対象のOSCメッセージが<br />設定されていません</p>
+        <VBtn
+          class="mt-2"
+          append-icon="mdi-chevron-right"
+          to="/setting"
+        >設定する</VBtn>
       </div>
     </VTooltip>
   </VBtn>
