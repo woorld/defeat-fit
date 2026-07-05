@@ -7,11 +7,12 @@ import { defeatCountApi } from '@electron/api/defeat-count';
 import { noticeApi } from '@electron/api/notice';
 import { useOscServer, type OscServer } from '@electron/osc/osc-server';
 
-type ListeningType = 'TARGET' | 'ALL' | 'UPRIGHT';
+type ListeningType = 'TARGET_AND_UPRIGHT' | 'ALL' | 'UPRIGHT';
 
 const basePort = 11337;
 const minDiscoveryWaitMs = 3000;
 const oscQueryPathWhenListenAllMessage = '/avatar/parameters/AngularY';
+const oscQueryPathUpright = '/avatar/parameters/Upright';
 const oscQueryDiscovery = new OSCQueryDiscovery();
 
 let discoveryStartAt = 0;
@@ -46,7 +47,7 @@ export const oscApi = {
     sendMessage = deps.sendMessage;
 
     ipcMain.handle('get-osc-status', () => this.getOscStatus());
-    ipcMain.handle('start-listening', () => this.openServer('TARGET'));
+    ipcMain.handle('start-listening', () => this.openServer('TARGET_AND_UPRIGHT'));
     ipcMain.handle('start-listening-all', () => this.openServer('ALL'));
     ipcMain.handle('start-listening-upright', () => this.openServer('UPRIGHT'));
     ipcMain.handle('stop-listening', () => this.closeServer());
@@ -55,20 +56,25 @@ export const oscApi = {
   },
 
   async openServer(listeningType: ListeningType) {
+    const settingAddresses = (await settingApi.getSetting('targetOscMessage'))
+      .filter(m => m.enabled)
+      .map(m => m.address);
+
+    const isSettingAddressEmpty = listeningType === 'TARGET_AND_UPRIGHT' && settingAddresses.length <= 0;
+    const hasOpened = oscQueryServer !== null || oscServer !== null || oscStatus === 'PENDING';
+
+    if (isSettingAddressEmpty || hasOpened) {
+      // 対象のOSCメッセージが空配列か、OSCサーバー、OSCQueryサーバーのどちらかが開始中・開始済の場合
+      return;
+    }
+
     const typeAddressMap = {
-      TARGET: (await settingApi.getSetting('targetOscMessage'))
-        .filter(m => m.enabled)
-        .map(m => m.address),
+      TARGET_AND_UPRIGHT: [...settingAddresses, oscQueryPathUpright],
       ALL: ['message'], // NOTE: 全メッセージを受信する場合はアドレスではなくServer.onに渡すイベント名を指定
-      UPRIGHT: ['/avatar/parameters/Upright'],
+      UPRIGHT: [oscQueryPathUpright],
     } as const satisfies Record<ListeningType, string[]>;
 
     const targetAddresses = typeAddressMap[listeningType];
-
-    if (targetAddresses.length <= 0 || oscQueryServer !== null || oscServer !== null || oscStatus === 'PENDING') {
-      // 対象のOSCメッセージが空配列か、OSCサーバのどちらかが開始中か開始済の場合
-      return;
-    }
 
     const prevOscStatus = oscStatus;
     changeOscStatus('PENDING');
@@ -91,15 +97,19 @@ export const oscApi = {
 
     const onListen: Parameters<typeof useOscServer>[1]['onListen'] = (address, value) => {
       // TODO: 対象メッセージだけでなく対象の値も設定できるようにする
-      // NOTE: Uprightの受信を妨げないため0は通す
+      // HACK: Uprightの受信を妨げないため0は通す
       if (!value && value !== 0) {
         return;
       }
 
+      // NOTE: この実装だとUprightをカウント用アドレスとして設定できない 必要になったら対応
+      const isUpright = listeningType === 'TARGET_AND_UPRIGHT' && address === oscQueryPathUpright;
+      const uprightHandler = () => sendMessageIfNotNull('listen-upright-value', Number(value));
+
       const handlers = {
-        TARGET: () => updateDefeatCount(),
+        TARGET_AND_UPRIGHT: isUpright ? uprightHandler : updateDefeatCount,
         ALL: () => sendMessageIfNotNull('listen-any-message', address),
-        UPRIGHT: () => sendMessageIfNotNull('listen-upright-value', Number(value)),
+        UPRIGHT: uprightHandler,
       } as const satisfies Record<ListeningType, () => void>;
 
       handlers[listeningType]();
@@ -107,7 +117,7 @@ export const oscApi = {
 
     const onOpen = () => {
       const typeStatusMap = {
-        TARGET: 'OPEN',
+        TARGET_AND_UPRIGHT: 'OPEN',
         ALL: 'OPEN_ALL',
         UPRIGHT: 'OPEN_UPRIGHT',
       } as const satisfies Record<ListeningType, OscStatus>;
