@@ -24,6 +24,7 @@ const addMessage = (address: string) => {
     <VLabel class="mb-2">対象のOSCメッセージ</VLabel>
     <ItemEmptyCard v-if="model.length <= 0" itemName="OSCメッセージ" />
     <template v-else>
+      <!-- TODO: /avatar/parameters/Upright をバリデーションで弾く -->
       <VAlert
         class="rounded-0"
         icon="mdi-alert-circle-outline"
@@ -31,7 +32,11 @@ const addMessage = (address: string) => {
         density="compact"
         color="info"
         variant="tonal"
-      >チェックボックスで受信のオンオフを切り替えられます。<br>重複・未入力・空白のみの設定は、保存時に削除されます。</VAlert>
+      >
+        ・チェックボックスで受信のオンオフを切り替えられます。<br>
+        ・重複・未入力・空白のみの設定は、保存時に削除されます。<br>
+        ・<VCode>/avatar/parameters/Upright</VCode>を設定すると、カウンターの自動カウント機能が正常に動作しない場合があります。
+      </VAlert>
       <VList>
         <VListItem
           v-for="setting, index of model"
