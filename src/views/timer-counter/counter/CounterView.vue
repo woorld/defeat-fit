@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useCounter } from './composables/counter';
 import { autoCountSetupStage, useAutoCount } from './composables/auto-count';
@@ -35,6 +35,8 @@ const {
   resetAutoCountSetupStatus,
 } = useAutoCount({ counterStatus, onNext, decrementCount });
 
+const isListeningForUpright = computed(() => ['OPEN', 'OPEN_UPRIGHT'].includes(oscStore.oscStatus));
+
 const onClickStart = async () => {
   if (!enableAutoCount.value) {
     startCount();
@@ -42,7 +44,7 @@ const onClickStart = async () => {
   }
 
   isAutoCountSetupOverlayVisible.value = true;
-  if (oscStore.oscStatus !== 'OPEN_UPRIGHT') {
+  if (!isListeningForUpright.value) {
     await oscStore.startListeningUpright();
   }
 
@@ -85,7 +87,7 @@ else {
         :minUpright
         :uprightAdjust
         :autoCountSetupStatus
-        :isPointerVisible="oscStore.oscStatus === 'OPEN_UPRIGHT'"
+        :isPointerVisible="isListeningForUpright"
       />
       <CountControl
         v-model:count="count"
