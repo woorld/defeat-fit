@@ -60,7 +60,10 @@ export const oscApi = {
       .filter(m => m.enabled)
       .map(m => m.address);
 
-    if (settingAddresses.length <= 0 || oscQueryServer !== null || oscServer !== null || oscStatus === 'PENDING') {
+    const isSettingAddressEmpty = listeningType === 'TARGET_AND_UPRIGHT' && settingAddresses.length <= 0;
+    const hasOpened = oscQueryServer !== null || oscServer !== null || oscStatus === 'PENDING';
+
+    if (isSettingAddressEmpty || hasOpened) {
       // 対象のOSCメッセージが空配列か、OSCサーバー、OSCQueryサーバーのどちらかが開始中・開始済の場合
       return;
     }
