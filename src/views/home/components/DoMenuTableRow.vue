@@ -16,7 +16,7 @@ const isDialogVisible = ref(false);
 
 <template>
   <tr class="cursor-pointer" @click="isDialogVisible = true">
-    <td>{{ props.presetMenu.menu.name }}</td>
+    <td class="menu-name">{{ props.presetMenu.menu.name }}</td>
     <td>× {{ props.presetMenu.multiplier }} {{ menuUnitMap[props.presetMenu.menu.unit] }}</td>
     <td class="text-right">
       <span
@@ -29,3 +29,9 @@ const isDialogVisible = ref(false);
   </tr>
   <DoMenuDialog v-model="isDialogVisible" :presetMenu="props.presetMenu" />
 </template>
+
+<style scoped>
+.menu-name {
+  width: 50%;
+}
+</style>
