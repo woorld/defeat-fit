@@ -61,5 +61,6 @@ const migrateV2ToV3 = (store: Store<SchemaV2>) => {
 
   store.set('lastSelectedPresetId', lastSelectedPresetId);
   store.delete('setting.lastSelectedPresetId');
+  store.set('setting.autoCountThresholdRange', SETTING_DEFAULT_VALUE.autoCountThresholdRange);
   store.set('SCHEMA_VERSION', 3);
 };
