@@ -31,7 +31,7 @@ export type SchemaV2 = Overwrite<
 export type Schema = Overwrite<
   SchemaV2,
   {
-    setting: Omit<SchemaV2['setting'], 'lastSelectedPresetId'>,
+    setting: Omit<SchemaV2['setting'], 'lastSelectedPresetId'> & { autoCountThresholdRange: number }
     lastSelectedPresetId: SchemaV2['setting']['lastSelectedPresetId'],
   }
 >;

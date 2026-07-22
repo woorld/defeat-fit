@@ -9,7 +9,7 @@ const props = defineProps<{
   currentUpright: number,
   maxUpright: number,
   minUpright: number,
-  uprightAdjust: number,
+  autoCountThresholdRange: number,
   autoCountSetupStatus: AutoCountSetupStatus,
   isPointerVisible: boolean,
 }>();
@@ -73,8 +73,8 @@ $indicator-inner-height: 1%;
 
   // MAX, MINの範囲表示
   &__threshold-area {
-    // NOTE: 上下方向にuprightAdjust分高さを増やすため2倍したものを加算する
-    $threshold-area-height: calc($indicator-inner-height + v-bind(uprightAdjust) * 2 * 100%);
+    // NOTE: 上下方向にautoCountThresholdRange分高さを増やすため2倍したものを加算する
+    $threshold-area-height: calc($indicator-inner-height + v-bind(autoCountThresholdRange) * 2 * 100%);
 
     &::before, &::after {
       content: "";
