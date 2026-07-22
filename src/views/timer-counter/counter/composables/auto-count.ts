@@ -20,6 +20,7 @@ export const autoCountSetupStage = {
 } as const;
 
 export function useAutoCount(args: {
+  autoCountThresholdRange: number,
   counterStatus: Ref<CounterStatus>,
   onNext: () => CounterStatus,
   decrementCount: () => number,
@@ -40,7 +41,6 @@ export function useAutoCount(args: {
   const autoCountSetupStatus = ref<AutoCountSetupStatus>(autoCountSetupStage.STANDBY);
   const maxUpright = ref(1);
   const minUpright = ref(0);
-  const uprightAdjust = ref(0.02); // TODO: 設定で変更できるようにする
   const autoCountSetupProgress = ref(0);
 
   const clearSetupTimer = () => {
@@ -63,8 +63,8 @@ export function useAutoCount(args: {
 
       const currentUpright = oscStore.upright;
       const withinAcceptableRange =
-        currentUpright <= recentUpright + uprightAdjust.value &&
-        currentUpright >= recentUpright - uprightAdjust.value;
+        currentUpright <= recentUpright + args.autoCountThresholdRange &&
+        currentUpright >= recentUpright - args.autoCountThresholdRange;
       recentUpright = currentUpright;
 
       if (!withinAcceptableRange) {
@@ -124,14 +124,14 @@ export function useAutoCount(args: {
       return;
     }
 
-    if (!hasReachedMin && newValue <= minUpright.value + uprightAdjust.value) {
+    if (!hasReachedMin && newValue <= minUpright.value + args.autoCountThresholdRange) {
       // 中間点(min)を通過
       hasReachedMin = true;
       playAudio('reachedMin');
       return;
     }
 
-    if (hasReachedMin && newValue >= maxUpright.value - uprightAdjust.value) {
+    if (hasReachedMin && newValue >= maxUpright.value - args.autoCountThresholdRange) {
       // 中間点(min)を通過後、初期位置(max)を通過
       const newCount = args.decrementCount();
       hasReachedMin = false;
@@ -151,7 +151,6 @@ export function useAutoCount(args: {
     autoCountSetupStatus,
     maxUpright,
     minUpright,
-    uprightAdjust,
     autoCountSetupProgress,
     setupAutoCount,
     resetAutoCountSetupStatus,

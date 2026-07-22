@@ -6,6 +6,12 @@ import { autoCountSetupStage, useAutoCount } from './composables/auto-count';
 import { useOscStore } from '@src/stores/osc';
 import CountControl from '../components/CountControl.vue';
 import UprightIndicator from './components/UprightIndicator.vue';
+import { SETTING_DEFAULT_VALUE } from '@common/constants';
+
+let autoCountThresholdRange = SETTING_DEFAULT_VALUE.autoCountThresholdRange;
+(async () => {
+  autoCountThresholdRange = await window.setting.getSetting('autoCountThresholdRange');
+})();
 
 const route = useRoute();
 const oscStore = useOscStore();
@@ -29,11 +35,10 @@ const {
   autoCountSetupStatus,
   maxUpright,
   minUpright,
-  uprightAdjust,
   autoCountSetupProgress,
   setupAutoCount,
   resetAutoCountSetupStatus,
-} = useAutoCount({ counterStatus, onNext, decrementCount });
+} = useAutoCount({ autoCountThresholdRange, counterStatus, onNext, decrementCount });
 
 const isListeningForUpright = computed(() => ['OPEN', 'OPEN_UPRIGHT'].includes(oscStore.oscStatus));
 
@@ -85,7 +90,7 @@ else {
         :currentUpright="oscStore.upright"
         :maxUpright
         :minUpright
-        :uprightAdjust
+        :autoCountThresholdRange
         :autoCountSetupStatus
         :isPointerVisible="isListeningForUpright"
       />
