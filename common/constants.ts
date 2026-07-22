@@ -9,6 +9,7 @@ export const SETTING_DEFAULT_VALUE: Setting = {
   dayBoundaryOffsetHours: 0,
   colorTheme: 'system',
   oscReceivedSound: 'slash',
+  autoCountThresholdRange: 0.025,
 } as const;
 
 export const ELECTRON_STORE_DEFAULT_VALUE: Schema = {
