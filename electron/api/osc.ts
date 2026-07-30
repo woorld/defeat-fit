@@ -6,6 +6,7 @@ import { ipcMain } from 'electron';
 import { defeatCountApi } from '@electron/api/defeat-count';
 import { noticeApi } from '@electron/api/notice';
 import { useOscServer, type OscServer } from '@electron/osc/osc-server';
+import dgram from 'node:dgram';
 
 type ListeningType = 'TARGET_AND_UPRIGHT' | 'ALL' | 'UPRIGHT';
 
@@ -36,6 +37,21 @@ const changeOscStatus = (newOscStatus: OscStatus) => {
 const updateDefeatCount = () => {
   const newCount = defeatCountApi.incrementDefeatCount();
   sendMessageIfNotNull('update-defeat-count', newCount);
+};
+
+const findFreeUdpPort = (startPort = basePort): Promise<number | null> => {
+  return new Promise(resolve => {
+    const socket = dgram.createSocket('udp4');
+    socket.on('error', () => {
+      socket.close();
+      resolve(findFreeUdpPort(startPort + 1));
+    });
+
+    socket.bind(startPort, () => {
+      const port = socket.address().port;
+      socket.close(() => resolve(port));
+    });
+  });
 };
 
 export const oscApi = {
