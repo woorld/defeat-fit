@@ -1,7 +1,7 @@
 {
   "name": "defeat-fit",
   "private": true,
-  "version": "0.3.2-ultrabeta",
+  "version": "0.3.3-ultrabeta",
   "type": "module",
   "scripts": {
     "dev": "vite",
