@@ -37,6 +37,10 @@ const updateDefeatCount = () => {
 
 const findFreeUdpPort = (startPort = basePort): Promise<number | null> => {
   return new Promise(resolve => {
+    if (basePort <= -1 || basePort >= 65536) {
+      resolve(null);
+    }
+
     const socket = dgram.createSocket('udp4');
     socket.on('error', () => {
       socket.close();
@@ -146,7 +150,6 @@ export const oscApi = {
         serviceName: 'DefeatFit',
         oscQueryHostName: 'DefeatFit',
         oscPort: usingPort,
-        httpPort: usingPort,
       });
 
       if (listeningType === 'ALL') {
