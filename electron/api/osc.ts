@@ -1,23 +1,20 @@
-import type OSC from 'osc-js';
 import { settingApi } from '@electron/api/setting';
-import { OSCQAccess, OSCQueryDiscovery, OSCQueryServer } from 'oscquery';
-import { setTimeout } from 'node:timers/promises';
+import { OSCQAccess, OSCQueryServer } from 'oscquery';
 import type { OscStatus, SendMessage } from '@common/types';
 import { ipcMain } from 'electron';
 import { defeatCountApi } from '@electron/api/defeat-count';
 import { noticeApi } from '@electron/api/notice';
-import { useOscServer, type OscPayload } from '@electron/osc/osc-server';
+import { useOscServer, type OscServer } from '@electron/osc/osc-server';
+import dgram from 'node:dgram';
 
-type ListeningType = 'TARGET' | 'ALL' | 'UPRIGHT';
+type ListeningType = 'TARGET_AND_UPRIGHT' | 'ALL' | 'UPRIGHT';
 
 const basePort = 11337;
-const minDiscoveryWaitMs = 3000;
 const oscQueryPathWhenListenAllMessage = '/avatar/parameters/AngularY';
-const oscQueryDiscovery = new OSCQueryDiscovery();
+const oscQueryPathUpright = '/avatar/parameters/Upright';
 
-let discoveryStartAt = 0;
 let oscQueryServer: OSCQueryServer | null = null;
-let oscServer: OSC | null = null;
+let oscServer: OscServer | null = null;
 let oscStatus: OscStatus = 'CLOSE';
 let isInitialized = false;
 let sendMessage: SendMessage | null = null;
@@ -26,17 +23,36 @@ const sendMessageIfNotNull: SendMessage = (channel, ...args) => {
   if (sendMessage !== null) {
     sendMessage(channel, ...args);
   }
-}
+};
 
 const changeOscStatus = (newOscStatus: OscStatus) => {
   oscStatus = newOscStatus;
   sendMessageIfNotNull('change-osc-status', newOscStatus);
-}
+};
 
 const updateDefeatCount = () => {
   const newCount = defeatCountApi.incrementDefeatCount();
   sendMessageIfNotNull('update-defeat-count', newCount);
-}
+};
+
+const findFreeUdpPort = (startPort = basePort): Promise<number | null> => {
+  return new Promise(resolve => {
+    if (basePort <= -1 || basePort >= 65536) {
+      resolve(null);
+    }
+
+    const socket = dgram.createSocket('udp4');
+    socket.on('error', () => {
+      socket.close();
+      resolve(findFreeUdpPort(startPort + 1));
+    });
+
+    socket.bind(startPort, () => {
+      const port = socket.address().port;
+      socket.close(() => resolve(port));
+    });
+  });
+};
 
 export const oscApi = {
   initialize(deps: { sendMessage: SendMessage }) {
@@ -47,7 +63,7 @@ export const oscApi = {
     sendMessage = deps.sendMessage;
 
     ipcMain.handle('get-osc-status', () => this.getOscStatus());
-    ipcMain.handle('start-listening', () => this.openServer('TARGET'));
+    ipcMain.handle('start-listening', () => this.openServer('TARGET_AND_UPRIGHT'));
     ipcMain.handle('start-listening-all', () => this.openServer('ALL'));
     ipcMain.handle('start-listening-upright', () => this.openServer('UPRIGHT'));
     ipcMain.handle('stop-listening', () => this.closeServer());
@@ -56,51 +72,44 @@ export const oscApi = {
   },
 
   async openServer(listeningType: ListeningType) {
+    const settingAddresses = (await settingApi.getSetting('targetOscMessage'))
+      .filter(m => m.enabled)
+      .map(m => m.address);
+
+    const isSettingAddressEmpty = listeningType === 'TARGET_AND_UPRIGHT' && settingAddresses.length <= 0;
+    const hasOpened = oscQueryServer !== null || oscServer !== null || oscStatus === 'PENDING';
+
+    if (isSettingAddressEmpty || hasOpened) {
+      // 対象のOSCメッセージが空配列か、OSCサーバー、OSCQueryサーバーのどちらかが開始中・開始済の場合
+      return;
+    }
+
     const typeAddressMap = {
-      TARGET: (await settingApi.getSetting('targetOscMessage'))
-        .filter(m => m.enabled)
-        .map(m => m.address),
-      ALL: ['*'],
-      UPRIGHT: ['/avatar/parameters/Upright'],
+      TARGET_AND_UPRIGHT: [...settingAddresses, oscQueryPathUpright],
+      ALL: ['message'], // NOTE: 全メッセージを受信する場合はアドレスではなくServer.onに渡すイベント名を指定
+      UPRIGHT: [oscQueryPathUpright],
     } as const satisfies Record<ListeningType, string[]>;
 
     const targetAddresses = typeAddressMap[listeningType];
 
-    if (targetAddresses.length <= 0 || oscQueryServer !== null || oscServer !== null || oscStatus === 'PENDING') {
-      // 対象のOSCメッセージが空配列か、OSCサーバのどちらかが開始中か開始済の場合
-      return;
-    }
-
     const prevOscStatus = oscStatus;
     changeOscStatus('PENDING');
 
-    this.startDiscovery();
-
-    // OSCサービスの検索開始から一定時間が経っていなければ、足りない分待つ
-    const discoveryElapsed = Date.now() - discoveryStartAt;
-    if (discoveryElapsed <= minDiscoveryWaitMs) {
-      await setTimeout(minDiscoveryWaitMs - discoveryElapsed);
-    }
-
-    const services = oscQueryDiscovery.getServices();
-    const notAvailablePorts = [
-      ...services.map(service => service.port),
-      ...services
-        .filter(service => service.hostInfo.oscPort !== undefined)
-        .map(service => service.hostInfo.oscPort as number) // 手前でundefinedを弾いているので型アサーションしてOK
-    ];
-
-    const onListen = (payload: OscPayload) => {
+    const onListen: Parameters<typeof useOscServer>[1]['onListen'] = (address, value) => {
       // TODO: 対象メッセージだけでなく対象の値も設定できるようにする
-      // NOTE: Uprightの受信を妨げないため0は通す
-      if (!payload.args[0] && payload.args[0] !== 0) {
+      // HACK: Uprightの受信を妨げないため0は通す
+      if (!value && value !== 0) {
         return;
       }
 
+      // NOTE: この実装だとUprightをカウント用アドレスとして設定できない 必要になったら対応
+      const isUpright = listeningType === 'TARGET_AND_UPRIGHT' && address === oscQueryPathUpright;
+      const uprightHandler = () => sendMessageIfNotNull('listen-upright-value', Number(value));
+
       const handlers = {
-        TARGET: () => updateDefeatCount(),
-        ALL: () => sendMessageIfNotNull('listen-any-message', payload.address),
-        UPRIGHT: () => sendMessageIfNotNull('listen-upright-value', payload.args[0]),
+        TARGET_AND_UPRIGHT: isUpright ? uprightHandler : updateDefeatCount,
+        ALL: () => sendMessageIfNotNull('listen-any-message', address),
+        UPRIGHT: uprightHandler,
       } as const satisfies Record<ListeningType, () => void>;
 
       handlers[listeningType]();
@@ -108,7 +117,7 @@ export const oscApi = {
 
     const onOpen = () => {
       const typeStatusMap = {
-        TARGET: 'OPEN',
+        TARGET_AND_UPRIGHT: 'OPEN',
         ALL: 'OPEN_ALL',
         UPRIGHT: 'OPEN_UPRIGHT',
       } as const satisfies Record<ListeningType, OscStatus>;
@@ -132,20 +141,15 @@ export const oscApi = {
     };
 
     try {
-      let usingPort = basePort;
-
-      while (notAvailablePorts.includes(usingPort)) {
-        if (usingPort >= 65536) {
-          throw Error('Could not set OSC port');
-        }
-        usingPort++;
+      const usingPort = await findFreeUdpPort(basePort);
+      if (usingPort === null) {
+        throw Error('Could not set OSC port');
       }
 
       oscQueryServer = new OSCQueryServer({
         serviceName: 'DefeatFit',
         oscQueryHostName: 'DefeatFit',
         oscPort: usingPort,
-        httpPort: usingPort,
       });
 
       if (listeningType === 'ALL') {
@@ -199,17 +203,5 @@ export const oscApi = {
 
   getOscStatus() {
     return oscStatus;
-  },
-
-  // NOTE: Discoveryの操作メソッドは現状フロント側に公開する必要はなさそう
-
-  startDiscovery() {
-    oscQueryDiscovery.start();
-    discoveryStartAt = Date.now();
-  },
-
-  stopDiscovery() {
-    oscQueryDiscovery.stop();
-    discoveryStartAt = 0;
   },
 } as const;

@@ -13,7 +13,7 @@ export type SchemaV1 = {
   },
 };
 
-export type Schema = Overwrite<
+export type SchemaV2 = Overwrite<
   SchemaV1,
   {
     SCHEMA_VERSION: number,
@@ -25,5 +25,13 @@ export type Schema = Overwrite<
       }[],
       oscReceivedSound: null | 'slash' | 'pull' | 'explode' | 'bell-small' | 'bell-large' | 'shoot' | 'hit',
     }>
+  }
+>;
+
+export type Schema = Overwrite<
+  SchemaV2,
+  {
+    setting: Omit<SchemaV2['setting'], 'lastSelectedPresetId'> & { autoCountThresholdRange: number }
+    lastSelectedPresetId: SchemaV2['setting']['lastSelectedPresetId'],
   }
 >;

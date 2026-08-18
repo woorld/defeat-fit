@@ -135,6 +135,14 @@ onBeforeRouteLeave(async (to) => {
         :min="1"
         :max="300"
       />
+      <SettingSlider
+        setting-name="autoCountThresholdRange"
+        label="自動カウントの閾値の範囲"
+        v-model="setting.autoCountThresholdRange"
+        :step="0.001"
+        :min="0.01"
+        :max="0.05"
+      />
       <div class="d-flex justify-space-between align-center">
         <VLabel>ホーム画面に注意喚起ダイアログを表示する</VLabel>
         <VSwitch

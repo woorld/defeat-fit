@@ -2,6 +2,7 @@ import { ipcRenderer, contextBridge } from 'electron';
 import type { License, MenuIdWithMultiplier, Notice, OscStatus, PresetWithMenus, Setting, StatsWithMenus, TotalStats } from '@common/types';
 import type { Menu, Stats, Preset } from '@prisma-generated-client';
 import type { UpdatePreset } from '@electron/api/preset';
+import type { Schema } from './store/schema';
 
 const defeatCountApi = {
   onUpdateDefeatCount: (callback: (defeatCount: number) => void) =>
@@ -77,11 +78,19 @@ const presetApi = {
     ipcRenderer.invoke('update-preset', preset, menuIdWithMultiplierList),
   deletePreset: (id: number): Promise<Preset> =>
     ipcRenderer.invoke('delete-preset', id),
+  getLastSelectedPresetId: (): Promise<Schema['lastSelectedPresetId']> =>
+    ipcRenderer.invoke('get-last-selected-preset-id'),
+  setLastSelectedPresetId: (id: Schema['lastSelectedPresetId']) =>
+    ipcRenderer.send('set-last-selected-preset-id', id),
 } as const;
 
 const noticeApi = {
   onCreateNotice: (callback: (notice: Notice) => void) =>
     ipcRenderer.on('create-notice', (_, notice: Notice) => callback(notice)),
+  onShowAppCloseConfirmDialog: (callback: (text: string) => void) =>
+    ipcRenderer.on('show-app-close-confirm-dialog', (_, text: string) => callback(text)),
+  acceptClose: () =>
+    ipcRenderer.send('accept-close'),
 } as const;
 
 const fileApi = {

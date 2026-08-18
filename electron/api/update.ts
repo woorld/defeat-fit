@@ -60,7 +60,6 @@ export const updateApi = {
   },
 
   relaunchApp() {
-    oscApi.stopDiscovery();
     oscApi.closeServer();
     autoUpdater.quitAndInstall(true, true);
   },
