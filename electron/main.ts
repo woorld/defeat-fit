@@ -32,7 +32,6 @@ void win; // HACK: 未使用でコンパイルエラーになるのを回避
 
 app.on('window-all-closed', async () => {
   try {
-    oscApi.stopDiscovery();
     await oscApi.closeServer();
   }
   catch (e) {
