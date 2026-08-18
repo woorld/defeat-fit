@@ -1,6 +1,5 @@
 import { settingApi } from '@electron/api/setting';
-import { OSCQAccess, OSCQueryDiscovery, OSCQueryServer } from 'oscquery';
-import { setTimeout } from 'node:timers/promises';
+import { OSCQAccess, OSCQueryServer } from 'oscquery';
 import type { OscStatus, SendMessage } from '@common/types';
 import { ipcMain } from 'electron';
 import { defeatCountApi } from '@electron/api/defeat-count';
@@ -11,12 +10,9 @@ import dgram from 'node:dgram';
 type ListeningType = 'TARGET_AND_UPRIGHT' | 'ALL' | 'UPRIGHT';
 
 const basePort = 11337;
-const minDiscoveryWaitMs = 3000;
 const oscQueryPathWhenListenAllMessage = '/avatar/parameters/AngularY';
 const oscQueryPathUpright = '/avatar/parameters/Upright';
-const oscQueryDiscovery = new OSCQueryDiscovery();
 
-let discoveryStartAt = 0;
 let oscQueryServer: OSCQueryServer | null = null;
 let oscServer: OscServer | null = null;
 let oscStatus: OscStatus = 'CLOSE';
@@ -95,22 +91,6 @@ export const oscApi = {
     const prevOscStatus = oscStatus;
     changeOscStatus('PENDING');
 
-    this.startDiscovery();
-
-    // OSCサービスの検索開始から一定時間が経っていなければ、足りない分待つ
-    const discoveryElapsed = Date.now() - discoveryStartAt;
-    if (discoveryElapsed <= minDiscoveryWaitMs) {
-      await setTimeout(minDiscoveryWaitMs - discoveryElapsed);
-    }
-
-    const services = oscQueryDiscovery.getServices();
-    const notAvailablePorts = [
-      ...services.map(service => service.port),
-      ...services
-        .filter(service => service.hostInfo.oscPort !== undefined)
-        .map(service => service.hostInfo.oscPort as number) // 手前でundefinedを弾いているので型アサーションしてOK
-    ];
-
     const onListen: Parameters<typeof useOscServer>[1]['onListen'] = (address, value) => {
       // TODO: 対象メッセージだけでなく対象の値も設定できるようにする
       // HACK: Uprightの受信を妨げないため0は通す
@@ -157,13 +137,9 @@ export const oscApi = {
     };
 
     try {
-      let usingPort = basePort;
-
-      while (notAvailablePorts.includes(usingPort)) {
-        if (usingPort >= 65536) {
-          throw Error('Could not set OSC port');
-        }
-        usingPort++;
+      const usingPort = await findFreeUdpPort(basePort);
+      if (usingPort === null) {
+        throw Error('Could not set OSC port');
       }
 
       oscQueryServer = new OSCQueryServer({
@@ -224,17 +200,5 @@ export const oscApi = {
 
   getOscStatus() {
     return oscStatus;
-  },
-
-  // NOTE: Discoveryの操作メソッドは現状フロント側に公開する必要はなさそう
-
-  startDiscovery() {
-    oscQueryDiscovery.start();
-    discoveryStartAt = Date.now();
-  },
-
-  stopDiscovery() {
-    oscQueryDiscovery.stop();
-    discoveryStartAt = 0;
   },
 } as const;
