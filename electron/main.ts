@@ -3,7 +3,7 @@ import { app, dialog, type BrowserWindow } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs';
 import { oscApi } from '@electron/api/osc';
-import { migrateDatabase } from '@electron/db/migrate';
+import { DatabaseMigrationError, migrateDatabase } from '@electron/db/migrate';
 import { migrateStore } from '@electron/store/migrate';
 import { createWindow } from '@electron/window';
 import { getUserDataPath } from '@electron/path/user-data';
@@ -27,6 +27,18 @@ if (app.isPackaged) {
     }
   }
 }
+
+const buildMigrationErrorMessage = (e: unknown): string => {
+  const detail = e instanceof Error ? e.message : String(e);
+  const state = e instanceof DatabaseMigrationError ? e.state : 'unchanged';
+  const summary = {
+    unchanged: 'データベースの更新に失敗しました。データベースは変更されていません。',
+    restored: 'データベースの更新に失敗したため、変更前の状態に戻しました。',
+    'restore-failed': 'データベースの更新と復元に失敗しました。データベースが破損している可能性があります。',
+  }[state];
+
+  return `${summary}アプリを終了します。\n\n${detail}`;
+};
 
 let win: BrowserWindow | null = null;
 void win; // HACK: 未使用でコンパイルエラーになるのを回避
@@ -53,10 +65,7 @@ app.whenReady().then(async () => {
       );
     }
     catch (e) {
-      dialog.showErrorBox(
-        'DefeatFit',
-        `データベースの更新に失敗しました。変更前の状態に戻したため、アプリを終了します。\n\n${e instanceof Error ? e.message : String(e)}`,
-      );
+      dialog.showErrorBox('DefeatFit', buildMigrationErrorMessage(e));
       app.quit();
       return;
     }

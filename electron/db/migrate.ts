@@ -131,34 +131,65 @@ const applyMigrations = async (dbPath: string, migrations: Migration[]) => {
 };
 
 /**
+ * unchanged: DBを変更する前に失敗した
+ * restored: 適用中に失敗し、バックアップから復元した
+ * restore-failed: 復元にも失敗した(DBが不整合な可能性がある)
+ */
+export type DatabaseMigrationErrorState = 'unchanged' | 'restored' | 'restore-failed';
+
+export class DatabaseMigrationError extends Error {
+  constructor(
+    readonly state: DatabaseMigrationErrorState,
+    cause: unknown,
+  ) {
+    super(cause instanceof Error ? cause.message : String(cause), { cause });
+  }
+}
+
+const restoreBackup = (dbPath: string, backupPath: string) => {
+  fs.copyFileSync(backupPath, dbPath);
+  fs.rmSync(backupPath);
+};
+
+/**
  * 未適用のマイグレーションをDBへ適用する。
- * 未適用がある場合のみ適用前にバックアップを取り、失敗した場合はバックアップから復元した上でエラーを投げる。
+ * 未適用がある場合のみ適用前にバックアップを取り、失敗した場合はバックアップから復元した上で`DatabaseMigrationError`を投げる。
  */
 export const migrateDatabase = async (dbPath: string, migrationsDir: string) => {
-  const migrations = loadMigrations(migrationsDir);
   const backupPath = `${dbPath}.bak`;
-
-  // NOTE: 前回の適用中にクラッシュした場合のみバックアップが残るため、新しいバックアップで上書きする前に復元する
-  if (fs.existsSync(backupPath)) {
-    fs.copyFileSync(backupPath, dbPath);
-    fs.rmSync(backupPath);
-  }
-
-  if (!(await hasPendingMigrations(dbPath, migrations))) {
-    return;
-  }
-
-  fs.copyFileSync(dbPath, backupPath);
+  let state: DatabaseMigrationErrorState = 'unchanged';
 
   try {
-    await applyMigrations(dbPath, migrations);
+    const migrations = loadMigrations(migrationsDir);
+
+    // NOTE: 前回の適用中にクラッシュした場合のみバックアップが残るため、新しいバックアップで上書きする前に復元する
+    if (fs.existsSync(backupPath)) {
+      state = 'restore-failed';
+      restoreBackup(dbPath, backupPath);
+      state = 'unchanged';
+    }
+
+    if (!(await hasPendingMigrations(dbPath, migrations))) {
+      return;
+    }
+
+    fs.copyFileSync(dbPath, backupPath);
+    state = 'restored';
+
+    try {
+      await applyMigrations(dbPath, migrations);
+    }
+    catch (e) {
+      console.error('DefeatFit: DBマイグレーションに失敗したためバックアップから復元します: ', e);
+      state = 'restore-failed';
+      restoreBackup(dbPath, backupPath);
+      state = 'restored';
+      throw e;
+    }
+
+    fs.rmSync(backupPath);
   }
   catch (e) {
-    console.error('DefeatFit: DBマイグレーションに失敗したためバックアップから復元します: ', e);
-    fs.copyFileSync(backupPath, dbPath);
-    fs.rmSync(backupPath);
-    throw e;
+    throw new DatabaseMigrationError(state, e);
   }
-
-  fs.rmSync(backupPath);
 };
