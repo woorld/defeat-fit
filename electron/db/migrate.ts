@@ -43,7 +43,11 @@ const loadMigrations = (migrationsDir: string): Migration[] => {
     });
 };
 
-// NOTE: Prisma生成のSQLは文字列リテラル内に`;`を含まない前提で、行末の`;`で分割する
+// NOTE: SQL文のパーサは持たず、行末の`;`で分割する。以下を含むマイグレーションは正しく分割できないため非対応
+//   - CREATE TRIGGER(BEGIN〜END内の`;`)
+//   - 文字列リテラル内の行末`;`、`--`、`/*`
+//   - `;`と同じ行の末尾コメント(2文が1文として実行され、後続が無視される)
+// 該当するSQLが必要になった場合はこの分割処理を見直すこと
 const splitStatements = (sql: string): string[] => {
   return sql
     .replace(/\/\*[\s\S]*?\*\//g, '')
