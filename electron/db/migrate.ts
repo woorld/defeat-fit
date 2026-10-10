@@ -150,9 +150,29 @@ export class DatabaseMigrationError extends Error {
   }
 }
 
+// NOTE: 途中で切れたバックアップが残らないよう、一時ファイルへ書き込んでからリネームする
+const createBackup = (dbPath: string, backupPath: string) => {
+  const tmpPath = `${backupPath}.tmp`;
+  fs.copyFileSync(dbPath, tmpPath);
+  fs.renameSync(tmpPath, backupPath);
+};
+
+// NOTE: クラッシュで残ったジャーナルは復元前のDBの内容に対するものなので、残したまま復元すると不整合を起こし得る
 const restoreBackup = (dbPath: string, backupPath: string) => {
+  for (const suffix of ['-journal', '-wal', '-shm']) {
+    fs.rmSync(`${dbPath}${suffix}`, { force: true });
+  }
   fs.copyFileSync(backupPath, dbPath);
-  fs.rmSync(backupPath);
+};
+
+// NOTE: 削除に失敗しても(ウイルス対策ソフトによるロック等)、マイグレーション自体の成否には影響させない
+const removeBackup = (backupPath: string) => {
+  try {
+    fs.rmSync(backupPath, { force: true });
+  }
+  catch (e) {
+    console.error('DefeatFit: DBバックアップの削除に失敗しました: ', e);
+  }
 };
 
 /**
@@ -166,18 +186,25 @@ export const migrateDatabase = async (dbPath: string, migrationsDir: string) => 
   try {
     const migrations = loadMigrations(migrationsDir);
 
-    // NOTE: 前回の適用中にクラッシュした場合のみバックアップが残るため、新しいバックアップで上書きする前に復元する
+    fs.rmSync(`${backupPath}.tmp`, { force: true });
+
+    // NOTE: バックアップが残っているのは、前回の適用中にクラッシュしたか、成功後の削除に失敗したとき。
+    //       後者はDBが更新済みでバックアップは古いため、未適用がある(または開けない)場合のみ復元する
     if (fs.existsSync(backupPath)) {
-      state = 'restore-failed';
-      restoreBackup(dbPath, backupPath);
-      state = 'unchanged';
+      const incomplete = await hasPendingMigrations(dbPath, migrations).catch(() => true);
+      if (incomplete) {
+        state = 'restore-failed';
+        restoreBackup(dbPath, backupPath);
+        state = 'unchanged';
+      }
+      removeBackup(backupPath);
     }
 
     if (!(await hasPendingMigrations(dbPath, migrations))) {
       return;
     }
 
-    fs.copyFileSync(dbPath, backupPath);
+    createBackup(dbPath, backupPath);
     state = 'restored';
 
     try {
@@ -188,10 +215,11 @@ export const migrateDatabase = async (dbPath: string, migrationsDir: string) => 
       state = 'restore-failed';
       restoreBackup(dbPath, backupPath);
       state = 'restored';
+      removeBackup(backupPath);
       throw e;
     }
 
-    fs.rmSync(backupPath);
+    removeBackup(backupPath);
   }
   catch (e) {
     throw new DatabaseMigrationError(state, e);
