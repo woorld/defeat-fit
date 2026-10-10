@@ -43,6 +43,12 @@ const buildMigrationErrorMessage = (e: unknown): string => {
 let win: BrowserWindow | null = null;
 void win; // HACK: 未使用でコンパイルエラーになるのを回避
 
+// NOTE: 多重起動すると、起動中のインスタンスが開いているDBに対して後発がマイグレーションやバックアップ復元を行い破損し得るため
+const isPrimaryInstance = !app.isPackaged || app.requestSingleInstanceLock();
+if (!isPrimaryInstance) {
+  app.quit();
+}
+
 app.on('window-all-closed', async () => {
   try {
     await oscApi.closeServer();
@@ -57,6 +63,10 @@ app.on('window-all-closed', async () => {
 });
 
 app.whenReady().then(async () => {
+  if (!isPrimaryInstance) {
+    return;
+  }
+
   if (app.isPackaged) {
     try {
       await migrateDatabase(
