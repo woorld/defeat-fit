@@ -1,8 +1,9 @@
 import 'dotenv/config'; // エントリポイントでのみロードすればOK
-import { app, type BrowserWindow } from 'electron';
+import { app, dialog, type BrowserWindow } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs';
 import { oscApi } from '@electron/api/osc';
+import { migrateDatabase } from '@electron/db/migrate';
 import { migrateStore } from '@electron/store/migrate';
 import { createWindow } from '@electron/window';
 import { getUserDataPath } from '@electron/path/user-data';
@@ -43,7 +44,24 @@ app.on('window-all-closed', async () => {
   }
 });
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  if (app.isPackaged) {
+    try {
+      await migrateDatabase(
+        path.join(getUserDataPath(), 'app.db'),
+        path.join(process.resourcesPath, 'migrations'),
+      );
+    }
+    catch (e) {
+      dialog.showErrorBox(
+        'DefeatFit',
+        `データベースの更新に失敗しました。変更前の状態に戻したため、アプリを終了します。\n\n${e instanceof Error ? e.message : String(e)}`,
+      );
+      app.quit();
+      return;
+    }
+  }
+
   migrateStore();
   win = createWindow();
 });
