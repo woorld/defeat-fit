@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, type ComponentPublicInstance } from 'vue';
 import type { StatsWithMenus, TotalStats } from '@common/types';
 import { menuUnitMap } from '@common/util';
 import ConfirmDialog from '@src/components/common/ConfirmDialog.vue';
+import { useNoticeStore } from '@src/stores/notice';
+import { copyElementImage } from '@src/composables/common/copy-element-image';
 
 // NOTE: Computedだとユーザ定義型ガードとして使えない
 const isStatsWithMenus = (stats: StatsWithMenus | TotalStats): stats is StatsWithMenus =>
@@ -16,9 +18,36 @@ const emit = defineEmits<{
   (e: 'delete-stats', id: number): void,
 }>();
 
+// NOTE: 画像から除外する要素のクラス（操作ボタン列）
+const CAPTURE_EXCLUDE_CLASS = 'capture-exclude';
+
+const noticeStore = useNoticeStore();
+
 const isDeleteDialogVisible = ref(false);
+const isCopying = ref(false);
+const cardRef = ref<ComponentPublicInstance>();
 
 const title = computed(() => isStatsWithMenus(props.stats) ? props.stats.date : 'Total');
+
+const onCopyImage = async () => {
+  const cardElement = cardRef.value?.$el as HTMLElement | undefined;
+  if (!cardElement || isCopying.value) {
+    return;
+  }
+
+  isCopying.value = true;
+  try {
+    await copyElementImage(cardElement, CAPTURE_EXCLUDE_CLASS);
+    noticeStore.noticeList.push({ text: '統計を画像としてコピーしました', color: 'success' });
+  }
+  catch (e) {
+    console.warn('DefeatFit: copy stats image failed: ', e);
+    noticeStore.noticeList.push({ text: '統計の画像コピーに失敗しました', color: 'error' });
+  }
+  finally {
+    isCopying.value = false;
+  }
+};
 
 const onDeleteStats = () => {
   if (!isStatsWithMenus(props.stats)) {
@@ -30,7 +59,7 @@ const onDeleteStats = () => {
 </script>
 
 <template>
-  <VCard class="mb-6 py-2" border>
+  <VCard ref="cardRef" class="mb-6 py-2" border>
     <template #text>
       <div class="d-flex justify-space-between align-center ga-4">
         <div class="w-25 text-center">
@@ -57,14 +86,26 @@ const onDeleteStats = () => {
             </tbody>
           </VTable>
         </div>
-        <VBtn
-          v-if="isStatsWithMenus(props.stats)"
-          class="text-red flex-0-1-1"
-          icon="mdi-trash-can"
-          elevation="0"
-          :rounded="false"
-          @click="isDeleteDialogVisible = true"
-        />
+        <div
+          class="d-flex flex-column flex-0-1-1"
+          :class="CAPTURE_EXCLUDE_CLASS"
+        >
+          <VBtn
+            icon="mdi-content-copy"
+            elevation="0"
+            :rounded="false"
+            :disabled="isCopying"
+            @click="onCopyImage"
+          />
+          <VBtn
+            v-if="isStatsWithMenus(props.stats)"
+            class="text-red"
+            icon="mdi-trash-can"
+            elevation="0"
+            :rounded="false"
+            @click="isDeleteDialogVisible = true"
+          />
+        </div>
       </div>
     </template>
   </VCard>
