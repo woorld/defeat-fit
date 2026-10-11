@@ -12,7 +12,8 @@ Issue #$ARGUMENTS に対応する。ブランチ名・PR形式・ラベルはリ
 ## 1. 準備
 
 - `$ARGUMENTS` が数値でなければ中断してユーザーに確認する
-- `gh issue view $ARGUMENTS --json title,body,labels` でIssueを取得する
+- `gh issue view $ARGUMENTS --json title,body,labels,state,comments` でIssueを取得する（コメントの追加仕様・合意事項も踏まえる）
+- Issueがクローズ済みの場合は、対応してよいかユーザーに確認する
 - 作業ツリーがクリーンでなければ中断してユーザーに確認する
 - `develop` を最新化し、`$ARGUMENTS-(簡潔な英文・ケバブケースの対応内容)` のブランチを作成する
 
@@ -25,7 +26,7 @@ Issue #$ARGUMENTS に対応する。ブランチ名・PR形式・ラベルはリ
 
 ## 3. レビュー依頼
 
-Agentツールを `model: "opus"` で起動し、レビューを依頼する。レビュアーは会話の文脈を持たないため、プロンプトは自己完結させ、以下を含める。
+Agentツールを `model: "opus"`、`run_in_background: false` で起動し、レビューを依頼する。結果を受け取ってから 4. に進む。レビュアーは会話の文脈を持たないため、プロンプトは自己完結させ、以下を含める。
 
 - IssueのタイトルとIssue本文
 - `git diff develop...HEAD` で変更を確認すること
@@ -45,7 +46,7 @@ Agentツールを `model: "opus"` で起動し、レビューを依頼する。�
 
 ## 5. 修正
 
-ユーザーから修正依頼があれば、修正・コミットして 3. に戻る。
+ユーザーから修正依頼があれば、修正し、`npx vue-tsc` で型チェックを通してからコミットして 3. に戻る。
 
 ## 6. プルリクエスト作成
 
