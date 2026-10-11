@@ -9,7 +9,7 @@ DefeatFit: OSCメッセージ（VRChatアバターギミックでの負け）の
 ## コマンド
 
 - `npm run dev` — Vite + vite-plugin-electron で開発起動（ユーザーデータは `%APPDATA%/defeat-fit-dev`）
-- `npm run build` — `prisma db push`で空のテンプレートDB(`dist/app.db`)を生成 → `vue-tsc`（型チェック） → `vite build` → `electron-builder`（成果物は`dist/release/`）
+- `npm run build` — `prisma migrate deploy`で空のテンプレートDB(`dist/app.db`)を生成 → `vue-tsc`（型チェック） → `vite build` → `electron-builder`（成果物は`dist/release/`）
 - `npm run format` — prettier
 - `npm run osc:send` / `osc:listen` — `osc-tester`でOSCの送受信テスト（宛先は`.env`の`OSC_TESTER_IP`/`OSC_TESTER_PORT`）
 - テスト・lintのスクリプトは存在しない。型チェックは`npx vue-tsc`。
@@ -23,7 +23,7 @@ DefeatFit: OSCメッセージ（VRChatアバターギミックでの負け）の
 - **`electron/preload.ts`**: `contextBridge`でAPI群を`window.osc`、`window.menu`等として公開。**IPCを追加する際は main側`ipcMain` と preload の両方（と型エクスポート）を更新する必要がある**。レンダラー側の型は`electron/electron-env.d.ts`で宣言。
 - **`src/` (renderer)**: Vue 3。`views/<画面>/`配下に画面とその`components`/`composables`、グローバル状態は`stores/`(Pinia)。mainからのpush通知（`onUpdateDefeatCount`等）はstoreで購読する。
 - **永続化は2系統**: ①Prisma/SQLite = メニュー・プリセット・統計（`prisma/schema.prisma`）、②`electron-store`(`config.json`) = 設定・最終選択プリセット等（`electron/store/`）。ストアのスキーマ変更時は`SCHEMA_VERSION`を上げ、`store/migrate.ts`にマイグレーションを追加する（失敗・破損時は設定ファイルをリネームして再生成）。
-- **パッケージ版のDB**: 起動時（`main.ts`）に`resources/app.db`（ビルド時生成のテンプレート）をユーザーデータへコピーして`DATABASE_URL`を設定する。
+- **パッケージ版のDB**: 起動時（`main.ts`）に`resources/app.db`（ビルド時に`migrate deploy`で生成したテンプレート）が無ければユーザーデータへコピーして`DATABASE_URL`を設定する。その後`db/migrate.ts`の`migrateDatabase()`が、同梱した`resources/migrations`の未適用分を`_prisma_migrations`と突き合わせて適用する（`_prisma_migrations`が無い配布済みDBは既存3本を適用済みとして基準化。適用前に`app.db.bak`を作成し、失敗時は復元してアプリを終了）。
 
 ### OSC受信 (`electron/api/osc.ts`, `electron/osc/osc-server.ts`)
 
