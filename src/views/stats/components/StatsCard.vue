@@ -5,6 +5,7 @@ import { menuUnitMap } from '@common/util';
 import ConfirmDialog from '@src/components/common/ConfirmDialog.vue';
 import { useNoticeStore } from '@src/stores/notice';
 import { copyElementImage } from '@src/composables/common/copy-element-image';
+import { isStatsCopyBusy } from '../composables/stats-copy-state';
 
 // NOTE: Computedだとユーザ定義型ガードとして使えない
 const isStatsWithMenus = (stats: StatsWithMenus | TotalStats): stats is StatsWithMenus =>
@@ -20,24 +21,27 @@ const emit = defineEmits<{
 
 // NOTE: 画像から除外する要素のクラス（操作ボタン列）
 const CAPTURE_EXCLUDE_CLASS = 'capture-exclude';
+// NOTE: 連打による画像生成の負荷（メモリ消費）を抑えるため、コピー完了後もしばらくボタンを押せなくする
+const COPY_COOLDOWN_MS = 5000;
 
 const noticeStore = useNoticeStore();
 
 const isDeleteDialogVisible = ref(false);
-const isCopying = ref(false);
+const isCopied = ref(false);
 const cardRef = ref<ComponentPublicInstance>();
 
 const title = computed(() => isStatsWithMenus(props.stats) ? props.stats.date : 'Total');
 
 const onCopyImage = async () => {
   const cardElement = cardRef.value?.$el as HTMLElement | undefined;
-  if (!cardElement || isCopying.value) {
+  if (!cardElement || isStatsCopyBusy.value) {
     return;
   }
 
-  isCopying.value = true;
+  isStatsCopyBusy.value = true;
   try {
     await copyElementImage(cardElement, CAPTURE_EXCLUDE_CLASS);
+    isCopied.value = true;
     noticeStore.noticeList.push({ text: '統計を画像としてコピーしました', color: 'success' });
   }
   catch (e) {
@@ -45,7 +49,11 @@ const onCopyImage = async () => {
     noticeStore.noticeList.push({ text: '統計の画像コピーに失敗しました', color: 'error' });
   }
   finally {
-    isCopying.value = false;
+    // NOTE: 共有状態を確実に戻すため、カードが破棄されてもタイマーは解除しない
+    setTimeout(() => {
+      isStatsCopyBusy.value = false;
+      isCopied.value = false;
+    }, COPY_COOLDOWN_MS);
   }
 };
 
@@ -91,10 +99,10 @@ const onDeleteStats = () => {
           :class="CAPTURE_EXCLUDE_CLASS"
         >
           <VBtn
-            icon="mdi-content-copy"
+            :icon="isCopied ? 'mdi-check' : 'mdi-content-copy'"
             elevation="0"
             :rounded="false"
-            :disabled="isCopying"
+            :disabled="isStatsCopyBusy"
             @click="onCopyImage"
           />
           <VBtn
