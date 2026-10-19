@@ -45,6 +45,7 @@ const updateEditingMenuId = (id: null | number) => {
         <tr class="font-weight-bold">
           <td>メニュー名</td>
           <td>単位</td>
+          <td class="text-right">上限</td>
           <td />
         </tr>
       </thead>
