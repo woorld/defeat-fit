@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue';
 import BaseDialog from '@src/components/common/BaseDialog.vue';
 import { useDefeatCountStore } from '@src/stores/defeat-count';
-import { menuUnitMap } from '@common/util';
+import { menuUnitMap, calcMenuAmount, isMenuAmountCapped } from '@common/util';
 import type { PresetWithMenus } from '@common/types';
 
 const defeatCount = useDefeatCountStore();
@@ -16,7 +16,12 @@ const model = defineModel<boolean>({ required: true });
 const isDecimalVisible = ref(false);
 const setCount = ref(1);
 
-const totalReps = computed(() => Math.ceil(props.presetMenu.multiplier * defeatCount.count));
+const totalReps = computed(
+  () => calcMenuAmount(props.presetMenu.multiplier, defeatCount.count, props.presetMenu.menu.maxValue)
+);
+const isCapped = computed(
+  () => isMenuAmountCapped(props.presetMenu.multiplier, defeatCount.count, props.presetMenu.menu.maxValue)
+);
 const secondsOrCountPerSet = computed(
   () => Math.floor(totalReps.value / setCount.value * 1000) / 1000 // 表示用に小数第4位以下を切り捨て
 );
@@ -66,7 +71,10 @@ const restoreIntegerTotalReps = () => {
         </div>
         <VIcon size="32">mdi-chevron-down</VIcon>
         <div class="d-flex justify-center align-baseline ga-2">
-          <span class="text-body">{{ totalReps }} {{ menuUnitMap[props.presetMenu.menu.unit] }} ÷ {{ setCount }} セット =</span>
+          <span class="text-body">
+            <span :class="{ 'text-warning': isCapped }">{{ totalReps }} {{ menuUnitMap[props.presetMenu.menu.unit] }}</span>
+            ÷ {{ setCount }} セット =
+          </span>
           <span class="text-h4 text-green">{{ secondsOrCountPerSet }}</span>
           <span class="text-body">{{ menuUnitMap[props.presetMenu.menu.unit] }} / セット</span>
         </div>

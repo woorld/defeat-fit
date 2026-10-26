@@ -3,6 +3,7 @@ import type { MenuIdWithMultiplier, TotalStats } from '@common/types';
 import { settingApi } from '@electron/api/setting';
 import { ipcMain } from 'electron';
 import { noticeApi } from '@electron/api/notice';
+import { calcMenuAmount } from '@common/util';
 
 const prisma = new PrismaClient();
 
@@ -86,9 +87,14 @@ export const statsApi = {
       },
     });
 
+    const menuList = await prisma.menu.findMany({
+      where: { id: { in: menuIdWithMultiplierList.map(menu => menu.menuId) } },
+    });
+
     // TODO: forでupsertを回さずにstatsMenu: create{}でワンライナー的にできる？
     for (const menuIdWithMultiplier of menuIdWithMultiplierList) {
-      const menuCount = Math.ceil(menuIdWithMultiplier.multiplier * defeatCount);
+      const maxValue = menuList.find(menu => menu.id === menuIdWithMultiplier.menuId)?.maxValue ?? 0;
+      const menuCount = calcMenuAmount(menuIdWithMultiplier.multiplier, defeatCount, maxValue);
 
       // 作成した統計に紐づく統計メニューを追加・更新
       await prisma.statsMenu.upsert({

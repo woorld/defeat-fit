@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import type { PresetWithMenus } from '@common/types';
-import { menuUnitMap } from '@common/util';
+import { menuUnitMap, calcMenuAmount, isMenuAmountCapped } from '@common/util';
 import { useDefeatCountStore } from '@src/stores/defeat-count';
 import DoMenuDialog from './DoMenuDialog.vue';
 
@@ -12,6 +12,13 @@ const props = defineProps<{
 }>();
 
 const isDialogVisible = ref(false);
+
+const menuAmount = computed(
+  () => calcMenuAmount(props.presetMenu.multiplier, defeatCount.count, props.presetMenu.menu.maxValue)
+);
+const isCapped = computed(
+  () => isMenuAmountCapped(props.presetMenu.multiplier, defeatCount.count, props.presetMenu.menu.maxValue)
+);
 </script>
 
 <template>
@@ -21,7 +28,8 @@ const isDialogVisible = ref(false);
     <td class="text-right">
       <span
         class="pt-1 pb-1 pr-2 pl-2 rounded"
-      >{{ Math.ceil(props.presetMenu.multiplier * defeatCount.count) }} {{ menuUnitMap[props.presetMenu.menu.unit] }}</span>
+        :class="{ 'text-warning': isCapped }"
+      >{{ menuAmount }} {{ menuUnitMap[props.presetMenu.menu.unit] }}</span>
     </td>
     <td class="text-right">
       <VIcon>mdi-chevron-right</VIcon>

@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Menu" ADD COLUMN "maxValue" INTEGER NOT NULL DEFAULT 0;
