@@ -4,8 +4,8 @@ import type { CounterStatus } from './counter';
 import setupProgressSound from '@src/assets/sound/timer-counter/start-countdown.mp3';
 import thresholdSetupCompleteSound from '@src/assets/sound/timer-counter/start.mp3';
 import reachedMinSound from '@src/assets/sound/timer-counter/reach-min.mp3';
-import setupStartMinSound from '@src/assets/sound/timer-counter/auto-count-setup-start-min.mp3';
-import setupStartMaxSound from '@src/assets/sound/timer-counter/auto-count-setup-start-max.mp3';
+import setupStartFirstSound from '@src/assets/sound/timer-counter/auto-count-setup-start-min.mp3';
+import setupStartSecondSound from '@src/assets/sound/timer-counter/auto-count-setup-start-max.mp3';
 import setupCompleteSound from '@src/assets/sound/timer-counter/auto-count-setup-complete.mp3';
 import { useAudio } from '@src/composables/common/audio';
 
@@ -14,8 +14,8 @@ export type AutoCountSetupStatus = typeof autoCountSetupStage[keyof typeof autoC
 // NOTE: STANDBY→DONEまでの順番が決まっているため、文字列ではなく数値にして大小を比較できるようにする
 export const autoCountSetupStage = {
   STANDBY: 0,
-  MIN: 1,
-  MAX: 2,
+  FIRST: 1,
+  SECOND: 2,
   DONE: 3,
 } as const;
 
@@ -30,8 +30,8 @@ export function useAutoCount(args: {
     setupProgress: setupProgressSound,
     thresholdSetupComplete: thresholdSetupCompleteSound,
     reachedMin: reachedMinSound,
-    setupStartMin: setupStartMinSound,
-    setupStartMax: setupStartMaxSound,
+    setupStartFirst: setupStartFirstSound,
+    setupStartSecond: setupStartSecondSound,
     setupComplete: setupCompleteSound,
   });
 
@@ -42,6 +42,7 @@ export function useAutoCount(args: {
   const maxUpright = ref(1);
   const minUpright = ref(0);
   const autoCountSetupProgress = ref(0);
+  const isSecondUprightTooClose = ref(false);
 
   const clearSetupTimer = () => {
     if (setupTimerId === null) {
@@ -90,13 +91,28 @@ export function useAutoCount(args: {
   });
 
   const setupAutoCount = async (): Promise<void> => {
-    autoCountSetupStatus.value = autoCountSetupStage.MIN;
-    playAudio('setupStartMin');
-    minUpright.value = await getThreshold();
+    autoCountSetupStatus.value = autoCountSetupStage.FIRST;
+    playAudio('setupStartFirst');
+    const firstUpright = await getThreshold();
+    // NOTE: 2回目の取得中は1回目の位置のみをインジケーターに表示するため、min/maxの両方に入れておく
+    minUpright.value = firstUpright;
+    maxUpright.value = firstUpright;
 
-    autoCountSetupStatus.value = autoCountSetupStage.MAX;
-    playAudio('setupStartMax');
-    maxUpright.value = await getThreshold();
+    autoCountSetupStatus.value = autoCountSetupStage.SECOND;
+    let secondUpright: number;
+    while (true) {
+      playAudio('setupStartSecond');
+      secondUpright = await getThreshold();
+
+      // NOTE: 差が閾値の範囲内に収まるとmin/maxを交互に通過できずカウントされないため取り直す
+      isSecondUprightTooClose.value = Math.abs(secondUpright - firstUpright) <= args.autoCountThresholdRange * 2;
+      if (!isSecondUprightTooClose.value) {
+        break;
+      }
+    }
+
+    minUpright.value = Math.min(firstUpright, secondUpright);
+    maxUpright.value = Math.max(firstUpright, secondUpright);
 
     autoCountSetupStatus.value = autoCountSetupStage.DONE;
     await playAudio('setupComplete');
@@ -108,6 +124,7 @@ export function useAutoCount(args: {
   const resetAutoCountSetupStatus = () => {
     autoCountSetupStatus.value = autoCountSetupStage.STANDBY;
     autoCountSetupProgress.value = 0;
+    isSecondUprightTooClose.value = false;
     clearSetupTimer();
   };
 
@@ -152,6 +169,7 @@ export function useAutoCount(args: {
     maxUpright,
     minUpright,
     autoCountSetupProgress,
+    isSecondUprightTooClose,
     setupAutoCount,
     resetAutoCountSetupStatus,
   };

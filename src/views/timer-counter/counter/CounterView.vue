@@ -36,6 +36,7 @@ const {
   maxUpright,
   minUpright,
   autoCountSetupProgress,
+  isSecondUprightTooClose,
   setupAutoCount,
   resetAutoCountSetupStatus,
 } = useAutoCount({ autoCountThresholdRange, counterStatus, onNext, decrementCount });
@@ -131,13 +132,15 @@ else {
           </div>
           <div v-else-if="autoCountSetupStatus < autoCountSetupStage.DONE" class="d-flex flex-column justify-center align-center ga-6">
             <p>
-              <template v-if="autoCountSetupStatus <= autoCountSetupStage.MIN">
-                頭の位置の最小値を設定します。<br />
-                今から行う筋トレの中で<strong>一番低い姿勢</strong>で止まってください。
+              <template v-if="autoCountSetupStatus <= autoCountSetupStage.FIRST">
+                頭の位置の最小値・最大値を設定します。<br />
+                今から行う筋トレの中で<strong>一番低い姿勢</strong>か<strong>一番高い姿勢</strong>のどちらかで止まってください。
               </template>
-              <template v-else-if="autoCountSetupStatus >= autoCountSetupStage.MAX">
-                頭の位置の最大値を設定します。<br />
-                今から行う筋トレの中で<strong>一番高い姿勢</strong>で止まってください。
+              <template v-else-if="autoCountSetupStatus >= autoCountSetupStage.SECOND">
+                <template v-if="isSecondUprightTooClose">
+                  <strong>1回目の姿勢との差が小さすぎます。</strong><br />
+                </template>
+                続けて、<strong>先ほどとは反対の姿勢</strong>で止まってください。
               </template>
             </p>
             <VProgressLinear
