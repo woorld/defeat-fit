@@ -36,7 +36,6 @@ const {
   maxUpright,
   minUpright,
   autoCountSetupProgress,
-  isSecondUprightTooClose,
   setupAutoCount,
   resetAutoCountSetupStatus,
 } = useAutoCount({ autoCountThresholdRange, counterStatus, onNext, decrementCount });
@@ -137,10 +136,8 @@ else {
                 今から行う筋トレの中で<strong>一番低い姿勢</strong>か<strong>一番高い姿勢</strong>のどちらかで止まってください。
               </template>
               <template v-else-if="autoCountSetupStatus >= autoCountSetupStage.SECOND">
-                <template v-if="isSecondUprightTooClose">
-                  <strong>1回目の姿勢との差が小さすぎます。</strong><br />
-                </template>
-                続けて、<strong>先ほどとは反対の姿勢</strong>で止まってください。
+                続けて、<strong>先ほどとは反対の姿勢</strong>で止まってください。<br />
+                1回目の姿勢から十分に離れるまで計測は進みません。
               </template>
             </p>
             <VProgressLinear

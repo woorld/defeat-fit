@@ -42,7 +42,6 @@ export function useAutoCount(args: {
   const maxUpright = ref(1);
   const minUpright = ref(0);
   const autoCountSetupProgress = ref(0);
-  const isSecondUprightTooClose = ref(false);
 
   const clearSetupTimer = () => {
     if (setupTimerId === null) {
@@ -52,7 +51,7 @@ export function useAutoCount(args: {
     setupTimerId = null;
   };
 
-  const getThreshold = (): Promise<number> => new Promise(resolve => {
+  const getThreshold = (excludedUpright?: number): Promise<number> => new Promise(resolve => {
     let recentUpright = oscStore.upright;
 
     setupTimerId = window.setInterval(() => {
@@ -70,6 +69,13 @@ export function useAutoCount(args: {
 
       if (!withinAcceptableRange) {
         // Uprightのブレが一定以上の場合
+        autoCountSetupProgress.value = 0;
+        return;
+      }
+
+      // NOTE: 差が閾値の範囲内に収まるとmin/maxを交互に通過できずカウントされないため、
+      // 取得後に取り直すのではなく、近い位置では進捗を進めない（同じ姿勢のまま取り直しと音声が繰り返されるのを防ぐ）
+      if (excludedUpright !== undefined && Math.abs(currentUpright - excludedUpright) <= args.autoCountThresholdRange * 2) {
         autoCountSetupProgress.value = 0;
         return;
       }
@@ -94,22 +100,13 @@ export function useAutoCount(args: {
     autoCountSetupStatus.value = autoCountSetupStage.FIRST;
     playAudio('setupStartFirst');
     const firstUpright = await getThreshold();
-    // NOTE: 2回目の取得中は1回目の位置のみをインジケーターに表示するため、min/maxの両方に入れておく
+    // NOTE: 2回目の取得中はmin側の範囲表示で1回目の位置を示す。maxにも入れるのは前回のセットアップの値を残さないため
     minUpright.value = firstUpright;
     maxUpright.value = firstUpright;
 
     autoCountSetupStatus.value = autoCountSetupStage.SECOND;
-    let secondUpright: number;
-    while (true) {
-      playAudio('setupStartSecond');
-      secondUpright = await getThreshold();
-
-      // NOTE: 差が閾値の範囲内に収まるとmin/maxを交互に通過できずカウントされないため取り直す
-      isSecondUprightTooClose.value = Math.abs(secondUpright - firstUpright) <= args.autoCountThresholdRange * 2;
-      if (!isSecondUprightTooClose.value) {
-        break;
-      }
-    }
+    playAudio('setupStartSecond');
+    const secondUpright = await getThreshold(firstUpright);
 
     minUpright.value = Math.min(firstUpright, secondUpright);
     maxUpright.value = Math.max(firstUpright, secondUpright);
@@ -124,7 +121,6 @@ export function useAutoCount(args: {
   const resetAutoCountSetupStatus = () => {
     autoCountSetupStatus.value = autoCountSetupStage.STANDBY;
     autoCountSetupProgress.value = 0;
-    isSecondUprightTooClose.value = false;
     clearSetupTimer();
   };
 
@@ -169,7 +165,6 @@ export function useAutoCount(args: {
     maxUpright,
     minUpright,
     autoCountSetupProgress,
-    isSecondUprightTooClose,
     setupAutoCount,
     resetAutoCountSetupStatus,
   };
