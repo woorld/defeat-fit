@@ -3,7 +3,7 @@ import type { MenuIdWithMultiplier, TotalStats } from '@common/types';
 import { settingApi } from '@electron/api/setting';
 import { ipcMain } from 'electron';
 import { noticeApi } from '@electron/api/notice';
-import { calcMenuAmount } from '@common/util';
+import { calcMenuAmount, getStatsDateString } from '@common/util';
 
 const prisma = new PrismaClient();
 
@@ -67,13 +67,8 @@ export const statsApi = {
   },
 
   async addStats(defeatCount: number, menuIdWithMultiplierList: MenuIdWithMultiplier[]) {
-    const nowDate = new Date();
     const hourOffset = await settingApi.getSetting('dayBoundaryOffsetHours');
-
-    // 設定画面で設定した時間分引いて日付判定を変更
-    nowDate.setHours(nowDate.getHours() - hourOffset);
-    // YYYY-MM-DD（sv-SE=スウェーデンの標準形式）で日付を取得
-    const roundedNowDateString = nowDate.toLocaleDateString('sv-SE');
+    const roundedNowDateString = getStatsDateString(new Date(), hourOffset);
 
     // 統計本体を追加・更新
     const todayStats = await prisma.stats.upsert({

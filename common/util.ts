@@ -14,3 +14,11 @@ export const calcMenuAmount = (multiplier: number, defeatCount: number, maxValue
 
 export const isMenuAmountCapped = (multiplier: number, defeatCount: number, maxValue: number) =>
   maxValue > 0 && calcRawMenuAmount(multiplier, defeatCount) >= maxValue;
+
+export const getStatsDateString = (date: Date, dayBoundaryOffsetHours: number) => {
+  const offsetDate = new Date(date);
+  // 設定画面で設定した時間分引いて日付判定を変更
+  offsetDate.setHours(offsetDate.getHours() - dayBoundaryOffsetHours);
+  // YYYY-MM-DD（sv-SE=スウェーデンの標準形式）で日付を取得
+  return offsetDate.toLocaleDateString('sv-SE');
+};
