@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, type ComponentPublicInstance } from 'vue';
 import type { StatsWithMenus, TotalStats } from '@common/types';
 import { menuUnitMap } from '@common/util';
 import ConfirmDialog from '@src/components/common/ConfirmDialog.vue';
+import { useNoticeStore } from '@src/stores/notice';
+import { copyElementImage } from '@src/composables/common/copy-element-image';
+import { isStatsCopyBusy } from '../composables/stats-copy-state';
 
 // NOTE: Computedだとユーザ定義型ガードとして使えない
 const isStatsWithMenus = (stats: StatsWithMenus | TotalStats): stats is StatsWithMenus =>
@@ -16,9 +19,43 @@ const emit = defineEmits<{
   (e: 'delete-stats', id: number): void,
 }>();
 
+// NOTE: 画像から除外する要素のクラス（操作ボタン列）
+const CAPTURE_EXCLUDE_CLASS = 'capture-exclude';
+// NOTE: 連打による画像生成の負荷（メモリ消費）を抑えるため、コピー完了後もしばらくボタンを押せなくする
+const COPY_COOLDOWN_MS = 5000;
+
+const noticeStore = useNoticeStore();
+
 const isDeleteDialogVisible = ref(false);
+const isCopied = ref(false);
+const cardRef = ref<ComponentPublicInstance>();
 
 const title = computed(() => isStatsWithMenus(props.stats) ? props.stats.date : 'Total');
+
+const onCopyImage = async () => {
+  const cardElement = cardRef.value?.$el as HTMLElement | undefined;
+  if (!cardElement || isStatsCopyBusy.value) {
+    return;
+  }
+
+  isStatsCopyBusy.value = true;
+  try {
+    await copyElementImage(cardElement, CAPTURE_EXCLUDE_CLASS);
+    isCopied.value = true;
+    noticeStore.noticeList.push({ text: '統計を画像としてコピーしました', color: 'success' });
+  }
+  catch (e) {
+    console.warn('DefeatFit: copy stats image failed: ', e);
+    noticeStore.noticeList.push({ text: '統計の画像コピーに失敗しました', color: 'error' });
+  }
+  finally {
+    // NOTE: 共有状態を確実に戻すため、カードが破棄されてもタイマーは解除しない
+    setTimeout(() => {
+      isStatsCopyBusy.value = false;
+      isCopied.value = false;
+    }, COPY_COOLDOWN_MS);
+  }
+};
 
 const onDeleteStats = () => {
   if (!isStatsWithMenus(props.stats)) {
@@ -30,7 +67,7 @@ const onDeleteStats = () => {
 </script>
 
 <template>
-  <VCard class="mb-6 py-2" border>
+  <VCard ref="cardRef" class="mb-6 py-2" border>
     <template #text>
       <div class="d-flex justify-space-between align-center ga-4">
         <div class="w-25 text-center">
@@ -57,14 +94,26 @@ const onDeleteStats = () => {
             </tbody>
           </VTable>
         </div>
-        <VBtn
-          v-if="isStatsWithMenus(props.stats)"
-          class="text-red flex-0-1-1"
-          icon="mdi-trash-can"
-          elevation="0"
-          :rounded="false"
-          @click="isDeleteDialogVisible = true"
-        />
+        <div
+          class="d-flex flex-column flex-0-1-1"
+          :class="CAPTURE_EXCLUDE_CLASS"
+        >
+          <VBtn
+            :icon="isCopied ? 'mdi-check' : 'mdi-content-copy'"
+            elevation="0"
+            :rounded="false"
+            :disabled="isStatsCopyBusy"
+            @click="onCopyImage"
+          />
+          <VBtn
+            v-if="isStatsWithMenus(props.stats)"
+            class="text-red"
+            icon="mdi-trash-can"
+            elevation="0"
+            :rounded="false"
+            @click="isDeleteDialogVisible = true"
+          />
+        </div>
       </div>
     </template>
   </VCard>
