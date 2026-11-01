@@ -4,8 +4,8 @@ import type { CounterStatus } from './counter';
 import setupProgressSound from '@src/assets/sound/timer-counter/start-countdown.mp3';
 import thresholdSetupCompleteSound from '@src/assets/sound/timer-counter/start.mp3';
 import reachedMinSound from '@src/assets/sound/timer-counter/reach-min.mp3';
-import setupStartMinSound from '@src/assets/sound/timer-counter/auto-count-setup-start-min.mp3';
-import setupStartMaxSound from '@src/assets/sound/timer-counter/auto-count-setup-start-max.mp3';
+import setupStartFirstSound from '@src/assets/sound/timer-counter/auto-count-setup-start-min.mp3';
+import setupStartSecondSound from '@src/assets/sound/timer-counter/auto-count-setup-start-max.mp3';
 import setupCompleteSound from '@src/assets/sound/timer-counter/auto-count-setup-complete.mp3';
 import { useAudio } from '@src/composables/common/audio';
 
@@ -14,8 +14,8 @@ export type AutoCountSetupStatus = typeof autoCountSetupStage[keyof typeof autoC
 // NOTE: STANDBY→DONEまでの順番が決まっているため、文字列ではなく数値にして大小を比較できるようにする
 export const autoCountSetupStage = {
   STANDBY: 0,
-  MIN: 1,
-  MAX: 2,
+  FIRST: 1,
+  SECOND: 2,
   DONE: 3,
 } as const;
 
@@ -30,8 +30,8 @@ export function useAutoCount(args: {
     setupProgress: setupProgressSound,
     thresholdSetupComplete: thresholdSetupCompleteSound,
     reachedMin: reachedMinSound,
-    setupStartMin: setupStartMinSound,
-    setupStartMax: setupStartMaxSound,
+    setupStartFirst: setupStartFirstSound,
+    setupStartSecond: setupStartSecondSound,
     setupComplete: setupCompleteSound,
   });
 
@@ -51,7 +51,7 @@ export function useAutoCount(args: {
     setupTimerId = null;
   };
 
-  const getThreshold = (): Promise<number> => new Promise(resolve => {
+  const getThreshold = (excludedUpright?: number): Promise<number> => new Promise(resolve => {
     let recentUpright = oscStore.upright;
 
     setupTimerId = window.setInterval(() => {
@@ -73,6 +73,13 @@ export function useAutoCount(args: {
         return;
       }
 
+      // NOTE: 差が閾値の範囲内に収まるとmin/maxを交互に通過できずカウントされないため、
+      // 取得後に取り直すのではなく、近い位置では進捗を進めない（同じ姿勢のまま取り直しと音声が繰り返されるのを防ぐ）
+      if (excludedUpright !== undefined && Math.abs(currentUpright - excludedUpright) <= args.autoCountThresholdRange * 2) {
+        autoCountSetupProgress.value = 0;
+        return;
+      }
+
       autoCountSetupProgress.value++;
 
       if (autoCountSetupProgress.value >= 3 && autoCountSetupProgress.value <= 5) {
@@ -90,13 +97,19 @@ export function useAutoCount(args: {
   });
 
   const setupAutoCount = async (): Promise<void> => {
-    autoCountSetupStatus.value = autoCountSetupStage.MIN;
-    playAudio('setupStartMin');
-    minUpright.value = await getThreshold();
+    autoCountSetupStatus.value = autoCountSetupStage.FIRST;
+    playAudio('setupStartFirst');
+    const firstUpright = await getThreshold();
+    // NOTE: 2回目の取得中はmin側の範囲表示で1回目の位置を示す。maxにも入れるのは前回のセットアップの値を残さないため
+    minUpright.value = firstUpright;
+    maxUpright.value = firstUpright;
 
-    autoCountSetupStatus.value = autoCountSetupStage.MAX;
-    playAudio('setupStartMax');
-    maxUpright.value = await getThreshold();
+    autoCountSetupStatus.value = autoCountSetupStage.SECOND;
+    playAudio('setupStartSecond');
+    const secondUpright = await getThreshold(firstUpright);
+
+    minUpright.value = Math.min(firstUpright, secondUpright);
+    maxUpright.value = Math.max(firstUpright, secondUpright);
 
     autoCountSetupStatus.value = autoCountSetupStage.DONE;
     await playAudio('setupComplete');
