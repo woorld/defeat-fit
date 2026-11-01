@@ -52,7 +52,15 @@ const onDeleteStats = () => {
             <tbody>
               <tr v-for="statsMenu of props.stats.statsMenuList">
                 <td>{{ statsMenu.menu?.name }}</td>
-                <td class="text-right">{{ statsMenu.count }} {{ menuUnitMap[statsMenu.menu?.unit || 'COUNT'] }}</td>
+                <td class="text-right">
+                  <template v-if="statsMenu.manualCount <= 0">{{ statsMenu.count }}</template>
+                  <span v-else-if="statsMenu.count <= 0" class="text-green">{{ statsMenu.manualCount }}</span>
+                  <template v-else>
+                    {{ statsMenu.count + statsMenu.manualCount }}
+                    (<span class="text-green">{{ statsMenu.manualCount }}</span>)
+                  </template>
+                  {{ menuUnitMap[statsMenu.menu?.unit || 'COUNT'] }}
+                </td>
               </tr>
             </tbody>
           </VTable>

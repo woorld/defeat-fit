@@ -39,7 +39,8 @@ getStats();
 <template>
   <VContainer>
     <ViewHeading title="統計" />
-    <template v-if="totalStats !== undefined && totalStats.defeatCount >= 1">
+    <!-- NOTE: 手動登録のみの統計は負け回数が0のため、負け回数ではなく統計の有無で判定する -->
+    <template v-if="totalStats !== undefined && statsList.length >= 1">
       <StatsCard :stats="totalStats" />
       <VDivider class="mb-6" />
     </template>
