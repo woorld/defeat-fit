@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma-generated-client';
-import type { MenuIdWithMultiplier, TotalStats } from '@common/types';
+import type { MenuIdWithManualCount, MenuIdWithMultiplier, TotalStats } from '@common/types';
 import { settingApi } from '@electron/api/setting';
 import { ipcMain } from 'electron';
 import { noticeApi } from '@electron/api/notice';
@@ -24,6 +24,13 @@ export const statsApi = {
         menuIdWithMultiplierList: MenuIdWithMultiplier[]
       ) => this.addStats(defeatCount, menuIdWithMultiplierList)
     );
+    ipcMain.handle(
+      'set-manual-stats', (
+        _,
+        date: string,
+        menuIdWithManualCountList: MenuIdWithManualCount[]
+      ) => this.setManualStats(date, menuIdWithManualCountList)
+    );
     ipcMain.handle('delete-stats', (_, id: number) => this.deleteStats(id));
 
     isInitialized = true;
@@ -45,7 +52,7 @@ export const statsApi = {
     // 負け回数と各メニューの合計回数を並列で取得
     const result = await Promise.all([
       prisma.stats.aggregate({ _sum: { defeatCount: true } }),
-      prisma.statsMenu.groupBy({ by: [ 'menuId' ], _sum: { count: true } }),
+      prisma.statsMenu.groupBy({ by: [ 'menuId' ], _sum: { count: true, manualCount: true } }),
     ]);
 
     const totalDefeatCount = result[0];
@@ -59,6 +66,7 @@ export const statsApi = {
       defeatCount: totalDefeatCount._sum.defeatCount ?? 0,
       statsMenuList: totalMenuCountList.map(stats => ({
         count: stats._sum.count ?? 0,
+        manualCount: stats._sum.manualCount ?? 0,
         menu: relatedMenuList.find(menu => menu.id === stats.menuId),
       })),
     }
@@ -116,6 +124,59 @@ export const statsApi = {
     });
 
     return todayStats;
+  },
+
+  async setManualStats(date: string, menuIdWithManualCountList: MenuIdWithManualCount[]) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      throw new Error(`Invalid stats date: ${date}`);
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      const stats = await tx.stats.upsert({
+        where: { date },
+        update: {},
+        create: {
+          date,
+          defeatCount: 0,
+        },
+      });
+
+      for (const { menuId, manualCount } of menuIdWithManualCountList) {
+        await tx.statsMenu.upsert({
+          where: {
+            statsId_menuId: {
+              statsId: stats.id,
+              menuId,
+            },
+          },
+          update: { manualCount },
+          create: {
+            statsId: stats.id,
+            menuId,
+            count: 0,
+            manualCount,
+          },
+        });
+      }
+
+      // 回数がすべて0になった統計メニュー・統計は空の記録として残さない
+      await tx.statsMenu.deleteMany({
+        where: { statsId: stats.id, count: 0, manualCount: 0 },
+      });
+      const remainingStatsMenuCount = await tx.statsMenu.count({ where: { statsId: stats.id } });
+      if (stats.defeatCount <= 0 && remainingStatsMenuCount <= 0) {
+        await tx.stats.delete({ where: { id: stats.id } });
+      }
+
+      return stats;
+    });
+
+    noticeApi.createNotice({
+      text: '手動登録を保存しました',
+      color: 'success',
+    });
+
+    return result;
   },
 
   async deleteStats(id: number) {
