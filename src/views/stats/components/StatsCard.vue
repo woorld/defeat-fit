@@ -14,6 +14,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'delete-stats', id: number): void,
+  (e: 'edit-manual-stats', date: string): void,
 }>();
 
 const isDeleteDialogVisible = ref(false);
@@ -26,6 +27,13 @@ const onDeleteStats = () => {
   }
   emit('delete-stats', props.stats.id);
   isDeleteDialogVisible.value = false;
+};
+
+const onEditManualStats = () => {
+  if (!isStatsWithMenus(props.stats)) {
+    return;
+  }
+  emit('edit-manual-stats', props.stats.date);
 };
 </script>
 
@@ -65,14 +73,24 @@ const onDeleteStats = () => {
             </tbody>
           </VTable>
         </div>
-        <VBtn
-          v-if="isStatsWithMenus(props.stats)"
-          class="text-red flex-0-1-1"
-          icon="mdi-trash-can"
-          elevation="0"
-          :rounded="false"
-          @click="isDeleteDialogVisible = true"
-        />
+        <div v-if="isStatsWithMenus(props.stats)" class="d-flex flex-column ga-2 flex-0-1-1">
+          <VBtn
+            icon
+            elevation="0"
+            :rounded="false"
+            @click="onEditManualStats"
+          >
+            <VIcon>mdi-pencil</VIcon>
+            <VTooltip text="手動登録の編集" activator="parent" />
+          </VBtn>
+          <VBtn
+            class="text-red"
+            icon="mdi-trash-can"
+            elevation="0"
+            :rounded="false"
+            @click="isDeleteDialogVisible = true"
+          />
+        </div>
       </div>
     </template>
   </VCard>
