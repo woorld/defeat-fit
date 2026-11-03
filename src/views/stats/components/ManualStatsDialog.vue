@@ -23,6 +23,7 @@ const date = ref('');
 const selectedMenuIdList = ref<Menu['id'][]>([]);
 const manualCountMap = ref<Partial<Record<Menu['id'], number>>>({});
 const isSaving = ref(false);
+const isInitialized = ref(false);
 
 // NOTE: new Date('YYYY-MM-DD')はUTC扱いになり日付がずれるため、ローカル時刻として生成する
 const toLocalDate = (dateString: string) => {
@@ -77,6 +78,7 @@ const initialize = async () => {
   today.value = getStatsDateString(new Date(), dayBoundaryOffsetHours);
   date.value = props.fixedDate ?? today.value;
   resetManualCount();
+  isInitialized.value = true;
 };
 
 const save = async () => {
@@ -107,6 +109,8 @@ const save = async () => {
 
 watch(model, (isVisible) => {
   if (isVisible) {
+    // 前回開いたときの入力内容が、初期化完了まで表示されないようにする
+    isInitialized.value = false;
     initialize();
   }
 });
@@ -117,90 +121,93 @@ watch(date, resetManualCount);
   <BaseDialog v-model="model">
     <div class="d-flex justify-center align-center ga-6 flex-column">
       <h3 class="text-h5">{{ props.fixedDate === null ? '手動登録' : '手動登録の編集' }}</h3>
-      <div class="d-flex justify-center align-center ga-4">
-        <VDateInput
-          class="date-input"
-          v-model="dateModel"
-          label="日付"
-          input-format="yyyy-mm-dd"
-          variant="outlined"
-          density="compact"
-          prepend-icon=""
-          prepend-inner-icon="$calendar"
-          hide-details
-          :max="maxDate"
-          :disabled="props.fixedDate !== null"
-          :rules="[() => isDateValid]"
-        />
-        <VMenu :close-on-content-click="false">
-          <template #activator="{ props: activatorProps }">
-            <VBtn
-              v-bind="activatorProps"
-              rounded
-              prepend-icon="mdi-plus"
-              :disabled="menuList.length <= 0"
-            >メニューを追加</VBtn>
-          </template>
-          <VList
-            v-model:selected="selectedMenuIdList"
-            select-strategy="leaf"
+      <VProgressCircular v-if="!isInitialized" indeterminate />
+      <template v-else>
+        <div class="d-flex justify-center align-center ga-4">
+          <VDateInput
+            class="date-input"
+            v-model="dateModel"
+            label="日付"
+            input-format="yyyy-mm-dd"
+            variant="outlined"
             density="compact"
-          >
-            <VListItem
-              v-for="menu of menuList"
-              :key="menu.id"
-              :title="menu.name"
-              :value="menu.id"
+            prepend-icon=""
+            prepend-inner-icon="$calendar"
+            hide-details
+            :max="maxDate"
+            :disabled="props.fixedDate !== null"
+            :rules="[() => isDateValid]"
+          />
+          <VMenu :close-on-content-click="false">
+            <template #activator="{ props: activatorProps }">
+              <VBtn
+                v-bind="activatorProps"
+                rounded
+                prepend-icon="mdi-plus"
+                :disabled="menuList.length <= 0"
+              >メニューを追加</VBtn>
+            </template>
+            <VList
+              v-model:selected="selectedMenuIdList"
+              select-strategy="leaf"
+              density="compact"
             >
-              <!-- NOTE: VListItemはクリック対象がinput要素だと選択処理をしないため、チェックボックス側からも選択させる -->
-              <template #prepend="{ isSelected, select }">
-                <VCheckboxBtn :model-value="isSelected" @update:model-value="select" />
-              </template>
-            </VListItem>
-          </VList>
-        </VMenu>
-      </div>
-      <template v-if="menuList.length <= 0">メニューはありません</template>
-      <template v-else-if="selectedMenuList.length <= 0">メニューを追加してください</template>
-      <VTable v-else class="w-100" density="compact">
-        <thead>
-          <tr>
-            <th>メニュー</th>
-            <th class="text-right">負け回数分</th>
-            <th class="text-right">手動登録</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="menu of selectedMenuList" :key="menu.id">
-            <td class="text-left">{{ menu.name }}</td>
-            <td class="text-right">{{ getStatsMenu(menu.id)?.count ?? 0 }} {{ menuUnitMap[menu.unit] }}</td>
-            <td class="manual-count-cell py-1">
-              <!-- HACK: rulesを不正値の赤枠表示用に使用 -->
-              <VTextField
-                v-model.number="manualCountMap[menu.id]"
-                type="number"
-                min="1"
-                step="1"
-                variant="outlined"
-                single-line
-                density="compact"
-                hide-details
-                :suffix="menuUnitMap[menu.unit]"
-                :rules="[() => isManualCountValid(manualCountMap[menu.id])]"
-              />
-            </td>
-          </tr>
-        </tbody>
-      </VTable>
-      <VBtn
-        color="green"
-        prepend-icon="mdi-content-save"
-        :disabled="!canSave"
-        :loading="isSaving"
-        @click="save"
-      >
-        保存
-      </VBtn>
+              <VListItem
+                v-for="menu of menuList"
+                :key="menu.id"
+                :title="menu.name"
+                :value="menu.id"
+              >
+                <!-- NOTE: VListItemはクリック対象がinput要素だと選択処理をしないため、チェックボックス側からも選択させる -->
+                <template #prepend="{ isSelected, select }">
+                  <VCheckboxBtn :model-value="isSelected" @update:model-value="select" />
+                </template>
+              </VListItem>
+            </VList>
+          </VMenu>
+        </div>
+        <template v-if="menuList.length <= 0">メニューはありません</template>
+        <template v-else-if="selectedMenuList.length <= 0">メニューを追加してください</template>
+        <VTable v-else class="w-100" density="compact">
+          <thead>
+            <tr>
+              <th>メニュー</th>
+              <th class="text-right">負け回数分</th>
+              <th class="text-right">手動登録</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="menu of selectedMenuList" :key="menu.id">
+              <td class="text-left">{{ menu.name }}</td>
+              <td class="text-right">{{ getStatsMenu(menu.id)?.count ?? 0 }} {{ menuUnitMap[menu.unit] }}</td>
+              <td class="manual-count-cell py-1">
+                <!-- HACK: rulesを不正値の赤枠表示用に使用 -->
+                <VTextField
+                  v-model.number="manualCountMap[menu.id]"
+                  type="number"
+                  min="1"
+                  step="1"
+                  variant="outlined"
+                  single-line
+                  density="compact"
+                  hide-details
+                  :suffix="menuUnitMap[menu.unit]"
+                  :rules="[() => isManualCountValid(manualCountMap[menu.id])]"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
+        <VBtn
+          color="green"
+          prepend-icon="mdi-content-save"
+          :disabled="!canSave"
+          :loading="isSaving"
+          @click="save"
+        >
+          保存
+        </VBtn>
+      </template>
     </div>
   </BaseDialog>
 </template>
