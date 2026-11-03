@@ -1,8 +1,13 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import { menuUnitMap } from '@common/util';
+import type { MenuUnit } from '@prisma-generated-client';
 
 const props = defineProps<{
   isStandby: boolean,
   isBreakTime: boolean,
+  unit: MenuUnit,
+  amountPerSet: number,
   isLockControl: boolean,
 }>();
 
@@ -22,6 +27,8 @@ const changeSetCount = (value: number) => {
   setCount.value = value;
   remainder.value = 0;
 };
+
+const isRemainderAdded = computed(() => remainder.value > 0 && !props.isBreakTime);
 </script>
 
 <template>
@@ -69,8 +76,12 @@ const changeSetCount = (value: number) => {
       :disabled="count < 1 || props.isLockControl"
       @click="changeCount(-1)"
     />
-    <div class="step-count" :class="{ 'text-green': props.isBreakTime }">
+    <div class="step-count" :class="{ 'text-green': props.isBreakTime, 'text-warning': isRemainderAdded }">
       <slot />
+      <VTooltip v-if="isRemainderAdded" activator="parent">
+        {{ props.unit === 'SECOND' ? '秒数' : '回数' }} / セット数 で出た余りを加算しています。<br />
+        {{ remainder }}セット後から{{ props.amountPerSet - 1 }}{{ menuUnitMap[props.unit] }}になります。
+      </VTooltip>
     </div>
     <VBtn
       icon="mdi-chevron-right"
@@ -82,9 +93,6 @@ const changeSetCount = (value: number) => {
       :disabled="props.isLockControl"
       @click="changeCount(10)"
     />
-  </div>
-  <div v-if="remainder > 0" class="text-caption text-medium-emphasis">
-    あまりを配分しているため、あと {{ remainder }} セット終了後から1少なくなります
   </div>
 </template>
 

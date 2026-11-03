@@ -9,13 +9,13 @@ import { useAudio } from '@src/composables/common/audio';
 export type CounterStatus = 'STANDBY' | 'PROGRESS' | 'BREAK_TIME';
 
 export function useCounter(count: Ref<number>, setCount: Ref<number>, remainder: Ref<number>) {
-  let recentCount = 0; // 実施中のセットの回数
   let initialCount = 0;
   let initialSetCount = 1;
   let initialRemainder = 0;
   let breakTimeSeconds = SETTING_DEFAULT_VALUE.breakTimeSecBetweenSets;
 
   const counterStatus = ref<CounterStatus>('STANDBY');
+  const amountPerSet = ref(0);
   const timerId = ref<number | null>(null);
   const timerSeconds = ref(0);
 
@@ -32,7 +32,7 @@ export function useCounter(count: Ref<number>, setCount: Ref<number>, remainder:
 
   const startCount = () => {
     playAudio('setStart');
-    recentCount = count.value;
+    amountPerSet.value = count.value;
     initialCount = count.value;
     initialSetCount = setCount.value;
     initialRemainder = remainder.value;
@@ -79,10 +79,10 @@ export function useCounter(count: Ref<number>, setCount: Ref<number>, remainder:
     if (remainder.value > 0) {
       remainder.value--;
       if (remainder.value === 0) {
-        recentCount--;
+        amountPerSet.value--;
       }
     }
-    count.value = recentCount;
+    count.value = amountPerSet.value;
 
     timerSeconds.value = breakTimeSeconds;
     timerId.value = window.setInterval(timerLoop, 1000);
@@ -109,6 +109,7 @@ export function useCounter(count: Ref<number>, setCount: Ref<number>, remainder:
 
   return {
     counterStatus,
+    amountPerSet,
     timerDisplay,
     startCount,
     stopCount,

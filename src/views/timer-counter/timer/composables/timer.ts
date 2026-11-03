@@ -7,7 +7,6 @@ import { useTimerUtil } from '../../composables/timer-util';
 import { useAudio } from '@src/composables/common/audio';
 
 export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>, remainder: Ref<number>) {
-  let recentTimerSeconds = 0; // 実施中のセットの秒数
   let initialTimerSeconds = 0;
   let initialSetCount = 1;
   let initialRemainder = 0;
@@ -16,6 +15,7 @@ export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>, remai
 
   const timerStatus = ref<'STANDBY' | 'COUNTDOWN' | 'PROGRESS' | 'BREAK_TIME' |'END'>('STANDBY');
   const timerId = ref<number | null>(null);
+  const amountPerSet = ref(0);
 
   const {
     timerDisplay,
@@ -30,7 +30,7 @@ export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>, remai
 
   const startTimer = () => {
     timerStatus.value = 'COUNTDOWN';
-    recentTimerSeconds = timerSeconds.value;
+    amountPerSet.value = timerSeconds.value;
     initialTimerSeconds = timerSeconds.value;
     initialSetCount = setCount.value;
     initialRemainder = remainder.value;
@@ -54,7 +54,7 @@ export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>, remai
       timerSeconds.value = initialTimerSeconds;
     }
     else if (timerStatus.value === 'BREAK_TIME') {
-      timerSeconds.value = recentTimerSeconds;
+      timerSeconds.value = amountPerSet.value;
     }
 
     clearTimer();
@@ -96,7 +96,7 @@ export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>, remai
         if (remainder.value > 0) {
           remainder.value--;
           if (remainder.value === 0) {
-            recentTimerSeconds--;
+            amountPerSet.value--;
           }
         }
 
@@ -109,7 +109,7 @@ export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>, remai
 
         if (timerSeconds.value <= 0) {
           playAudio('timerStart');
-          timerSeconds.value = recentTimerSeconds;
+          timerSeconds.value = amountPerSet.value;
           timerStatus.value = 'PROGRESS';
           return;
         }
@@ -144,6 +144,7 @@ export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>, remai
 
   return {
     timerStatus,
+    amountPerSet,
     timerDisplay,
     startTimer,
     stopTimer,

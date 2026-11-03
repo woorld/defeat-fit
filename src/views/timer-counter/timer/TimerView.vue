@@ -12,6 +12,7 @@ const setCount = ref(Number(route.params.setCount) || 1);
 
 const {
   timerStatus,
+  amountPerSet,
   timerDisplay,
   startTimer,
   stopTimer,
@@ -28,6 +29,8 @@ const canStart = computed(() => timerStatus.value === 'STANDBY');
       v-model:remainder="remainder"
       :isStandby="timerStatus === 'STANDBY'"
       :isBreakTime="timerStatus === 'BREAK_TIME'"
+      unit="SECOND"
+      :amountPerSet="timerStatus === 'STANDBY' ? timerSeconds : amountPerSet"
       :isLockControl="timerStatus !== 'STANDBY'"
     >
       <div class="text-h2 w-100 text-center">{{ timerDisplay }}</div>

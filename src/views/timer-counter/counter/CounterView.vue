@@ -25,6 +25,7 @@ const hasResolvedInitialPending = ref(false);
 
 const {
   counterStatus,
+  amountPerSet,
   timerDisplay,
   startCount,
   stopCount,
@@ -102,6 +103,8 @@ else {
         v-model:enableAutoCount="enableAutoCount"
         :isStandby="counterStatus === 'STANDBY'"
         :isBreakTime="counterStatus === 'BREAK_TIME'"
+        unit="COUNT"
+        :amountPerSet="counterStatus === 'STANDBY' ? count : amountPerSet"
         :isLockControl="counterStatus !== 'STANDBY'"
       >
         <div class="d-flex w-100 justify-space-between align-baseline">
