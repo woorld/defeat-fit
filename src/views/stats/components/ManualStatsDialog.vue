@@ -173,7 +173,7 @@ watch(date, resetManualCount);
             <tr>
               <th>メニュー</th>
               <th class="text-right">負け回数分</th>
-              <th class="text-right">手動登録</th>
+              <th class="text-right">手動登録分</th>
             </tr>
           </thead>
           <tbody>
