@@ -6,7 +6,8 @@ import CountControl from '../components/CountControl.vue';
 
 const route = useRoute();
 
-const timerSeconds = ref(Number(route.params.seconds) || 0);
+const remainder = ref(Number(route.query.remainder) || 0);
+const timerSeconds = ref((Number(route.params.seconds) || 0) + (remainder.value > 0 ? 1 : 0));
 const setCount = ref(Number(route.params.setCount) || 1);
 
 const {
@@ -14,7 +15,7 @@ const {
   timerDisplay,
   startTimer,
   stopTimer,
-} = useTimer(timerSeconds, setCount);
+} = useTimer(timerSeconds, setCount, remainder);
 
 const canStart = computed(() => timerStatus.value === 'STANDBY');
 </script>
@@ -24,6 +25,7 @@ const canStart = computed(() => timerStatus.value === 'STANDBY');
     <CountControl
       v-model:count="timerSeconds"
       v-model:setCount="setCount"
+      v-model:remainder="remainder"
       :isStandby="timerStatus === 'STANDBY'"
       :isBreakTime="timerStatus === 'BREAK_TIME'"
       :isLockControl="timerStatus !== 'STANDBY'"

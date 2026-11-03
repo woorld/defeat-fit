@@ -16,7 +16,8 @@ let autoCountThresholdRange = SETTING_DEFAULT_VALUE.autoCountThresholdRange;
 const route = useRoute();
 const oscStore = useOscStore();
 
-const count = ref(Number(route.params.count) || 0);
+const remainder = ref(Number(route.query.remainder) || 0);
+const count = ref((Number(route.params.count) || 0) + (remainder.value > 0 ? 1 : 0));
 const setCount = ref(Number(route.params.setCount) || 1);
 const enableAutoCount = ref(true);
 const isAutoCountSetupOverlayVisible = ref(false);
@@ -29,7 +30,7 @@ const {
   stopCount,
   onNext,
   decrementCount,
-} = useCounter(count, setCount);
+} = useCounter(count, setCount, remainder);
 
 const {
   autoCountSetupStatus,
@@ -97,6 +98,7 @@ else {
       <CountControl
         v-model:count="count"
         v-model:setCount="setCount"
+        v-model:remainder="remainder"
         v-model:enableAutoCount="enableAutoCount"
         :isStandby="counterStatus === 'STANDBY'"
         :isBreakTime="counterStatus === 'BREAK_TIME'"

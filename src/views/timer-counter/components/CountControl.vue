@@ -9,6 +9,19 @@ const props = defineProps<{
 const count = defineModel<number>('count', { required: true });
 const setCount = defineModel<number>('setCount', { required: true });
 const enableAutoCount = defineModel<boolean>('enableAutoCount', { default: null });
+/** 1回（秒）多くするセットの残り数 */
+const remainder = defineModel<number>('remainder', { default: 0 });
+
+// 手動で変更した場合はあまりの配分を破棄し、全セット同じ回数（秒数）にする
+const changeCount = (addValue: number) => {
+  count.value += addValue;
+  remainder.value = 0;
+};
+
+const changeSetCount = (value: number) => {
+  setCount.value = value;
+  remainder.value = 0;
+};
 </script>
 
 <template>
@@ -17,7 +30,8 @@ const enableAutoCount = defineModel<boolean>('enableAutoCount', { default: null 
       <VLabel>セット数</VLabel>
       <VNumberInput
         class="flex-grow-0"
-        v-model="setCount"
+        :modelValue="setCount"
+        @update:modelValue="changeSetCount"
         hide-details
         inset
         :min="1"
@@ -48,12 +62,12 @@ const enableAutoCount = defineModel<boolean>('enableAutoCount', { default: null 
     <VBtn
       icon="mdi-chevron-double-left"
       :disabled="count < 10 || props.isLockControl"
-      @click="count -= 10"
+      @click="changeCount(-10)"
     />
     <VBtn
       icon="mdi-chevron-left"
       :disabled="count < 1 || props.isLockControl"
-      @click="count -= 1"
+      @click="changeCount(-1)"
     />
     <div class="step-count" :class="{ 'text-green': props.isBreakTime }">
       <slot />
@@ -61,13 +75,16 @@ const enableAutoCount = defineModel<boolean>('enableAutoCount', { default: null 
     <VBtn
       icon="mdi-chevron-right"
       :disabled="props.isLockControl"
-      @click="count += 1"
+      @click="changeCount(1)"
     />
     <VBtn
       icon="mdi-chevron-double-right"
       :disabled="props.isLockControl"
-      @click="count += 10"
+      @click="changeCount(10)"
     />
+  </div>
+  <div v-if="remainder > 0" class="text-caption text-medium-emphasis">
+    あまりを配分しているため、あと {{ remainder }} セット終了後から1少なくなります
   </div>
 </template>
 

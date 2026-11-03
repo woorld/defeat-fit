@@ -6,9 +6,11 @@ import timerEndSound from '@src/assets/sound/timer-counter/end.mp3';
 import { useTimerUtil } from '../../composables/timer-util';
 import { useAudio } from '@src/composables/common/audio';
 
-export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>) {
-  let recentTimerSeconds = 0;
-  let recentSetCount = 1;
+export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>, remainder: Ref<number>) {
+  let recentTimerSeconds = 0; // 実施中のセットの秒数
+  let initialTimerSeconds = 0;
+  let initialSetCount = 1;
+  let initialRemainder = 0;
   let audioPlayCount = 0;
   let breakTimeSeconds = SETTING_DEFAULT_VALUE.breakTimeSecBetweenSets;
 
@@ -29,7 +31,9 @@ export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>) {
   const startTimer = () => {
     timerStatus.value = 'COUNTDOWN';
     recentTimerSeconds = timerSeconds.value;
-    recentSetCount = setCount.value;
+    initialTimerSeconds = timerSeconds.value;
+    initialSetCount = setCount.value;
+    initialRemainder = remainder.value;
     audioPlayCount = 0;
 
     timerLoop(); // NOTE: 最初の1回は即時実行したいためここで呼び出す
@@ -42,10 +46,14 @@ export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>) {
     }
 
     if (setCount.value <= 0) {
-      setCount.value = recentSetCount;
+      setCount.value = initialSetCount;
+      remainder.value = initialRemainder;
     }
 
-    if (timerSeconds.value <= 0 || timerStatus.value === 'BREAK_TIME') {
+    if (timerSeconds.value <= 0) {
+      timerSeconds.value = initialTimerSeconds;
+    }
+    else if (timerStatus.value === 'BREAK_TIME') {
       timerSeconds.value = recentTimerSeconds;
     }
 
@@ -82,6 +90,14 @@ export function useTimer(timerSeconds: Ref<number>, setCount: Ref<number>) {
         if (setCount.value <= 0) {
           timerStatus.value = 'END';
           return;
+        }
+
+        // あまりを上乗せするセットが終わったら、以降のセットは1秒少なくする
+        if (remainder.value > 0) {
+          remainder.value--;
+          if (remainder.value === 0) {
+            recentTimerSeconds--;
+          }
         }
 
         audioPlayCount = 0;
