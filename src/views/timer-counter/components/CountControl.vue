@@ -78,9 +78,9 @@ const isRemainderAdded = computed(() => remainder.value > 0 && !props.isBreakTim
     />
     <div class="step-count" :class="{ 'text-green': props.isBreakTime, 'text-warning': isRemainderAdded }">
       <slot />
-      <VTooltip v-if="isRemainderAdded" activator="parent">
+      <VTooltip v-if="isRemainderAdded" activator="parent" location="top">
         {{ props.unit === 'SECOND' ? '秒数' : '回数' }} / セット数 で出た余りを加算しています。<br />
-        {{ remainder }}セット後から{{ props.amountPerSet - 1 }}{{ menuUnitMap[props.unit] }}になります。
+        {{ remainder }} セット後から {{ props.amountPerSet - 1 }} {{ menuUnitMap[props.unit] }}になります。
       </VTooltip>
     </div>
     <VBtn
