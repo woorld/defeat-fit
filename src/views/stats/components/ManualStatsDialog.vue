@@ -21,7 +21,7 @@ const menuList = ref<Menu[]>([]);
 const today = ref('');
 const date = ref('');
 const selectedMenuIdList = ref<Menu['id'][]>([]);
-const manualCountMap = ref<Record<Menu['id'], number>>({});
+const manualCountMap = ref<Partial<Record<Menu['id'], number>>>({});
 const isSaving = ref(false);
 
 // NOTE: new Date('YYYY-MM-DD')はUTC扱いになり日付がずれるため、ローカル時刻として生成する
@@ -42,12 +42,14 @@ const maxDate = computed(() => today.value === '' ? undefined : toLocalDate(toda
 const targetStats = computed(() => props.statsList.find(stats => stats.date === date.value));
 const selectedMenuList = computed(() => menuList.value.filter(menu => selectedMenuIdList.value.includes(menu.id)));
 const isDateValid = computed(() => /^\d{4}-\d{2}-\d{2}$/.test(date.value) && date.value <= today.value);
-const isManualCountValid = (manualCount: number) => Number.isInteger(manualCount) && manualCount >= 0;
+// NOTE: 0回の登録は意味を持たないため1以上を必須とする（取り消しはメニューの選択解除で行う）
+const isManualCountValid = (manualCount: number | undefined) =>
+  manualCount !== undefined && Number.isInteger(manualCount) && manualCount >= 1;
 const canSave = computed(() =>
   isDateValid.value
   // 既存の手動登録をすべて取り消す場合は、メニュー未選択でも保存できる必要がある
   && (selectedMenuList.value.length >= 1 || getRegisteredMenuIdList().length >= 1)
-  && selectedMenuList.value.every(menu => isManualCountValid(manualCountMap.value[menu.id] ?? 0))
+  && selectedMenuList.value.every(menu => isManualCountValid(manualCountMap.value[menu.id]))
 );
 
 const getStatsMenu = (menuId: Menu['id']) =>
@@ -61,7 +63,7 @@ const getRegisteredMenuIdList = () =>
 const resetManualCount = () => {
   selectedMenuIdList.value = getRegisteredMenuIdList();
   manualCountMap.value = Object.fromEntries(
-    menuList.value.map(menu => [menu.id, getStatsMenu(menu.id)?.manualCount ?? 0])
+    getRegisteredMenuIdList().map(menuId => [menuId, getStatsMenu(menuId)?.manualCount])
   );
 };
 
@@ -83,8 +85,7 @@ const save = async () => {
   }
 
   const selectedMenuIdWithManualCountList: MenuIdWithManualCount[] = selectedMenuList.value
-    .map(menu => ({ menuId: menu.id, manualCount: manualCountMap.value[menu.id] ?? 0 }))
-    .filter(({ menuId, manualCount }) => manualCount > 0 || getStatsMenu(menuId) !== undefined);
+    .map(menu => ({ menuId: menu.id, manualCount: manualCountMap.value[menu.id] ?? 0 }));
   // 選択を外したメニューは、既存の手動登録を取り消すため0で送る
   const deselectedMenuIdWithManualCountList: MenuIdWithManualCount[] = getRegisteredMenuIdList()
     .filter(menuId => !selectedMenuIdList.value.includes(menuId))
@@ -178,14 +179,14 @@ watch(date, resetManualCount);
               <VTextField
                 v-model.number="manualCountMap[menu.id]"
                 type="number"
-                min="0"
+                min="1"
                 step="1"
                 variant="outlined"
                 single-line
                 density="compact"
                 hide-details
                 :suffix="menuUnitMap[menu.unit]"
-                :rules="[() => isManualCountValid(manualCountMap[menu.id] ?? 0)]"
+                :rules="[() => isManualCountValid(manualCountMap[menu.id])]"
               />
             </td>
           </tr>
