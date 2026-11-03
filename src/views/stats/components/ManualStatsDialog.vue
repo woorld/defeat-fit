@@ -151,8 +151,9 @@ watch(date, resetManualCount);
               :title="menu.name"
               :value="menu.id"
             >
-              <template #prepend="{ isSelected }">
-                <VCheckboxBtn :model-value="isSelected" />
+              <!-- NOTE: VListItemはクリック対象がinput要素だと選択処理をしないため、チェックボックス側からも選択させる -->
+              <template #prepend="{ isSelected, select }">
+                <VCheckboxBtn :model-value="isSelected" @update:model-value="select" />
               </template>
             </VListItem>
           </VList>
