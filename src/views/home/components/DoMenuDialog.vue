@@ -27,6 +27,14 @@ const secondsOrCountPerSet = computed(
 );
 const isSecondsMenu = computed(() => props.presetMenu.menu.unit === 'SECOND');
 
+// 割り切れない場合は、あまりを先頭のセットから1ずつ上乗せする
+const baseAmountPerSet = computed(() => Math.floor(totalReps.value / setCount.value));
+const remainder = computed(() => totalReps.value % setCount.value);
+const timerCounterPath = computed(() => {
+  const path = `/timer-counter/${isSecondsMenu.value ? 'timer' : 'counter'}/${baseAmountPerSet.value}/${setCount.value}`;
+  return remainder.value > 0 ? `${path}?remainder=${remainder.value}` : path;
+});
+
 const stepSetCount = (addValue: 1 | -1) => {
   if (isDecimalVisible.value) {
     setCount.value += addValue;
@@ -78,6 +86,10 @@ const restoreIntegerTotalReps = () => {
           <span class="text-h4 text-green">{{ secondsOrCountPerSet }}</span>
           <span class="text-body">{{ menuUnitMap[props.presetMenu.menu.unit] }} / セット</span>
         </div>
+        <div v-if="remainder > 0" class="text-body">
+          （{{ baseAmountPerSet + 1 }} {{ menuUnitMap[props.presetMenu.menu.unit] }} × {{ remainder }} セット
+          + {{ baseAmountPerSet }} {{ menuUnitMap[props.presetMenu.menu.unit] }} × {{ setCount - remainder }} セット）
+        </div>
         <VCheckbox
           v-model="isDecimalVisible"
           label="割り切れないセット数を表示"
@@ -88,15 +100,10 @@ const restoreIntegerTotalReps = () => {
       <VBtn
         append-icon="mdi-chevron-right"
         color="green"
-        :to="`/timer-counter/${isSecondsMenu ? 'timer' : 'counter'}/${Math.ceil(secondsOrCountPerSet)}/${setCount}`"
+        :to="timerCounterPath"
         :disabled="!setCount"
       >
         {{ isSecondsMenu ? 'タイマー' : 'カウンター' }}画面へ
-        <VTooltip
-          v-if="isDecimalVisible"
-          text="小数は切り上げ"
-          activator="parent"
-        />
       </VBtn>
     </div>
   </BaseDialog>
