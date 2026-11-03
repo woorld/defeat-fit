@@ -68,6 +68,10 @@ const resetManualCount = () => {
   );
 };
 
+const deselectMenu = (menuId: Menu['id']) => {
+  selectedMenuIdList.value = selectedMenuIdList.value.filter(selectedMenuId => selectedMenuId !== menuId);
+};
+
 const initialize = async () => {
   const [fetchedMenuList, dayBoundaryOffsetHours] = await Promise.all([
     window.menu.getMenuList(),
@@ -174,6 +178,7 @@ watch(date, resetManualCount);
               <th>メニュー</th>
               <th class="text-right">負け回数分</th>
               <th class="text-right">手動登録分</th>
+              <th />
             </tr>
           </thead>
           <tbody>
@@ -193,6 +198,15 @@ watch(date, resetManualCount);
                   hide-details
                   :suffix="menuUnitMap[menu.unit]"
                   :rules="[() => isManualCountValid(manualCountMap[menu.id])]"
+                />
+              </td>
+              <td class="text-right px-2">
+                <VBtn
+                  class="text-red"
+                  size="small"
+                  elevation="0"
+                  icon="mdi-trash-can"
+                  @click="deselectMenu(menu.id)"
                 />
               </td>
             </tr>
