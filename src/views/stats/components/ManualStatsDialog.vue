@@ -131,7 +131,6 @@ watch(date, resetManualCount);
           <VDateInput
             class="date-input"
             v-model="dateModel"
-            label="日付"
             input-format="yyyy-mm-dd"
             variant="outlined"
             density="compact"
