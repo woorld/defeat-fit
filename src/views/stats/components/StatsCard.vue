@@ -17,6 +17,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'delete-stats', id: number): void,
+  (e: 'edit-manual-stats', date: string): void,
 }>();
 
 // NOTE: 画像から除外する要素のクラス（操作ボタン列）
@@ -64,6 +65,13 @@ const onDeleteStats = () => {
   emit('delete-stats', props.stats.id);
   isDeleteDialogVisible.value = false;
 };
+
+const onEditManualStats = () => {
+  if (!isStatsWithMenus(props.stats)) {
+    return;
+  }
+  emit('edit-manual-stats', props.stats.date);
+};
 </script>
 
 <template>
@@ -89,13 +97,21 @@ const onDeleteStats = () => {
             <tbody>
               <tr v-for="statsMenu of props.stats.statsMenuList">
                 <td>{{ statsMenu.menu?.name }}</td>
-                <td class="text-right">{{ statsMenu.count }} {{ menuUnitMap[statsMenu.menu?.unit || 'COUNT'] }}</td>
+                <td class="text-right text-no-wrap">
+                  <template v-if="statsMenu.manualCount <= 0">{{ statsMenu.count }}</template>
+                  <span v-else-if="statsMenu.count <= 0" class="text-green">{{ statsMenu.manualCount }}</span>
+                  <template v-else>
+                    {{ statsMenu.count }} + <span class="text-green">{{ statsMenu.manualCount }}</span>
+                    = {{ statsMenu.count + statsMenu.manualCount }}
+                  </template>
+                  {{ menuUnitMap[statsMenu.menu?.unit || 'COUNT'] }}
+                </td>
               </tr>
             </tbody>
           </VTable>
         </div>
         <div
-          class="d-flex flex-column flex-0-1-1"
+          class="d-flex flex-column ga-2 flex-0-1-1"
           :class="CAPTURE_EXCLUDE_CLASS"
         >
           <VBtn
@@ -105,14 +121,24 @@ const onDeleteStats = () => {
             :disabled="isStatsCopyBusy"
             @click="onCopyImage"
           />
-          <VBtn
-            v-if="isStatsWithMenus(props.stats)"
-            class="text-red"
-            icon="mdi-trash-can"
-            elevation="0"
-            :rounded="false"
-            @click="isDeleteDialogVisible = true"
-          />
+          <template v-if="isStatsWithMenus(props.stats)">
+            <VBtn
+              icon
+              elevation="0"
+              :rounded="false"
+              @click="onEditManualStats"
+            >
+              <VIcon>mdi-pencil</VIcon>
+              <VTooltip text="手動登録の編集" activator="parent" />
+            </VBtn>
+            <VBtn
+              class="text-red"
+              icon="mdi-trash-can"
+              elevation="0"
+              :rounded="false"
+              @click="isDeleteDialogVisible = true"
+            />
+          </template>
         </div>
       </div>
     </template>

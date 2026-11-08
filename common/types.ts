@@ -1,5 +1,5 @@
 import type { WebContents } from 'electron';
-import type { Prisma, Menu, PresetMenu } from '@prisma-generated-client';
+import type { Prisma, Menu, PresetMenu, StatsMenu } from '@prisma-generated-client';
 import type { Schema } from '@electron/store/schema';
 
 export type Setting = Schema['setting'];
@@ -24,6 +24,7 @@ export type TotalStats = {
   defeatCount: number,
   statsMenuList: {
     count: number,
+    manualCount: number,
     menu?: Menu,
   }[],
 };
@@ -41,6 +42,11 @@ export type PresetWithMenus = Prisma.PresetGetPayload<{
 export type MenuIdWithMultiplier = {
   menuId: Menu['id'],
   multiplier: PresetMenu['multiplier'],
+};
+
+export type MenuIdWithManualCount = {
+  menuId: Menu['id'],
+  manualCount: StatsMenu['manualCount'],
 };
 
 export type OscStatus = 'OPEN'| 'OPEN_ALL' | 'OPEN_UPRIGHT' | 'CLOSE' | 'PENDING';
