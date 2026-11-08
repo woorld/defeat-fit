@@ -97,7 +97,7 @@ const onEditManualStats = () => {
             <tbody>
               <tr v-for="statsMenu of props.stats.statsMenuList">
                 <td>{{ statsMenu.menu?.name }}</td>
-                <td class="text-right">
+                <td class="text-right text-no-wrap">
                   <template v-if="statsMenu.manualCount <= 0">{{ statsMenu.count }}</template>
                   <span v-else-if="statsMenu.count <= 0" class="text-green">{{ statsMenu.manualCount }}</span>
                   <template v-else>
