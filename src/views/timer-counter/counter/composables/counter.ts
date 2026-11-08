@@ -8,12 +8,14 @@ import { useAudio } from '@src/composables/common/audio';
 
 export type CounterStatus = 'STANDBY' | 'PROGRESS' | 'BREAK_TIME';
 
-export function useCounter(count: Ref<number>, setCount: Ref<number>) {
-  let recentCount = 0;
-  let recentSetCount = 1;
+export function useCounter(count: Ref<number>, setCount: Ref<number>, remainder: Ref<number>) {
+  let initialCount = 0;
+  let initialSetCount = 1;
+  let initialRemainder = 0;
   let breakTimeSeconds = SETTING_DEFAULT_VALUE.breakTimeSecBetweenSets;
 
   const counterStatus = ref<CounterStatus>('STANDBY');
+  const amountPerSet = ref(0);
   const timerId = ref<number | null>(null);
   const timerSeconds = ref(0);
 
@@ -30,8 +32,10 @@ export function useCounter(count: Ref<number>, setCount: Ref<number>) {
 
   const startCount = () => {
     playAudio('setStart');
-    recentCount = count.value;
-    recentSetCount = setCount.value;
+    amountPerSet.value = count.value;
+    initialCount = count.value;
+    initialSetCount = setCount.value;
+    initialRemainder = remainder.value;
     counterStatus.value = 'PROGRESS';
   };
 
@@ -61,14 +65,24 @@ export function useCounter(count: Ref<number>, setCount: Ref<number>) {
 
     // 1セット完了
     playAudio('setEnd');
-    count.value = recentCount;
     setCount.value--;
 
     if (setCount.value <= 0) {
-      setCount.value = recentSetCount;
+      count.value = initialCount;
+      setCount.value = initialSetCount;
+      remainder.value = initialRemainder;
       counterStatus.value = 'STANDBY';
       return counterStatus.value;
     }
+
+    // あまりを上乗せするセットが終わったら、以降のセットは1回少なくする
+    if (remainder.value > 0) {
+      remainder.value--;
+      if (remainder.value === 0) {
+        amountPerSet.value--;
+      }
+    }
+    count.value = amountPerSet.value;
 
     timerSeconds.value = breakTimeSeconds;
     timerId.value = window.setInterval(timerLoop, 1000);
@@ -95,6 +109,7 @@ export function useCounter(count: Ref<number>, setCount: Ref<number>) {
 
   return {
     counterStatus,
+    amountPerSet,
     timerDisplay,
     startCount,
     stopCount,

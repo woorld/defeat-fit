@@ -17,8 +17,9 @@ const props = defineProps<{
 // NOTE: 要素の表示・非表示やスタイリングは<style>で行うよう統一する
 const colorClass = computed(() => theme.current.value.dark ? 'dark' : 'light');
 const pointerDisplay = computed(() => props.isPointerVisible ? 'visible' : 'hidden');
-const minThresholdDisplay = computed(() => props.autoCountSetupStatus > autoCountSetupStage.MIN ? 'visible' : 'hidden');
-const maxThresholdDisplay = computed(() => props.autoCountSetupStatus > autoCountSetupStage.MAX ? 'visible' : 'hidden');
+// NOTE: 2回目の取得中はmin/maxともに1回目の値のため、min側の範囲のみ表示して1回目の位置を示す
+const minThresholdAreaDisplay = computed(() => props.autoCountSetupStatus > autoCountSetupStage.FIRST ? 'visible' : 'hidden');
+const maxThresholdAreaAndBubblesDisplay = computed(() => props.autoCountSetupStatus > autoCountSetupStage.SECOND ? 'visible' : 'hidden');
 </script>
 
 <template>
@@ -162,13 +163,12 @@ $indicator-inner-height: 1%;
   visibility: v-bind(pointerDisplay);
 }
 
-.upright-threshold-bubble.min,
 .upright-indicator__threshold-area::before {
-  visibility: v-bind(minThresholdDisplay);
+  visibility: v-bind(minThresholdAreaDisplay);
 }
 
-.upright-threshold-bubble.max,
+.upright-threshold-bubble,
 .upright-indicator__threshold-area::after {
-  visibility: v-bind(maxThresholdDisplay);
+  visibility: v-bind(maxThresholdAreaAndBubblesDisplay);
 }
 </style>

@@ -1,14 +1,34 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import { menuUnitMap } from '@common/util';
+import type { MenuUnit } from '@prisma-generated-client';
 
 const props = defineProps<{
   isStandby: boolean,
   isBreakTime: boolean,
+  unit: MenuUnit,
+  amountPerSet: number,
   isLockControl: boolean,
 }>();
 
 const count = defineModel<number>('count', { required: true });
 const setCount = defineModel<number>('setCount', { required: true });
 const enableAutoCount = defineModel<boolean>('enableAutoCount', { default: null });
+/** 1回（秒）多くするセットの残り数 */
+const remainder = defineModel<number>('remainder', { default: 0 });
+
+// 手動で変更した場合はあまりの配分を破棄し、全セット同じ回数（秒数）にする
+const changeCount = (addValue: number) => {
+  count.value += addValue;
+  remainder.value = 0;
+};
+
+const changeSetCount = (value: number) => {
+  setCount.value = value;
+  remainder.value = 0;
+};
+
+const isRemainderAdded = computed(() => remainder.value > 0 && !props.isBreakTime);
 </script>
 
 <template>
@@ -17,7 +37,8 @@ const enableAutoCount = defineModel<boolean>('enableAutoCount', { default: null 
       <VLabel>セット数</VLabel>
       <VNumberInput
         class="flex-grow-0"
-        v-model="setCount"
+        :modelValue="setCount"
+        @update:modelValue="changeSetCount"
         hide-details
         inset
         :min="1"
@@ -48,25 +69,29 @@ const enableAutoCount = defineModel<boolean>('enableAutoCount', { default: null 
     <VBtn
       icon="mdi-chevron-double-left"
       :disabled="count < 10 || props.isLockControl"
-      @click="count -= 10"
+      @click="changeCount(-10)"
     />
     <VBtn
       icon="mdi-chevron-left"
       :disabled="count < 1 || props.isLockControl"
-      @click="count -= 1"
+      @click="changeCount(-1)"
     />
-    <div class="step-count" :class="{ 'text-green': props.isBreakTime }">
+    <div class="step-count" :class="{ 'text-green': props.isBreakTime, 'text-warning': isRemainderAdded }">
       <slot />
+      <VTooltip v-if="isRemainderAdded" activator="parent" location="top">
+        {{ props.unit === 'SECOND' ? '秒数' : '回数' }} / セット数 で出た余りを加算しています。<br />
+        {{ remainder }} セット後から {{ props.amountPerSet - 1 }} {{ menuUnitMap[props.unit] }}になります。
+      </VTooltip>
     </div>
     <VBtn
       icon="mdi-chevron-right"
       :disabled="props.isLockControl"
-      @click="count += 1"
+      @click="changeCount(1)"
     />
     <VBtn
       icon="mdi-chevron-double-right"
       :disabled="props.isLockControl"
-      @click="count += 10"
+      @click="changeCount(10)"
     />
   </div>
 </template>

@@ -16,7 +16,8 @@ let autoCountThresholdRange = SETTING_DEFAULT_VALUE.autoCountThresholdRange;
 const route = useRoute();
 const oscStore = useOscStore();
 
-const count = ref(Number(route.params.count) || 0);
+const remainder = ref(Number(route.query.remainder) || 0);
+const count = ref((Number(route.params.count) || 0) + (remainder.value > 0 ? 1 : 0));
 const setCount = ref(Number(route.params.setCount) || 1);
 const enableAutoCount = ref(true);
 const isAutoCountSetupOverlayVisible = ref(false);
@@ -24,12 +25,13 @@ const hasResolvedInitialPending = ref(false);
 
 const {
   counterStatus,
+  amountPerSet,
   timerDisplay,
   startCount,
   stopCount,
   onNext,
   decrementCount,
-} = useCounter(count, setCount);
+} = useCounter(count, setCount, remainder);
 
 const {
   autoCountSetupStatus,
@@ -97,9 +99,12 @@ else {
       <CountControl
         v-model:count="count"
         v-model:setCount="setCount"
+        v-model:remainder="remainder"
         v-model:enableAutoCount="enableAutoCount"
         :isStandby="counterStatus === 'STANDBY'"
         :isBreakTime="counterStatus === 'BREAK_TIME'"
+        unit="COUNT"
+        :amountPerSet="counterStatus === 'STANDBY' ? count : amountPerSet"
         :isLockControl="counterStatus !== 'STANDBY'"
       >
         <div class="d-flex w-100 justify-space-between align-baseline">
@@ -131,13 +136,13 @@ else {
           </div>
           <div v-else-if="autoCountSetupStatus < autoCountSetupStage.DONE" class="d-flex flex-column justify-center align-center ga-6">
             <p>
-              <template v-if="autoCountSetupStatus <= autoCountSetupStage.MIN">
-                頭の位置の最小値を設定します。<br />
-                今から行う筋トレの中で<strong>一番低い姿勢</strong>で止まってください。
+              <template v-if="autoCountSetupStatus <= autoCountSetupStage.FIRST">
+                頭の位置の最小値・最大値を設定します。<br />
+                今から行う筋トレの中で<strong>一番低い姿勢</strong>か<strong>一番高い姿勢</strong>のどちらかで止まってください。
               </template>
-              <template v-else-if="autoCountSetupStatus >= autoCountSetupStage.MAX">
-                頭の位置の最大値を設定します。<br />
-                今から行う筋トレの中で<strong>一番高い姿勢</strong>で止まってください。
+              <template v-else-if="autoCountSetupStatus >= autoCountSetupStage.SECOND">
+                続けて、<strong>先ほどとは反対の姿勢</strong>で止まってください。<br />
+                1回目の姿勢から十分に離れるまで計測は進みません。
               </template>
             </p>
             <VProgressLinear
