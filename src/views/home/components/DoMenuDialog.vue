@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue';
 import BaseDialog from '@src/components/common/BaseDialog.vue';
 import { useDefeatCountStore } from '@src/stores/defeat-count';
-import { menuUnitMap } from '@common/util';
+import { menuUnitMap, calcMenuAmount, isMenuAmountCapped } from '@common/util';
 import type { PresetWithMenus } from '@common/types';
 
 const defeatCount = useDefeatCountStore();
@@ -16,11 +16,24 @@ const model = defineModel<boolean>({ required: true });
 const isDecimalVisible = ref(false);
 const setCount = ref(1);
 
-const totalReps = computed(() => Math.ceil(props.presetMenu.multiplier * defeatCount.count));
+const totalReps = computed(
+  () => calcMenuAmount(props.presetMenu.multiplier, defeatCount.count, props.presetMenu.menu.maxValue)
+);
+const isCapped = computed(
+  () => isMenuAmountCapped(props.presetMenu.multiplier, defeatCount.count, props.presetMenu.menu.maxValue)
+);
 const secondsOrCountPerSet = computed(
   () => Math.floor(totalReps.value / setCount.value * 1000) / 1000 // 表示用に小数第4位以下を切り捨て
 );
 const isSecondsMenu = computed(() => props.presetMenu.menu.unit === 'SECOND');
+
+// 割り切れない場合は、あまりを先頭のセットから1ずつ上乗せする
+const baseAmountPerSet = computed(() => Math.floor(totalReps.value / setCount.value));
+const remainder = computed(() => totalReps.value % setCount.value);
+const timerCounterPath = computed(() => {
+  const path = `/timer-counter/${isSecondsMenu.value ? 'timer' : 'counter'}/${baseAmountPerSet.value}/${setCount.value}`;
+  return remainder.value > 0 ? `${path}?remainder=${remainder.value}` : path;
+});
 
 const stepSetCount = (addValue: 1 | -1) => {
   if (isDecimalVisible.value) {
@@ -66,9 +79,16 @@ const restoreIntegerTotalReps = () => {
         </div>
         <VIcon size="32">mdi-chevron-down</VIcon>
         <div class="d-flex justify-center align-baseline ga-2">
-          <span class="text-body">{{ totalReps }} {{ menuUnitMap[props.presetMenu.menu.unit] }} ÷ {{ setCount }} セット =</span>
+          <span class="text-body">
+            <span :class="{ 'text-warning': isCapped }">{{ totalReps }} {{ menuUnitMap[props.presetMenu.menu.unit] }}</span>
+            ÷ {{ setCount }} セット =
+          </span>
           <span class="text-h4 text-green">{{ secondsOrCountPerSet }}</span>
           <span class="text-body">{{ menuUnitMap[props.presetMenu.menu.unit] }} / セット</span>
+        </div>
+        <div v-if="remainder > 0" class="text-body">
+          （{{ baseAmountPerSet + 1 }} {{ menuUnitMap[props.presetMenu.menu.unit] }} × {{ remainder }} セット
+          + {{ baseAmountPerSet }} {{ menuUnitMap[props.presetMenu.menu.unit] }} × {{ setCount - remainder }} セット）
         </div>
         <VCheckbox
           v-model="isDecimalVisible"
@@ -80,15 +100,10 @@ const restoreIntegerTotalReps = () => {
       <VBtn
         append-icon="mdi-chevron-right"
         color="green"
-        :to="`/timer-counter/${isSecondsMenu ? 'timer' : 'counter'}/${Math.ceil(secondsOrCountPerSet)}/${setCount}`"
+        :to="timerCounterPath"
         :disabled="!setCount"
       >
         {{ isSecondsMenu ? 'タイマー' : 'カウンター' }}画面へ
-        <VTooltip
-          v-if="isDecimalVisible"
-          text="小数は切り上げ"
-          activator="parent"
-        />
       </VBtn>
     </div>
   </BaseDialog>

@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "StatsMenu" ADD COLUMN "manualCount" INTEGER NOT NULL DEFAULT 0;

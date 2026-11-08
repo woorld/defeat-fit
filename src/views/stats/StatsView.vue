@@ -4,9 +4,12 @@ import ViewHeading from '@src/components/common/ViewHeading.vue';
 import StatsCard from './components/StatsCard.vue';
 import type { StatsWithMenus, TotalStats } from '@common/types';
 import ItemEmptyCard from '@src/components/common/ItemEmptyCard.vue';
+import ManualStatsDialog from './components/ManualStatsDialog.vue';
 
 const statsList = ref<StatsWithMenus[]>([]);
 const totalStats = ref<TotalStats | undefined>(undefined);
+const isManualStatsDialogVisible = ref(false);
+const manualStatsFixedDate = ref<string | null>(null);
 
 const dateDescStatsList = computed(() => {
   const sortedStats = statsList.value.toSorted((statsA, statsB) => {
@@ -33,13 +36,26 @@ const deleteStats = async (id: number) => {
   getStats();
 };
 
+const openManualStatsDialog = (date: string | null) => {
+  manualStatsFixedDate.value = date;
+  isManualStatsDialogVisible.value = true;
+};
+
 getStats();
 </script>
 
 <template>
   <VContainer>
     <ViewHeading title="統計" />
-    <template v-if="totalStats !== undefined && totalStats.defeatCount >= 1">
+    <div class="d-flex justify-end mb-6">
+      <VBtn
+        rounded
+        prepend-icon="mdi-plus"
+        @click="openManualStatsDialog(null)"
+      >手動登録</VBtn>
+    </div>
+    <!-- NOTE: 手動登録のみの統計は負け回数が0のため、負け回数ではなく統計の有無で判定する -->
+    <template v-if="totalStats !== undefined && statsList.length >= 1">
       <StatsCard :stats="totalStats" />
       <VDivider class="mb-6" />
     </template>
@@ -48,6 +64,13 @@ getStats();
       v-for="stats in dateDescStatsList"
       :stats
       @delete-stats="deleteStats"
+      @edit-manual-stats="openManualStatsDialog"
+    />
+    <ManualStatsDialog
+      v-model="isManualStatsDialogVisible"
+      :statsList
+      :fixedDate="manualStatsFixedDate"
+      @save="getStats"
     />
   </VContainer>
 </template>

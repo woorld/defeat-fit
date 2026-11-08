@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { onBeforeRouteLeave, useRouter } from 'vue-router';
 import type { PresetWithMenus } from '@common/types';
 import type { Menu } from '@prisma-generated-client';
 import PresetMenuEditor from './components/PresetMenuEditor.vue';
@@ -21,6 +22,11 @@ const menuListInLeftPane = ref<Menu[]>([]);
 const menuListInPreset = ref<Menu[]>([]);
 const menuMultiplierList = ref<number[]>([]);
 const isDeleteDialogVisible = ref(false);
+const isNotSavedDialogVisible = ref(false);
+
+const router = useRouter();
+let pendingAction: (() => void) | null = null;
+let skipLeaveGuard = false;
 
 const presetSelect = computed(() => presetList.value.map(preset => ({
   title: preset.name,
@@ -30,6 +36,48 @@ const hasPreset = computed(() => presetList.value.length >= 1);
 const canAddPreset = computed(() =>  allMenuList.value.length >= 1);
 const canEditPreset = computed(() => editingPresetId.value !== null);
 const canSavePreset = computed(() => presetName.value.length >= 1 && menuListInPreset.value.length >= 1);
+
+const isPresetChanged = computed(() => {
+  if (editingPresetId.value === null) {
+    return false;
+  }
+
+  const currentMenuIdList = menuListInPreset.value.map(menu => menu.id);
+  if (editingPresetId.value === 0) {
+    return presetName.value !== '' || currentMenuIdList.length >= 1;
+  }
+
+  const savedPreset = presetList.value.find(preset => preset.id === editingPresetId.value);
+  if (savedPreset === undefined) {
+    return false;
+  }
+
+  return (
+    presetName.value !== savedPreset.name ||
+    JSON.stringify(currentMenuIdList) !== JSON.stringify(savedPreset.presetMenuList.map(presetMenu => presetMenu.menu.id)) ||
+    JSON.stringify(menuMultiplierList.value) !== JSON.stringify(savedPreset.presetMenuList.map(presetMenu => presetMenu.multiplier))
+  );
+});
+
+// 未保存の変更がある場合は確認ダイアログを挟んでから、変更を破棄する操作を実行する
+const confirmDiscardThen = (action: () => void) => {
+  if (!isPresetChanged.value) {
+    action();
+    return;
+  }
+  pendingAction = action;
+  isNotSavedDialogVisible.value = true;
+};
+
+const onClickDiscardConfirm = () => {
+  isNotSavedDialogVisible.value = false;
+  pendingAction?.();
+  pendingAction = null;
+};
+
+const onSelectPreset = (id: number | null) => {
+  confirmDiscardThen(() => setEditingPresetById(id));
+};
 
 const getPresetList = async () => {
   presetList.value = await window.preset.getPresetList();
@@ -84,7 +132,7 @@ const onClickSave = async () => {
     await window.preset.updatePreset(preset, menuIdWithMultiplierList);
   }
 
-  getPresetList();
+  await getPresetList();
 };
 
 const onClickDiscard = () => {
@@ -115,6 +163,18 @@ const deletePreset = async () => {
   allMenuList.value = result[0];
   setEditingPresetById(hasPreset.value ? presetList.value[0].id : null);
 })();
+
+onBeforeRouteLeave((to) => {
+  if (skipLeaveGuard || !isPresetChanged.value) {
+    return;
+  }
+
+  confirmDiscardThen(() => {
+    skipLeaveGuard = true;
+    router.push(to.path);
+  });
+  return false;
+});
 </script>
 
 <template>
@@ -131,21 +191,21 @@ const deletePreset = async () => {
     <div v-if="editingPresetId !== 0" class="d-flex justify-center align-center mb-8">
       <VSelect
         v-if="presetList.length >= 1"
-        v-model="editingPresetId"
+        :modelValue="editingPresetId"
         class="mr-4"
         hide-details
         variant="solo"
         density="compact"
         rounded
         :items="presetSelect"
-        @update:modelValue="setEditingPresetById"
+        @update:modelValue="onSelectPreset"
       />
       <VBtn
         v-if="canAddPreset"
         rounded
         prepend-icon="mdi-plus"
         :disabled="editingPresetId === 0"
-        @click="setEditingPresetById(0)"
+        @click="confirmDiscardThen(() => setEditingPresetById(0))"
       >プリセットを追加</VBtn>
     </div>
     <template v-if="canEditPreset">
@@ -184,6 +244,17 @@ const deletePreset = async () => {
         @click-no="isDeleteDialogVisible = false"
       >
         本当に {{ presetName }} を削除しますか？<br />
+      </ConfirmDialog>
+      <ConfirmDialog
+        v-model="isNotSavedDialogVisible"
+        title="未保存の変更"
+        yesBtnColor="red"
+        reverseYesNoPosition
+        @click-yes="onClickDiscardConfirm"
+        @click-no="isNotSavedDialogVisible = false"
+      >
+        保存されていない変更があります。<br />
+        変更を破棄して続行しますか？
       </ConfirmDialog>
     </template>
   </div>

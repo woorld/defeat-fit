@@ -18,6 +18,7 @@ const menuDefaultValue: Menu = {
   id: 0,
   name: '',
   unit: 'COUNT',
+  maxValue: 0,
 } as const;
 
 const props = defineProps<{
@@ -39,6 +40,7 @@ const menu = ref<Menu>(props.menu
 const isDeleteDialogVisible = ref(false);
 
 const canEdit = computed(() => props.editingMenuId === menu.value.id);
+const isMaxValueValid = computed(() => Number.isInteger(menu.value.maxValue) && menu.value.maxValue >= 0);
 const isLockBtn = computed(() => props.editingMenuId !== null && props.editingMenuId !== menu.value.id);
 
 const editMenu = async () => {
@@ -104,15 +106,32 @@ const onClickDiscard = () => {
           :items="unitSelectItems"
         />
       </td>
+      <td class="px-2 max-value-cell">
+        <!-- HACK: rulesを不正値の赤枠表示用に使用 -->
+        <VTextField
+          class="menu-input"
+          v-model.number="menu.maxValue"
+          type="number"
+          min="0"
+          step="1"
+          variant="outlined"
+          single-line
+          density="compact"
+          hide-details
+          :suffix="menuUnitMap[menu.unit]"
+          :rules="[() => isMaxValueValid]"
+        />
+      </td>
     </template>
     <template v-else>
       <td>{{ menu.name }}</td>
       <td>{{ menuUnitMap[menu.unit] }}</td>
+      <td class="text-right">{{ menu.maxValue > 0 ? `${menu.maxValue} ${menuUnitMap[menu.unit]}` : 'なし' }}</td>
     </template>
-    <td class="text-right">
+    <td class="text-right text-no-wrap">
       <VBtn
         :class="{'text-green': canEdit}"
-        :disabled="isLockBtn || menu.name.length <= 0"
+        :disabled="isLockBtn || menu.name.length <= 0 || !isMaxValueValid"
         size="small"
         elevation="0"
         :icon="canEdit ? 'mdi-check' : 'mdi-pencil'"
@@ -142,6 +161,10 @@ const onClickDiscard = () => {
 </template>
 
 <style scoped>
+.max-value-cell {
+  width: 140px;
+}
+
 .menu-input:deep(.v-field-label) {
   font-size: 14px;
 }

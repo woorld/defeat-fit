@@ -1,11 +1,11 @@
 {
   "name": "defeat-fit",
   "private": true,
-  "version": "0.3.3-ultrabeta",
+  "version": "0.4.0-ultrabeta",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "cross-env DATABASE_URL=file:../dist/app.db prisma db push --skip-generate --force-reset && vue-tsc && vite build && electron-builder",
+    "build": "node -e \"require('fs').rmSync('dist/app.db',{force:true})\" && cross-env DATABASE_URL=file:../dist/app.db prisma migrate deploy && vue-tsc && vite build && electron-builder",
     "preview": "vite preview",
     "format": "prettier -w .",
     "osc:send": "osc-tester send /defeatfit/count true",
@@ -14,6 +14,7 @@
   "dependencies": {
     "@prisma/client": "^6.18.0",
     "electron-updater": "^6.7.3",
+    "html-to-image": "^1.11.13",
     "node-osc": "^11.4.0",
     "oscquery": "^1.1.1",
     "pinia": "^3.0.3",
@@ -28,7 +29,7 @@
     "@types/sortablejs": "^1.15.9",
     "@vitejs/plugin-vue": "^5.0.4",
     "cross-env": "^10.1.0",
-    "electron": "^40.6.0",
+    "electron": "^45.2.3",
     "electron-builder": "^26.0.12",
     "electron-store": "^10.1.0",
     "osc-tester": "github:woorld/osc-tester",

@@ -1,5 +1,5 @@
 import { ipcRenderer, contextBridge } from 'electron';
-import type { License, MenuIdWithMultiplier, Notice, OscStatus, PresetWithMenus, Setting, StatsWithMenus, TotalStats } from '@common/types';
+import type { License, MenuIdWithManualCount, MenuIdWithMultiplier, Notice, OscStatus, PresetWithMenus, Setting, StatsWithMenus, TotalStats } from '@common/types';
 import type { Menu, Stats, Preset } from '@prisma-generated-client';
 import type { UpdatePreset } from '@electron/api/preset';
 import type { Schema } from './store/schema';
@@ -65,6 +65,8 @@ const statsApi = {
     ipcRenderer.invoke('get-total-stats'),
   addStats: (defeatCount: number, menuIdWithMultiplierList: MenuIdWithMultiplier[]): Promise<Stats> =>
     ipcRenderer.invoke('add-stats', defeatCount, menuIdWithMultiplierList),
+  setManualStats: (date: string, menuIdWithManualCountList: MenuIdWithManualCount[]): Promise<Stats> =>
+    ipcRenderer.invoke('set-manual-stats', date, menuIdWithManualCountList),
   deleteStats: (id: number): Promise<Stats> =>
     ipcRenderer.invoke('delete-stats', id),
 } as const;

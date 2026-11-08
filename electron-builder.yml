@@ -11,6 +11,8 @@ files:
 extraResources:
   - from: dist/app.db
     to: .
+  - from: prisma/migrations
+    to: migrations
   - from: dist/license
     to: license
   - from: prisma/generated/query_engine-windows.dll.node
