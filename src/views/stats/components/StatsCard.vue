@@ -64,8 +64,8 @@ const onEditManualStats = () => {
                   <template v-if="statsMenu.manualCount <= 0">{{ statsMenu.count }}</template>
                   <span v-else-if="statsMenu.count <= 0" class="text-green">{{ statsMenu.manualCount }}</span>
                   <template v-else>
-                    {{ statsMenu.count + statsMenu.manualCount }}
-                    (<span class="text-green">{{ statsMenu.manualCount }}</span>)
+                    {{ statsMenu.count }} + <span class="text-green">{{ statsMenu.manualCount }}</span>
+                    = {{ statsMenu.count + statsMenu.manualCount }}
                   </template>
                   {{ menuUnitMap[statsMenu.menu?.unit || 'COUNT'] }}
                 </td>
