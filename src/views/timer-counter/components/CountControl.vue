@@ -13,7 +13,7 @@ const props = defineProps<{
 
 const count = defineModel<number>('count', { required: true });
 const setCount = defineModel<number>('setCount', { required: true });
-const enableAutoCount = defineModel<boolean>('enableAutoCount', { default: null });
+const enableAutoCount = defineModel<boolean | null>('enableAutoCount', { default: null });
 /** 1回（秒）多くするセットの残り数 */
 const remainder = defineModel<number>('remainder', { default: 0 });
 
