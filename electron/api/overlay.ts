@@ -21,10 +21,39 @@ const isValidHudImage = (image: OverlayHudImage) =>
   && image.pixels instanceof Uint8Array
   && image.pixels.length === image.width * image.height * 4;
 
+/** 画面が消す機会を失う場面に備えた後始末を登録済みのウィンドウ */
+const hudCleanupRegistered = new WeakSet<WebContents>();
+
+/**
+ * 表示したまま画面がなくなった場合に、表示を消す
+ * NOTE: ウィンドウの破棄・リロード・レンダラーの異常終了ではonUnmountedが呼ばれず、画面側から消せない
+ */
+const registerHudCleanup = (owner: WebContents) => {
+  // 表示のたびに登録すると、ウィンドウが生きている間リスナーが増え続ける
+  if (hudCleanupRegistered.has(owner)) {
+    return;
+  }
+  hudCleanupRegistered.add(owner);
+
+  const clear = () => setHud(owner, null);
+  owner.on('destroyed', clear);
+  owner.on('render-process-gone', clear);
+  owner.on('did-start-navigation', (details) => {
+    if (details.isMainFrame && !details.isSameDocument) {
+      clear();
+    }
+  });
+};
+
 const setHud = (owner: WebContents, image: OverlayHudImage | null) => {
+  // NOTE: タイマー・カウンターはウィンドウごとに独立して動く。両方で同時に動かすと交互に上書きし合って
+  //       表示がちらつくため、先に表示したウィンドウが消すまで、他のウィンドウからの変更は受け付けない
+  if (hud !== null && hud.owner !== owner) {
+    return;
+  }
+
   if (image === null) {
-    // NOTE: タイマー・カウンターはウィンドウごとに独立して動くため、他のウィンドウが表示中の内容は消さない
-    if (hud?.owner !== owner) {
+    if (hud === null) {
       return;
     }
     hud = null;
@@ -33,10 +62,7 @@ const setHud = (owner: WebContents, image: OverlayHudImage | null) => {
     if (!isValidHudImage(image)) {
       return;
     }
-    if (hud?.owner !== owner) {
-      // 表示したままウィンドウが破棄されると消す機会がなくなり、次の接続時にも残ってしまう
-      owner.once('destroyed', () => setHud(owner, null));
-    }
+    registerHudCleanup(owner);
     hud = { owner, image };
   }
   hudRevision++;
