@@ -5,6 +5,7 @@ import { useNoticeStore } from '@src/stores/notice';
 import UpdateDialog from '@src/components/UpdateDialog.vue';
 import TransitionRouterView from '@src/components/common/TransitionRouterView.vue';
 import AppCloseConfirmDialog from '@src/components/AppCloseConfirmDialog.vue';
+import { isOverlayWindow } from '@src/composables/common/window-type';
 
 const noticeStore = useNoticeStore();
 
@@ -26,8 +27,11 @@ const isUpdateDialogVisible = ref(false);
       close-text="×"
       timer
     />
-    <UpdateDialog v-model="isUpdateDialogVisible" />
-    <AppCloseConfirmDialog />
+    <!-- NOTE: アップデート・終了確認はアプリ全体に対する操作のため、メインウィンドウだけで扱う -->
+    <template v-if="!isOverlayWindow">
+      <UpdateDialog v-model="isUpdateDialogVisible" />
+      <AppCloseConfirmDialog />
+    </template>
   </VApp>
 </template>
 

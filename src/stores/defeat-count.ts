@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import type { OscReceivedSoundSetting } from '@common/types';
+import { isOverlayWindow } from '@src/composables/common/window-type';
 import soundSlash from '@src/assets/sound/defeat/slash.mp3';
 import soundPull from '@src/assets/sound/defeat/pull.mp3';
 import soundExplode from '@src/assets/sound/defeat/explode.mp3';
@@ -47,7 +48,8 @@ export const useDefeatCountStore = defineStore('defeat-count', () => {
   }
 
   const playOscReceivedSound = () => {
-    if (!shouldPlayAudio) {
+    // NOTE: オーバーレイ用ウィンドウでも鳴らすと、メインウィンドウの分と二重に聞こえる
+    if (!shouldPlayAudio || isOverlayWindow) {
       return;
     }
 

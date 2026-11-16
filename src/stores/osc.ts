@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import type { OscStatus } from '@common/types';
 import { useDefeatCountStore } from '@src/stores/defeat-count';
+import { isOverlayWindow } from '@src/composables/common/window-type';
 
 export const useOscStore = defineStore('osc', () => {
   const defeatCountStore = useDefeatCountStore();
@@ -54,7 +55,11 @@ export const useOscStore = defineStore('osc', () => {
       upright.value = uprightValue;
     });
 
-    window.osc.startListening();
+    // NOTE: オーバーレイ用ウィンドウはSteamVRの起動時に後から生成されるため、
+    //       そこでも開始するとユーザーが停止した受信を勝手に再開してしまう
+    if (!isOverlayWindow) {
+      window.osc.startListening();
+    }
   })();
 
   return {

@@ -1,10 +1,24 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useOscStore } from '@src/stores/osc';
+import { isOverlayWindow } from '@src/composables/common/window-type';
 
 const route = useRoute();
 const oscStore = useOscStore();
+
+const isPinned = ref(true);
+
+const togglePinned = () => {
+  isPinned.value = !isPinned.value;
+  window.overlay.setPinned(isPinned.value);
+};
+
+if (isOverlayWindow) {
+  (async () => {
+    isPinned.value = await window.overlay.isPinned();
+  })();
+}
 
 const isInTimerCounterView = computed(() => route.path.startsWith('/timer-counter'));
 const isInMenuView = computed(() => route.path.startsWith('/menu'));
@@ -29,6 +43,12 @@ const isInMenuView = computed(() => route.path.startsWith('/menu'));
     </VBtn>
     <VBtn to="/about">
       <VIcon>mdi-information</VIcon>
+    </VBtn>
+    <VBtn v-if="isOverlayWindow" :active="false" @click="togglePinned">
+      <VIcon>{{ isPinned ? 'mdi-pin' : 'mdi-pin-off' }}</VIcon>
+      <VTooltip activator="parent" location="top">
+        ダッシュボードを閉じても左手に表示{{ isPinned ? '中' : 'しない' }}
+      </VTooltip>
     </VBtn>
   </VBottomNavigation>
 </template>
