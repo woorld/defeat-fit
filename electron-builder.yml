@@ -17,6 +17,12 @@ extraResources:
     to: license
   - from: prisma/generated/query_engine-windows.dll.node
     to: .prisma/client/query_engine-windows.dll.node # NOTE: .prisma/client配下にクエリエンジンを置かないと検知されない
+  - from: vendor/openvr/openvr_api.dll
+    to: openvr/openvr_api.dll
+  - from: vendor/openvr/LICENSE
+    to: license/openvr.LICENSE.txt
+  - from: node_modules/@koromix/koffi-win32-x64/win32_x64/koffi.node
+    to: koffi/win32_x64/koffi.node # NOTE: koffiはバンドル後、resources/koffi配下からネイティブモジュールを探す
 win:
   target:
     - target: nsis
