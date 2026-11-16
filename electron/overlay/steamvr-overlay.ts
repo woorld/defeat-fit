@@ -1,8 +1,8 @@
-import { app, type BrowserWindow } from 'electron';
+import { app, type BrowserWindow, type NativeImage } from 'electron';
 import path from 'node:path';
 import { overlayApi } from '@electron/api/overlay';
 import { loadOpenVr, VR_EVENT_TYPE, VR_MOUSE_BUTTON_LEFT, type OpenVr, type OverlayHandle, type VrEvent } from '@electron/overlay/openvr';
-import { createOverlayWindow, OVERLAY_WINDOW_SIZE, type OverlayFrame } from '@electron/overlay/overlay-window';
+import { createOverlayWindow, OVERLAY_WINDOW_SIZE, toOverlayFrame, type OverlayFrame } from '@electron/overlay/overlay-window';
 
 const OVERLAY_KEY = 'com.github.woorld.defeatfit';
 const OVERLAY_NAME = 'DefeatFit';
@@ -44,8 +44,12 @@ type Session = {
   thumbnail: OverlayHandle,
   pinned: OverlayHandle,
   window: BrowserWindow,
+  /** 最新の描画結果のうち、まだピクセル列に変換していないもの */
+  paintedImage: NativeImage | null,
+  /** 最後に変換した描画結果（RGBA） */
   frame: OverlayFrame | null,
-  isFrameRgba: boolean,
+  /** オーバーレイ用ウィンドウに描画させているか。どのオーバーレイも見えていない間は止める */
+  isPainting: boolean,
   shouldUploadDashboard: boolean,
   shouldUploadPinned: boolean,
   hasUploadedDashboard: boolean,
@@ -123,14 +127,14 @@ const connect = (vr: OpenVr) => {
     dashboard,
     thumbnail,
     pinned,
-    window: createOverlayWindow(frame => {
-      newSession.frame = frame;
-      newSession.isFrameRgba = false;
+    window: createOverlayWindow(image => {
+      newSession.paintedImage = image;
       newSession.shouldUploadDashboard = true;
       newSession.shouldUploadPinned = true;
     }),
+    paintedImage: null,
     frame: null,
-    isFrameRgba: false,
+    isPainting: true,
     shouldUploadDashboard: false,
     shouldUploadPinned: false,
     hasUploadedDashboard: false,
@@ -242,7 +246,10 @@ const tick = () => {
 
     updatePinnedOverlay(openVr, session);
     updatePinnedInteractivity(openVr, session);
-    uploadFrame(openVr, session);
+
+    const isDashboardVisible = openVr.isOverlayVisible(session.dashboard);
+    updatePainting(session, isDashboardVisible);
+    uploadFrame(openVr, session, isDashboardVisible);
     session.tickCount++;
   }
   catch (e) {
@@ -366,24 +373,49 @@ const updatePinnedInteractivity = (vr: OpenVr, currentSession: Session) => {
   currentSession.isPinnedInteractive = isInteractive;
 };
 
-/** 描画内容に変更があれば、表示中のオーバーレイへ転送する */
-const uploadFrame = (vr: OpenVr, currentSession: Session) => {
-  const { frame } = currentSession;
-  if (frame === null) {
+/** どのオーバーレイも見えていない間は、オーバーレイ用ウィンドウの描画を止める */
+const updatePainting = (currentSession: Session, isDashboardVisible: boolean) => {
+  // NOTE: ダッシュボードは開くまで見えないが、開いた瞬間に空で表示されないよう初回の転送までは描画させる
+  const needsPainting = isDashboardVisible
+    || currentSession.pinnedDevice !== null
+    || !currentSession.hasUploadedDashboard;
+  if (needsPainting === currentSession.isPainting) {
     return;
   }
 
-  // NOTE: ダッシュボードは開くまで見えないが、開いた瞬間に空で表示されないよう初回だけは必ず転送する
+  const { webContents } = currentSession.window;
+  if (needsPainting) {
+    webContents.startPainting();
+    // 止めていた間の変更を反映させるため、描画し直させる
+    webContents.invalidate();
+  }
+  else {
+    webContents.stopPainting();
+  }
+  currentSession.isPainting = needsPainting;
+};
+
+/** 描画内容に変更があれば、表示中のオーバーレイへ転送する */
+const uploadFrame = (vr: OpenVr, currentSession: Session, isDashboardVisible: boolean) => {
   const uploadsDashboard = currentSession.shouldUploadDashboard
-    && (!currentSession.hasUploadedDashboard || vr.isOverlayVisible(currentSession.dashboard));
+    && (!currentSession.hasUploadedDashboard || isDashboardVisible);
   const uploadsPinned = currentSession.shouldUploadPinned && currentSession.pinnedDevice !== null;
   if (!uploadsDashboard && !uploadsPinned) {
     return;
   }
 
-  if (!currentSession.isFrameRgba) {
-    swapRedAndBlue(frame.bitmap);
-    currentSession.isFrameRgba = true;
+  if (currentSession.paintedImage !== null) {
+    const newFrame = toOverlayFrame(currentSession.paintedImage);
+    currentSession.paintedImage = null;
+    if (newFrame !== null) {
+      swapRedAndBlue(newFrame.bitmap);
+      currentSession.frame = newFrame;
+    }
+  }
+
+  const { frame } = currentSession;
+  if (frame === null) {
+    return;
   }
 
   if (uploadsDashboard) {
