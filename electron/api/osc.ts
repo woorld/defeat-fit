@@ -18,6 +18,8 @@ let oscServer: OscServer | null = null;
 let oscStatus: OscStatus = 'CLOSE';
 let isInitialized = false;
 let sendMessage: SendMessage | null = null;
+/** closeServer()が待っている、OSCサーバーの停止完了の通知先 */
+let resolveServerClosed: (() => void) | null = null;
 
 const sendMessageIfNotNull: SendMessage = (channel, ...args) => {
   if (sendMessage !== null) {
@@ -138,6 +140,9 @@ export const oscApi = {
         text: 'OSCメッセージの受信を停止しました',
         color: 'success',
       });
+
+      resolveServerClosed?.();
+      resolveServerClosed = null;
     };
 
     try {
@@ -196,9 +201,21 @@ export const oscApi = {
 
     changeOscStatus('PENDING');
 
+    const closingServer = oscServer;
     await oscQueryServer.stop();
     oscQueryServer = null;
-    oscServer.close();
+
+    // NOTE: ソケットが閉じる（状態がCLOSEになる）のは少し後のため、待たずに返すと、
+    //       呼び出し側が停止直後に状態を見ても停止中(PENDING)のままで、受信の再開を判断できない
+    await new Promise<void>(resolve => {
+      if (closingServer.server === null) {
+        // 開いていないサーバーは閉じた通知が来ない
+        resolve();
+        return;
+      }
+      resolveServerClosed = resolve;
+      closingServer.close();
+    });
   },
 
   getOscStatus() {
