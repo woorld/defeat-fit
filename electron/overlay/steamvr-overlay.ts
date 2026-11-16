@@ -58,6 +58,7 @@ type Session = {
   isPinnedInteractive: boolean,
   tickCount: number,
   mouse: { x: number, y: number },
+  isMouseDown: boolean,
 };
 
 let openVr: OpenVr | null = null;
@@ -142,6 +143,7 @@ const connect = (vr: OpenVr) => {
     isPinnedInteractive: false,
     tickCount: 0,
     mouse: { x: 0, y: 0 },
+    isMouseDown: false,
   };
   // NOTE: 以降で例外が起きてもdisconnect()がウィンドウ・オーバーレイを片付けられるよう、先にセッションを確定させる
   session = newSession;
@@ -280,14 +282,21 @@ const forwardInput = (currentSession: Session, event: VrEvent) => {
         return;
       }
       updateMousePosition();
+      currentSession.isMouseDown = event.type === VR_EVENT_TYPE.MOUSE_BUTTON_DOWN;
       webContents.sendInputEvent({
-        type: event.type === VR_EVENT_TYPE.MOUSE_BUTTON_DOWN ? 'mouseDown' : 'mouseUp',
+        type: currentSession.isMouseDown ? 'mouseDown' : 'mouseUp',
         button: 'left',
         clickCount: 1,
         ...mouse,
       });
       return;
     case VR_EVENT_TYPE.FOCUS_LEAVE:
+      if (currentSession.isMouseDown) {
+        // NOTE: 押したままレーザーが外れるとボタンを離したイベントが届かず、押下状態（スライダーのドラッグ等）が残る
+        //       元の位置で離すとクリックが成立してしまうため、画面の外で離したことにする
+        currentSession.isMouseDown = false;
+        webContents.sendInputEvent({ type: 'mouseUp', button: 'left', clickCount: 1, x: -1, y: -1 });
+      }
       webContents.sendInputEvent({ type: 'mouseLeave', ...mouse });
       return;
     case VR_EVENT_TYPE.SCROLL_DISCRETE:
