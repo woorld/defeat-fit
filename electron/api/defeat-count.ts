@@ -12,7 +12,12 @@ export const defeatCountApi = {
     }
 
     ipcMain.handle('get-defeat-count', () => this.getDefeatCount());
-    ipcMain.handle('decrement-defeat-count', () => this.decrementDefeatCount());
+    ipcMain.handle('decrement-defeat-count', () => {
+      const newCount = this.decrementDefeatCount();
+      // 操作元以外のウィンドウ（SteamVRオーバーレイ等）にも反映する
+      deps.sendMessage('update-defeat-count', newCount);
+      return newCount;
+    });
     ipcMain.on('reset-defeat-count', () => {
       this.resetDefeatCount();
       deps.sendMessage('update-defeat-count', this.getDefeatCount());

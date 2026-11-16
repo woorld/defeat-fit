@@ -7,7 +7,7 @@ import { menuApi } from '@electron/api/menu';
 import { settingApi } from '@electron/api/setting';
 import { statsApi } from '@electron/api/stats';
 import { presetApi } from '@electron/api/preset';
-import type { SendMessage } from '@common/types';
+import { addBroadcastTarget, broadcast } from '@electron/broadcast';
 import { noticeApi } from '@electron/api/notice';
 import { ALLOWED_EXTERNAL_LINKS } from '@common/constants';
 import { fileApi } from '@electron/api/file';
@@ -33,6 +33,21 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
   ? path.join(process.env.APP_ROOT, 'public')
   : RENDERER_DIST;
 
+export const PRELOAD_PATH = path.join(__dirname, 'preload.mjs');
+
+/** レンダラーを読み込む。queryはレンダラー側で`location.search`から参照できる */
+export const loadRenderer = (win: BrowserWindow, query: Record<string, string> = {}) => {
+  if (VITE_DEV_SERVER_URL) {
+    const url = new URL(VITE_DEV_SERVER_URL);
+    url.search = new URLSearchParams(query).toString();
+    win.loadURL(url.toString());
+  }
+  else {
+    // win.loadFile('dist/index.html')
+    win.loadFile(path.join(RENDERER_DIST, 'index.html'), { query });
+  }
+};
+
 export function createWindow() {
   const win = new BrowserWindow({
     width: app.isPackaged ? undefined : 1200, // 開発者ツールでコンテンツが潰れないよう横幅を広げる
@@ -40,24 +55,15 @@ export function createWindow() {
     minHeight: 600,
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
     webPreferences: {
-      preload: path.join(__dirname, 'preload.mjs'),
+      preload: PRELOAD_PATH,
       devTools: !app.isPackaged,
     },
     autoHideMenuBar: true,
     show: false, // ページがロードされるまではウィンドウを非表示にする
   });
 
-  const sendMessage: SendMessage = (channel, ...args) => {
-    try {
-      if (!win || win.isDestroyed() || !win.webContents || win.webContents.isDestroyed()) {
-        return;
-      }
-      win.webContents.send(channel, ...args);
-    }
-    catch (e) {
-      console.warn('DefeatFit: sendMessage failed: ', e);
-    }
-  }
+  addBroadcastTarget(win.webContents);
+  const sendMessage = broadcast;
 
   defeatCountApi.initialize({ sendMessage });
   oscApi.initialize({ sendMessage });
@@ -109,13 +115,7 @@ export function createWindow() {
     return { action: 'deny' };
   });
 
-  if (VITE_DEV_SERVER_URL) {
-    win.loadURL(VITE_DEV_SERVER_URL);
-  }
-  else {
-    // win.loadFile('dist/index.html')
-    win.loadFile(path.join(RENDERER_DIST, 'index.html'));
-  }
+  loadRenderer(win);
 
   return win;
 }
