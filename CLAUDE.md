@@ -31,6 +31,13 @@ DefeatFit: OSCメッセージ（VRChatアバターギミックでの負け）の
 - `ListeningType`（`TARGET_AND_UPRIGHT` / `ALL` / `UPRIGHT`）で購読アドレスを切り替える（通常カウント、設定画面の全メッセージ選択、タイマーカウンターの直立判定）。
 - 環境により同一メッセージが多重受信されるため、10ms以内の同アドレス重複は無視している。
 
+### SteamVRオーバーレイ (`electron/overlay/`)
+
+- SteamVRの起動を5秒間隔で監視し、起動中だけ接続する（`steamvr-overlay.ts`）。接続中は**メインウィンドウと同じレンダラーをオフスクリーンの別ウィンドウで描画**し（`overlay-window.ts`）、その画像をダッシュボードのタブと左手コントローラー上の常時表示オーバーレイへ転送する。レーザーポインターの操作はマウス入力として同ウィンドウへ転送する。
+- 専用画面は持たないため、画面の変更はそのままオーバーレイにも反映される。オーバーレイ側だけ挙動を変える場合は、レンダラーで`isOverlayWindow`（`src/composables/common/window-type.ts`）を参照する。
+- ウィンドウが2つになるため、mainからのpush通知は`electron/broadcast.ts`で全ウィンドウへ送る。タイマー等のレンダラー内の状態はウィンドウごとに独立し、負けカウント・OSC状態などmainが持つ状態だけが共有される。
+- OpenVRは`koffi`(FFI)で`vendor/openvr/openvr_api.dll`を直接呼ぶ（`openvr.ts`）。`koffi.node`とDLLは`electron-builder.yml`の`extraResources`で同梱する。読み込みに失敗してもオーバーレイが無効になるだけで、アプリは起動する。
+
 ## 規約・補足
 
 - パスエイリアス: `@src` `@electron` `@common` `@prisma-generated-client`（`tsconfig.json`と`vite.config.ts`の両方で定義）。
