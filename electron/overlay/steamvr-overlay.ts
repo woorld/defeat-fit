@@ -48,6 +48,11 @@ const HUD_TRANSFORM = new Float32Array([
  * NOTE: コントローラーの向きとレーザーの向きは機種ごとにずれるため、厳密な当たり判定ではなく余裕を持たせた円錐で判定する
  */
 const POINTING_MAX_ANGLE_COS = Math.cos(30 * Math.PI / 180);
+/**
+ * 操作可能にした後、解除するまでの範囲
+ * NOTE: 有効化と同じ角度で解除すると、境界付近で手がわずかに揺れるだけでレーザーが点滅する
+ */
+const POINTING_RELEASE_ANGLE_COS = Math.cos(40 * Math.PI / 180);
 const POINTING_MAX_DISTANCE_METERS = 1;
 
 /** スクロール1段階あたりの移動量(px) */
@@ -74,6 +79,8 @@ type Session = {
   /** 常時表示オーバーレイを取り付けているデバイス。非表示中はnull */
   pinnedDevice: number | null,
   isPinnedInteractive: boolean,
+  /** レーザーポインターが常時表示オーバーレイに当たっているか */
+  isPinnedHovered: boolean,
   tickCount: number,
   mouse: { x: number, y: number },
   isMouseDown: boolean,
@@ -163,6 +170,7 @@ const connect = (vr: OpenVr) => {
     hasUploadedDashboard: false,
     pinnedDevice: null,
     isPinnedInteractive: false,
+    isPinnedHovered: false,
     tickCount: 0,
     mouse: { x: 0, y: 0 },
     isMouseDown: false,
@@ -266,6 +274,9 @@ const tick = () => {
 
     for (const handle of [session.dashboard, session.pinned]) {
       while ((event = openVr.pollNextOverlayEvent(handle)) !== null) {
+        if (handle === session.pinned) {
+          trackPinnedHover(session, event);
+        }
         forwardInput(session, event);
       }
     }
@@ -362,8 +373,21 @@ const updatePinnedOverlay = (vr: OpenVr, currentSession: Session) => {
   currentSession.pinnedDevice = device;
 };
 
-/** 右手コントローラーが、左手コントローラー上の常時表示オーバーレイの方を向いているか */
-const isRightHandPointingAtPinned = (vr: OpenVr, leftDevice: number) => {
+/**
+ * レーザーポインターが常時表示オーバーレイに当たっているかを記録する
+ * NOTE: IVROverlay::IsHoverTargetOverlayは「最後に当たったオーバーレイ」を返し、レーザーが外れた後もtrueのままになるため使えない
+ */
+const trackPinnedHover = (currentSession: Session, event: VrEvent) => {
+  if (event.type === VR_EVENT_TYPE.FOCUS_ENTER) {
+    currentSession.isPinnedHovered = true;
+  }
+  else if (event.type === VR_EVENT_TYPE.FOCUS_LEAVE) {
+    currentSession.isPinnedHovered = false;
+  }
+};
+
+/** 右手コントローラーが、左手コントローラー上の常時表示オーバーレイの方を向いているか（maxAngleCosは許容する角度の余弦） */
+const isRightHandPointingAtPinned = (vr: OpenVr, leftDevice: number, maxAngleCos: number) => {
   const rightDevice = vr.getRightHandDeviceIndex();
   const left = vr.getDevicePose(leftDevice);
   const right = rightDevice === null ? null : vr.getDevicePose(rightDevice);
@@ -384,7 +408,7 @@ const isRightHandPointingAtPinned = (vr: OpenVr, leftDevice: number) => {
 
   const forward = [-right[2], -right[6], -right[10]];
   const cos = (forward[0] * toOverlay[0] + forward[1] * toOverlay[1] + forward[2] * toOverlay[2]) / distance;
-  return cos >= POINTING_MAX_ANGLE_COS;
+  return cos >= maxAngleCos;
 };
 
 /**
@@ -394,10 +418,11 @@ const isRightHandPointingAtPinned = (vr: OpenVr, leftDevice: number) => {
  */
 const updatePinnedInteractivity = (vr: OpenVr, currentSession: Session) => {
   const { pinned, pinnedDevice } = currentSession;
+  const maxAngleCos = currentSession.isPinnedInteractive ? POINTING_RELEASE_ANGLE_COS : POINTING_MAX_ANGLE_COS;
   // レーザーが当たっている間は、手の向きが判定範囲から外れても操作を続けられるようにする
   const isInteractive = pinnedDevice !== null && (
-    isRightHandPointingAtPinned(vr, pinnedDevice)
-    || (currentSession.isPinnedInteractive && vr.isHoverTargetOverlay(pinned))
+    isRightHandPointingAtPinned(vr, pinnedDevice, maxAngleCos)
+    || (currentSession.isPinnedInteractive && currentSession.isPinnedHovered)
   );
   if (isInteractive === currentSession.isPinnedInteractive) {
     return;
@@ -405,6 +430,8 @@ const updatePinnedInteractivity = (vr: OpenVr, currentSession: Session) => {
 
   vr.setOverlayInteractive(pinned, isInteractive);
   currentSession.isPinnedInteractive = isInteractive;
+  // 操作できなくした後は外れたイベントが届く保証がないため、当たっていない状態に戻しておく
+  currentSession.isPinnedHovered = false;
 };
 
 /** タイマー・カウンターの進行状況（レンダラーが画像にして渡してくる）を、視界の隅のオーバーレイに反映する */

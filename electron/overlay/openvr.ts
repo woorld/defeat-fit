@@ -17,6 +17,7 @@ export const VR_EVENT_TYPE = {
   MOUSE_MOVE: 300,
   MOUSE_BUTTON_DOWN: 301,
   MOUSE_BUTTON_UP: 302,
+  FOCUS_ENTER: 303,
   FOCUS_LEAVE: 304,
   SCROLL_DISCRETE: 305,
   QUIT: 700,
@@ -65,7 +66,6 @@ const OVERLAY_FUNCTIONS = {
   PollNextOverlayEvent: [48, 'bool', 'uint64_t handle, _Out_ uint8_t *event, uint32_t eventSize'],
   SetOverlayInputMethod: [50, 'int32_t', 'uint64_t handle, int32_t method'],
   SetOverlayMouseScale: [52, 'int32_t', 'uint64_t handle, const float *scale'],
-  IsHoverTargetOverlay: [54, 'bool', 'uint64_t handle'],
   SetOverlayRaw: [62, 'int32_t', 'uint64_t handle, const uint8_t *buffer, uint32_t width, uint32_t height, uint32_t bytesPerPixel'],
   CreateDashboardOverlay: [67, 'int32_t', 'const char *key, const char *name, _Out_ uint64_t *mainHandle, _Out_ uint64_t *thumbnailHandle'],
 } as const satisfies Record<string, FnDefinition>;
@@ -238,11 +238,6 @@ const createOpenVr = (koffi: Koffi, dllPath: string) => {
      */
     setOverlayInteractive(handle: OverlayHandle, isInteractive: boolean) {
       callOverlay('SetOverlayFlag', handle, VR_OVERLAY_FLAG_MAKE_OVERLAYS_INTERACTIVE_IF_VISIBLE, isInteractive);
-    },
-
-    /** レーザーポインターがオーバーレイに当たっているか */
-    isHoverTargetOverlay(handle: OverlayHandle): boolean {
-      return getTables().overlay.IsHoverTargetOverlay(handle);
     },
 
     /** matrixはHmdMatrix34_t（3行4列、行優先） */
