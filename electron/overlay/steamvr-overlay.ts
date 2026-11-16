@@ -213,18 +213,23 @@ const setThumbnail = async (vr: OpenVr, targetSession: Session) => {
   }
 };
 
-const closeOverlayWindow = async (window: BrowserWindow) => {
+const closeOverlayWindow = async (window: BrowserWindow, cleansUpRenderer: boolean) => {
   if (window.isDestroyed()) {
     return;
   }
 
-  await overlayApi.requestRendererCleanup(window.webContents);
+  if (cleansUpRenderer) {
+    await overlayApi.requestRendererCleanup(window.webContents);
+  }
   if (!window.isDestroyed()) {
     window.destroy();
   }
 };
 
-const disconnect = () => {
+/**
+ * @param cleansUpRenderer オーバーレイ用ウィンドウの画面に後始末（OSCの受信対象を戻す等）をさせてから破棄するか
+ */
+const disconnect = (cleansUpRenderer = true) => {
   if (tickTimer !== null) {
     clearInterval(tickTimer);
     tickTimer = null;
@@ -235,7 +240,7 @@ const disconnect = () => {
 
   if (closingSession !== null) {
     // NOTE: SteamVRとの切断は待たせられない（終了時に巻き込まれる）ため、ウィンドウの後始末だけ非同期で進める
-    closeOverlayWindow(closingSession.window);
+    closeOverlayWindow(closingSession.window, cleansUpRenderer);
 
     for (const handle of [closingSession.hud, closingSession.pinned, closingSession.dashboard]) {
       try {
@@ -544,7 +549,8 @@ export const steamVrOverlay = {
       probeTimer = null;
     }
     if (session !== null) {
-      disconnect();
+      // NOTE: アプリの終了時に画面の後始末をさせると、終了間際にOSCの受信を開始し直してしまう
+      disconnect(false);
     }
   },
 } as const;
