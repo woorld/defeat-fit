@@ -29,6 +29,13 @@ const PINNED_TRANSFORM = new Float32Array([
   0, -1, 0, 0.08,
 ]);
 
+/**
+ * 右手コントローラーが常時表示オーバーレイを指しているとみなす範囲
+ * NOTE: コントローラーの向きとレーザーの向きは機種ごとにずれるため、厳密な当たり判定ではなく余裕を持たせた円錐で判定する
+ */
+const POINTING_MAX_ANGLE_COS = Math.cos(30 * Math.PI / 180);
+const POINTING_MAX_DISTANCE_METERS = 1;
+
 /** スクロール1段階あたりの移動量(px) */
 const SCROLL_STEP = 100;
 
@@ -44,6 +51,7 @@ type Session = {
   hasUploadedDashboard: boolean,
   /** 常時表示オーバーレイを取り付けているデバイス。非表示中はnull */
   pinnedDevice: number | null,
+  isPinnedInteractive: boolean,
   tickCount: number,
   mouse: { x: number, y: number },
 };
@@ -127,6 +135,7 @@ const connect = (vr: OpenVr) => {
     shouldUploadPinned: false,
     hasUploadedDashboard: false,
     pinnedDevice: null,
+    isPinnedInteractive: false,
     tickCount: 0,
     mouse: { x: 0, y: 0 },
   };
@@ -142,6 +151,7 @@ const connect = (vr: OpenVr) => {
   vr.setOverlayWidthInMeters(dashboard, DASHBOARD_WIDTH_METERS);
   vr.enableMouseInput(dashboard, OVERLAY_WINDOW_SIZE.width, OVERLAY_WINDOW_SIZE.height);
   vr.setOverlayWidthInMeters(pinned, PINNED_WIDTH_METERS);
+  vr.enableMouseInput(pinned, OVERLAY_WINDOW_SIZE.width, OVERLAY_WINDOW_SIZE.height);
   setThumbnail(vr, newSession);
 
   tickTimer = setInterval(tick, TICK_INTERVAL_MS);
@@ -214,11 +224,14 @@ const tick = () => {
       }
     }
 
-    while ((event = openVr.pollNextOverlayEvent(session.dashboard)) !== null) {
-      forwardInput(session, event);
+    for (const handle of [session.dashboard, session.pinned]) {
+      while ((event = openVr.pollNextOverlayEvent(handle)) !== null) {
+        forwardInput(session, event);
+      }
     }
 
     updatePinnedOverlay(openVr, session);
+    updatePinnedInteractivity(openVr, session);
     uploadFrame(openVr, session);
     session.tickCount++;
   }
@@ -296,6 +309,51 @@ const updatePinnedOverlay = (vr: OpenVr, currentSession: Session) => {
     currentSession.shouldUploadPinned = true;
   }
   currentSession.pinnedDevice = device;
+};
+
+/** 右手コントローラーが、左手コントローラー上の常時表示オーバーレイの方を向いているか */
+const isRightHandPointingAtPinned = (vr: OpenVr, leftDevice: number) => {
+  const rightDevice = vr.getRightHandDeviceIndex();
+  const left = vr.getDevicePose(leftDevice);
+  const right = rightDevice === null ? null : vr.getDevicePose(rightDevice);
+  if (left === null || right === null) {
+    return false;
+  }
+
+  // HmdMatrix34_tは行優先で、各行の4列目が位置。コントローラーの正面は-Z方向
+  const offset = [PINNED_TRANSFORM[3], PINNED_TRANSFORM[7], PINNED_TRANSFORM[11]];
+  const toOverlay = [0, 1, 2].map(row =>
+    left[row * 4] * offset[0] + left[row * 4 + 1] * offset[1] + left[row * 4 + 2] * offset[2] + left[row * 4 + 3]
+    - right[row * 4 + 3],
+  );
+  const distance = Math.hypot(...toOverlay);
+  if (distance === 0 || distance > POINTING_MAX_DISTANCE_METERS) {
+    return false;
+  }
+
+  const forward = [-right[2], -right[6], -right[10]];
+  const cos = (forward[0] * toOverlay[0] + forward[1] * toOverlay[1] + forward[2] * toOverlay[2]) / distance;
+  return cos >= POINTING_MAX_ANGLE_COS;
+};
+
+/**
+ * 常時表示オーバーレイを、右手コントローラーで指している間だけレーザーポインターで操作できるようにする
+ * NOTE: 操作可能にしている間はSteamVR全体がレーザー操作のモードになり、VRアプリの操作を妨げ得るため、
+ *       表示中ずっと操作可能にはしない
+ */
+const updatePinnedInteractivity = (vr: OpenVr, currentSession: Session) => {
+  const { pinned, pinnedDevice } = currentSession;
+  // レーザーが当たっている間は、手の向きが判定範囲から外れても操作を続けられるようにする
+  const isInteractive = pinnedDevice !== null && (
+    isRightHandPointingAtPinned(vr, pinnedDevice)
+    || (currentSession.isPinnedInteractive && vr.isHoverTargetOverlay(pinned))
+  );
+  if (isInteractive === currentSession.isPinnedInteractive) {
+    return;
+  }
+
+  vr.setOverlayInteractive(pinned, isInteractive);
+  currentSession.isPinnedInteractive = isInteractive;
 };
 
 /** 描画内容に変更があれば、表示中のオーバーレイへ転送する */

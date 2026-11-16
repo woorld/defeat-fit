@@ -27,7 +27,15 @@ export const VR_MOUSE_BUTTON_LEFT = 1;
 const VR_APPLICATION_BACKGROUND = 3;
 const VR_OVERLAY_INPUT_METHOD_MOUSE = 1;
 const VR_OVERLAY_FLAG_SEND_DISCRETE_SCROLL_EVENTS = 64;
+const VR_OVERLAY_FLAG_MAKE_OVERLAYS_INTERACTIVE_IF_VISIBLE = 65536;
 const VR_TRACKED_CONTROLLER_ROLE_LEFT_HAND = 1;
+const VR_TRACKED_CONTROLLER_ROLE_RIGHT_HAND = 2;
+const VR_TRACKING_UNIVERSE_STANDING = 1;
+const VR_MAX_TRACKED_DEVICE_COUNT = 64;
+/** Windows(x64)でのsizeof(TrackedDevicePose_t)。先頭がHmdMatrix34_t、bPoseIsValidはオフセット76 */
+const VR_POSE_SIZE = 80;
+const VR_POSE_IS_VALID_OFFSET = 76;
+const VR_MATRIX34_LENGTH = 12;
 const VR_TRACKED_DEVICE_INDEX_INVALID = 0xFFFFFFFF;
 /** Windows(x64)でのsizeof(VREvent_t)。dataはオフセット16から始まる */
 const VR_EVENT_SIZE = 64;
@@ -39,6 +47,7 @@ type FnDefinition = readonly [index: number, result: string, params: string];
 //       同梱するDLLを更新してもここを変える必要はない（バージョンを上げる場合のみ、ヘッダーの構造体の並びからindexを取り直す）
 const SYSTEM_INTERFACE = 'FnTable:IVRSystem_026';
 const SYSTEM_FUNCTIONS = {
+  GetDeviceToAbsoluteTrackingPose: [12, 'void', 'int32_t origin, float predictedSeconds, _Out_ uint8_t *poses, uint32_t poseCount'],
   GetTrackedDeviceIndexForControllerRole: [18, 'uint32_t', 'int32_t role'],
   PollNextEvent: [30, 'bool', '_Out_ uint8_t *event, uint32_t eventSize'],
 } as const satisfies Record<string, FnDefinition>;
@@ -56,6 +65,7 @@ const OVERLAY_FUNCTIONS = {
   PollNextOverlayEvent: [48, 'bool', 'uint64_t handle, _Out_ uint8_t *event, uint32_t eventSize'],
   SetOverlayInputMethod: [50, 'int32_t', 'uint64_t handle, int32_t method'],
   SetOverlayMouseScale: [52, 'int32_t', 'uint64_t handle, const float *scale'],
+  IsHoverTargetOverlay: [54, 'bool', 'uint64_t handle'],
   SetOverlayRaw: [62, 'int32_t', 'uint64_t handle, const uint8_t *buffer, uint32_t width, uint32_t height, uint32_t bytesPerPixel'],
   CreateDashboardOverlay: [67, 'int32_t', 'const char *key, const char *name, _Out_ uint64_t *mainHandle, _Out_ uint64_t *thumbnailHandle'],
 } as const satisfies Record<string, FnDefinition>;
@@ -106,6 +116,7 @@ const createOpenVr = (koffi: Koffi, dllPath: string) => {
   let system: Table<typeof SYSTEM_FUNCTIONS> | null = null;
   let overlay: Table<typeof OVERLAY_FUNCTIONS> | null = null;
   const eventBuffer = Buffer.alloc(VR_EVENT_SIZE);
+  const poseBuffer = Buffer.alloc(VR_POSE_SIZE * VR_MAX_TRACKED_DEVICE_COUNT);
 
   const getTables = () => {
     if (system === null || overlay === null) {
@@ -120,6 +131,11 @@ const createOpenVr = (koffi: Koffi, dllPath: string) => {
     if (error !== 0) {
       throw new OpenVrError(name, error);
     }
+  };
+
+  const getDeviceIndexForRole = (role: number): number | null => {
+    const index = getTables().system.GetTrackedDeviceIndexForControllerRole(role);
+    return index === VR_TRACKED_DEVICE_INDEX_INVALID ? null : index;
   };
 
   const readEvent = (): VrEvent => ({
@@ -167,8 +183,25 @@ const createOpenVr = (koffi: Koffi, dllPath: string) => {
     },
 
     getLeftHandDeviceIndex(): number | null {
-      const index = getTables().system.GetTrackedDeviceIndexForControllerRole(VR_TRACKED_CONTROLLER_ROLE_LEFT_HAND);
-      return index === VR_TRACKED_DEVICE_INDEX_INVALID ? null : index;
+      return getDeviceIndexForRole(VR_TRACKED_CONTROLLER_ROLE_LEFT_HAND);
+    },
+
+    getRightHandDeviceIndex(): number | null {
+      return getDeviceIndexForRole(VR_TRACKED_CONTROLLER_ROLE_RIGHT_HAND);
+    },
+
+    /** デバイスの現在の位置と向き（HmdMatrix34_t、プレイエリア基準）。トラッキングできていなければnull */
+    getDevicePose(deviceIndex: number): number[] | null {
+      if (deviceIndex >= VR_MAX_TRACKED_DEVICE_COUNT) {
+        return null;
+      }
+
+      getTables().system.GetDeviceToAbsoluteTrackingPose(VR_TRACKING_UNIVERSE_STANDING, 0, poseBuffer, deviceIndex + 1);
+      const offset = deviceIndex * VR_POSE_SIZE;
+      if (poseBuffer.readUInt8(offset + VR_POSE_IS_VALID_OFFSET) === 0) {
+        return null;
+      }
+      return Array.from({ length: VR_MATRIX34_LENGTH }, (_, i) => poseBuffer.readFloatLE(offset + i * 4));
     },
 
     createOverlay(key: string, name: string): OverlayHandle {
@@ -197,6 +230,19 @@ const createOpenVr = (koffi: Koffi, dllPath: string) => {
       callOverlay('SetOverlayInputMethod', handle, VR_OVERLAY_INPUT_METHOD_MOUSE);
       callOverlay('SetOverlayMouseScale', handle, new Float32Array([width, height]));
       callOverlay('SetOverlayFlag', handle, VR_OVERLAY_FLAG_SEND_DISCRETE_SCROLL_EVENTS, true);
+    },
+
+    /**
+     * ダッシュボードを開いていなくても、オーバーレイをレーザーポインターで操作できるようにする
+     * NOTE: 有効な間はSteamVR全体がレーザー操作のモードになるため、VRアプリの操作を妨げないよう必要な間だけ有効にすること
+     */
+    setOverlayInteractive(handle: OverlayHandle, isInteractive: boolean) {
+      callOverlay('SetOverlayFlag', handle, VR_OVERLAY_FLAG_MAKE_OVERLAYS_INTERACTIVE_IF_VISIBLE, isInteractive);
+    },
+
+    /** レーザーポインターがオーバーレイに当たっているか */
+    isHoverTargetOverlay(handle: OverlayHandle): boolean {
+      return getTables().overlay.IsHoverTargetOverlay(handle);
     },
 
     /** matrixはHmdMatrix34_t（3行4列、行優先） */
