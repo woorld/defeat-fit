@@ -45,7 +45,9 @@ export const createOverlayWindow = (onPaint: (image: NativeImage) => void) => {
     webPreferences: {
       preload: PRELOAD_PATH,
       devTools: !app.isPackaged,
-      offscreen: true,
+      // NOTE: ディスプレイの拡大率（150%等）に合わせて描画させると、画素数が増えて転送が重くなるだけで、
+      //       オーバーレイ上の見た目の大きさは変わらない
+      offscreen: { deviceScaleFactor: 1 },
       // NOTE: 非表示ウィンドウ扱いでタイマーが間引かれると、タイマー・カウンター画面の秒数がずれる
       backgroundThrottling: false,
     },
