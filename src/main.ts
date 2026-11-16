@@ -17,6 +17,7 @@ import StatsView from '@src/views/stats/StatsView.vue';
 import SettingView from '@src/views/setting/SettingView.vue';
 import AboutView from '@src/views/about/AboutView.vue';
 import { createPinia } from 'pinia';
+import { isOverlayWindow, overlayWindowState } from '@src/composables/common/window-type';
 
 const colorTheme = await window.setting.getSetting('colorTheme');
 const vuetify = createVuetify({
@@ -89,8 +90,24 @@ const router = createRouter({
 
 const pinia = createPinia();
 
-createApp(App)
+const app = createApp(App)
   .use(vuetify)
   .use(router)
-  .use(pinia)
-  .mount('#app');
+  .use(pinia);
+
+app.mount('#app');
+
+if (isOverlayWindow) {
+  // NOTE: ウィンドウは破棄されてもonBeforeRouteLeave・onUnmountedが呼ばれないため、
+  //       破棄の前に画面を離れてアンマウントし、各画面の後始末（OSCの受信対象を戻す等）を走らせる
+  window.overlay.onClosing(async () => {
+    overlayWindowState.isClosing = true;
+    try {
+      await router.replace('/');
+    }
+    finally {
+      app.unmount();
+      window.overlay.notifyClosed();
+    }
+  });
+}

@@ -175,6 +175,17 @@ const setThumbnail = async (vr: OpenVr, targetSession: Session) => {
   }
 };
 
+const closeOverlayWindow = async (window: BrowserWindow) => {
+  if (window.isDestroyed()) {
+    return;
+  }
+
+  await overlayApi.requestRendererCleanup(window.webContents);
+  if (!window.isDestroyed()) {
+    window.destroy();
+  }
+};
+
 const disconnect = () => {
   if (tickTimer !== null) {
     clearInterval(tickTimer);
@@ -185,9 +196,8 @@ const disconnect = () => {
   session = null;
 
   if (closingSession !== null) {
-    if (!closingSession.window.isDestroyed()) {
-      closingSession.window.destroy();
-    }
+    // NOTE: SteamVRとの切断は待たせられない（終了時に巻き込まれる）ため、ウィンドウの後始末だけ非同期で進める
+    closeOverlayWindow(closingSession.window);
 
     for (const handle of [closingSession.pinned, closingSession.dashboard]) {
       try {

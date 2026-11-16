@@ -6,6 +6,7 @@ import SettingSlider from './components/SettingSlider.vue';
 import ConfirmDialog from '@src/components/common/ConfirmDialog.vue';
 import ViewHeading from '@src/components/common/ViewHeading.vue';
 import { useOscStore } from '@src/stores/osc';
+import { overlayWindowState } from '@src/composables/common/window-type';
 import { onBeforeRouteLeave, useRouter } from 'vue-router';
 import ColorThemeSelect from './components/ColorThemeSelect.vue';
 import { useTheme } from 'vuetify';
@@ -95,7 +96,8 @@ window.osc.stopListening();
 getSetting();
 
 onBeforeRouteLeave(async (to) => {
-  if (isSettingChanged.value) {
+  // NOTE: オーバーレイ用ウィンドウの破棄前は確認ダイアログを操作できないため、未保存の変更は破棄して離れる
+  if (isSettingChanged.value && !overlayWindowState.isClosing) {
     isNotSavedDialogVisible.value = true;
     nextPagePath = to.path;
     return false;

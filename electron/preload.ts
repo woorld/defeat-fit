@@ -122,6 +122,10 @@ const overlayApi = {
     ipcRenderer.invoke('is-overlay-pinned'),
   setPinned: (isPinned: boolean) =>
     ipcRenderer.send('set-overlay-pinned', isPinned),
+  onClosing: (callback: () => void) =>
+    ipcRenderer.on('overlay-closing', () => callback()),
+  notifyClosed: () =>
+    ipcRenderer.send('overlay-closed'),
 } as const;
 
 contextBridge.exposeInMainWorld('defeatCount', defeatCountApi);

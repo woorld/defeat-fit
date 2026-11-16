@@ -4,3 +4,9 @@ import { OVERLAY_WINDOW_QUERY } from '@common/constants';
 export const isOverlayWindow = Object.entries(OVERLAY_WINDOW_QUERY).every(
   ([key, value]) => new URLSearchParams(window.location.search).get(key) === value
 );
+
+/**
+ * オーバーレイ用ウィンドウが破棄される直前か
+ * 破棄前の画面遷移はユーザーの操作ではないため、遷移を確認ダイアログ等で止める画面はこれを見て素通しする
+ */
+export const overlayWindowState = { isClosing: false };
