@@ -8,6 +8,7 @@ import { settingApi } from '@electron/api/setting';
 import { statsApi } from '@electron/api/stats';
 import { presetApi } from '@electron/api/preset';
 import { addBroadcastTarget, broadcast } from '@electron/broadcast';
+import { overlayApi } from '@electron/api/overlay';
 import { noticeApi } from '@electron/api/notice';
 import { ALLOWED_EXTERNAL_LINKS } from '@common/constants';
 import { fileApi } from '@electron/api/file';
@@ -74,6 +75,7 @@ export function createWindow() {
   noticeApi.initialize({ sendMessage, closeWindow: () => win.close() });
   fileApi.initialize();
   updateApi.initialize({ sendMessage })
+  overlayApi.initialize();
 
   if (!app.isPackaged) {
     win.webContents.openDevTools();

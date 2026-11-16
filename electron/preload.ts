@@ -117,6 +117,13 @@ const updateApi = {
     ipcRenderer.on('error-while-update', (_, error: Error) => callback(error)),
 } as const;
 
+const overlayApi = {
+  isPinned: (): Promise<boolean> =>
+    ipcRenderer.invoke('is-overlay-pinned'),
+  setPinned: (isPinned: boolean) =>
+    ipcRenderer.send('set-overlay-pinned', isPinned),
+} as const;
+
 contextBridge.exposeInMainWorld('defeatCount', defeatCountApi);
 contextBridge.exposeInMainWorld('osc', oscApi);
 contextBridge.exposeInMainWorld('menu', menuApi);
@@ -126,6 +133,7 @@ contextBridge.exposeInMainWorld('preset', presetApi);
 contextBridge.exposeInMainWorld('notice', noticeApi);
 contextBridge.exposeInMainWorld('file', fileApi);
 contextBridge.exposeInMainWorld('update', updateApi);
+contextBridge.exposeInMainWorld('overlay', overlayApi);
 
 export type DefeatCountApi = typeof defeatCountApi;
 export type OscApi = typeof oscApi;
@@ -136,3 +144,4 @@ export type PresetApi = typeof presetApi;
 export type NoticeApi = typeof noticeApi;
 export type FileApi = typeof fileApi;
 export type UpdateApi = typeof updateApi;
+export type OverlayApi = typeof overlayApi;

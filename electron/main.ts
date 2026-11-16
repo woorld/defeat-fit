@@ -7,6 +7,7 @@ import { DatabaseMigrationError, migrateDatabase } from '@electron/db/migrate';
 import { migrateStore } from '@electron/store/migrate';
 import { createWindow } from '@electron/window';
 import { getUserDataPath } from '@electron/path/user-data';
+import { steamVrOverlay } from '@electron/overlay/steamvr-overlay';
 
 app.setPath('userData', getUserDataPath());
 
@@ -83,4 +84,8 @@ app.whenReady().then(async () => {
 
   migrateStore();
   win = createWindow();
+
+  // NOTE: オーバーレイ用ウィンドウが残っているとwindow-all-closedが発火せず、アプリが終了しなくなる
+  win.on('closed', () => steamVrOverlay.stop());
+  steamVrOverlay.start();
 });

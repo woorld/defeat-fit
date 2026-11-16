@@ -20,4 +20,5 @@ interface Window {
   notice: import('./preload').NoticeApi;
   file: import('./preload').FileApi;
   update: import('./preload').UpdateApi;
+  overlay: import('./preload').OverlayApi;
 }

@@ -18,6 +18,9 @@ export const ELECTRON_STORE_DEFAULT_VALUE: Schema = {
   lastSelectedPresetId: null,
 } as const;
 
+/** SteamVRオーバーレイ用ウィンドウのレンダラーに付与するクエリ */
+export const OVERLAY_WINDOW_QUERY = { window: 'overlay' } as const;
+
 export const ALLOWED_EXTERNAL_LINKS: { [key: string]: string} = {
   githubRepository: 'https://github.com/woorld/defeat-fit',
   developerTwitter: 'https://x.com/world912000',
