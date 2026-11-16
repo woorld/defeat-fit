@@ -1,4 +1,4 @@
-import { BrowserWindow, type NativeImage } from 'electron';
+import { app, BrowserWindow, type NativeImage } from 'electron';
 import { addBroadcastTarget } from '@electron/broadcast';
 import { loadRenderer, PRELOAD_PATH } from '@electron/window';
 import { OVERLAY_WINDOW_QUERY } from '@common/constants';
@@ -44,6 +44,7 @@ export const createOverlayWindow = (onPaint: (image: NativeImage) => void) => {
     show: false,
     webPreferences: {
       preload: PRELOAD_PATH,
+      devTools: !app.isPackaged,
       offscreen: true,
       // NOTE: 非表示ウィンドウ扱いでタイマーが間引かれると、タイマー・カウンター画面の秒数がずれる
       backgroundThrottling: false,
