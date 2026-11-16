@@ -262,7 +262,7 @@ const createOpenVr = (koffi: Koffi, dllPath: string) => {
       return getTables().overlay.IsOverlayVisible(handle);
     },
 
-    setOverlayRaw(handle: OverlayHandle, rgba: Buffer, width: number, height: number) {
+    setOverlayRaw(handle: OverlayHandle, rgba: Uint8Array, width: number, height: number) {
       callOverlay('SetOverlayRaw', handle, rgba, width, height, 4);
     },
   };

@@ -7,6 +7,7 @@ import { useOscStore } from '@src/stores/osc';
 import CountControl from '../components/CountControl.vue';
 import UprightIndicator from './components/UprightIndicator.vue';
 import { SETTING_DEFAULT_VALUE } from '@common/constants';
+import { useVrHud } from '@src/composables/common/vr-hud';
 
 let autoCountThresholdRange = SETTING_DEFAULT_VALUE.autoCountThresholdRange;
 (async () => {
@@ -41,6 +42,12 @@ const {
   setupAutoCount,
   resetAutoCountSetupStatus,
 } = useAutoCount({ autoCountThresholdRange, counterStatus, onNext, decrementCount });
+
+useVrHud(computed(() => counterStatus.value === 'STANDBY' ? null : {
+  value: counterStatus.value === 'BREAK_TIME' ? timerDisplay.value.replaceAll(' ', '') : `${count.value} 回`,
+  caption: `${counterStatus.value === 'BREAK_TIME' ? '休憩中 ' : ''}あと ${setCount.value} セット`,
+  isBreakTime: counterStatus.value === 'BREAK_TIME',
+}));
 
 const isListeningForUpright = computed(() => ['OPEN', 'OPEN_UPRIGHT'].includes(oscStore.oscStatus));
 

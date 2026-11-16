@@ -1,5 +1,5 @@
 import { ipcRenderer, contextBridge } from 'electron';
-import type { License, MenuIdWithManualCount, MenuIdWithMultiplier, Notice, OscStatus, PresetWithMenus, Setting, StatsWithMenus, TotalStats } from '@common/types';
+import type { License, MenuIdWithManualCount, MenuIdWithMultiplier, Notice, OscStatus, OverlayHudImage, PresetWithMenus, Setting, StatsWithMenus, TotalStats } from '@common/types';
 import type { Menu, Stats, Preset } from '@prisma-generated-client';
 import type { UpdatePreset } from '@electron/api/preset';
 import type { Schema } from './store/schema';
@@ -122,6 +122,8 @@ const overlayApi = {
     ipcRenderer.invoke('is-overlay-pinned'),
   setPinned: (isPinned: boolean) =>
     ipcRenderer.send('set-overlay-pinned', isPinned),
+  setHud: (image: OverlayHudImage | null) =>
+    ipcRenderer.send('set-overlay-hud', image),
   onClosing: (callback: () => void) =>
     ipcRenderer.on('overlay-closing', () => callback()),
   notifyClosed: () =>

@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useTimer } from './composables/timer';
 import CountControl from '../components/CountControl.vue';
+import { useVrHud } from '@src/composables/common/vr-hud';
 
 const route = useRoute();
 
@@ -19,6 +20,12 @@ const {
 } = useTimer(timerSeconds, setCount, remainder);
 
 const canStart = computed(() => timerStatus.value === 'STANDBY');
+
+useVrHud(computed(() => timerStatus.value === 'STANDBY' ? null : {
+  value: timerDisplay.value.replaceAll(' ', ''),
+  caption: `${timerStatus.value === 'BREAK_TIME' ? '休憩中 ' : ''}あと ${setCount.value} セット`,
+  isBreakTime: timerStatus.value === 'BREAK_TIME',
+}));
 </script>
 
 <template>

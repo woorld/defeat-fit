@@ -29,6 +29,20 @@ const PINNED_TRANSFORM = new Float32Array([
   0, -1, 0, 0.08,
 ]);
 
+/** HMDのデバイス番号（k_unTrackedDeviceIndex_Hmd） */
+const HMD_DEVICE_INDEX = 0;
+const HUD_WIDTH_METERS = 0.25;
+/**
+ * タイマー・カウンターの進行状況を出すオーバーレイの、HMDから見た位置（HmdMatrix34_t）
+ * 視界の右上、1m先に正面向きで置く
+ * NOTE: これ以上外側に寄せると、レンズの周辺で文字がぼやけて読みにくくなる
+ */
+const HUD_TRANSFORM = new Float32Array([
+  1, 0, 0, 0.35,
+  0, 1, 0, 0.25,
+  0, 0, 1, -1,
+]);
+
 /**
  * 右手コントローラーが常時表示オーバーレイを指しているとみなす範囲
  * NOTE: コントローラーの向きとレーザーの向きは機種ごとにずれるため、厳密な当たり判定ではなく余裕を持たせた円錐で判定する
@@ -43,6 +57,10 @@ type Session = {
   dashboard: OverlayHandle,
   thumbnail: OverlayHandle,
   pinned: OverlayHandle,
+  hud: OverlayHandle,
+  /** 転送済みのHUDの変更番号（overlayApi.getHud().revision） */
+  hudRevision: number | null,
+  isHudShown: boolean,
   window: BrowserWindow,
   /** 最新の描画結果のうち、まだピクセル列に変換していないもの */
   paintedImage: NativeImage | null,
@@ -123,11 +141,15 @@ const probe = () => {
 const connect = (vr: OpenVr) => {
   const { main: dashboard, thumbnail } = vr.createDashboardOverlay(`${OVERLAY_KEY}.dashboard`, OVERLAY_NAME);
   const pinned = vr.createOverlay(`${OVERLAY_KEY}.pinned`, `${OVERLAY_NAME} (常時表示)`);
+  const hud = vr.createOverlay(`${OVERLAY_KEY}.hud`, `${OVERLAY_NAME} (タイマー・カウンター)`);
 
   const newSession: Session = {
     dashboard,
     thumbnail,
     pinned,
+    hud,
+    hudRevision: null,
+    isHudShown: false,
     window: createOverlayWindow(image => {
       newSession.paintedImage = image;
       newSession.shouldUploadDashboard = true;
@@ -158,6 +180,8 @@ const connect = (vr: OpenVr) => {
   vr.enableMouseInput(dashboard, OVERLAY_WINDOW_SIZE.width, OVERLAY_WINDOW_SIZE.height);
   vr.setOverlayWidthInMeters(pinned, PINNED_WIDTH_METERS);
   vr.enableMouseInput(pinned, OVERLAY_WINDOW_SIZE.width, OVERLAY_WINDOW_SIZE.height);
+  vr.setOverlayWidthInMeters(hud, HUD_WIDTH_METERS);
+  vr.setOverlayTransformTrackedDeviceRelative(hud, HMD_DEVICE_INDEX, HUD_TRANSFORM);
   setThumbnail(vr, newSession);
 
   tickTimer = setInterval(tick, TICK_INTERVAL_MS);
@@ -205,7 +229,7 @@ const disconnect = () => {
     // NOTE: SteamVRとの切断は待たせられない（終了時に巻き込まれる）ため、ウィンドウの後始末だけ非同期で進める
     closeOverlayWindow(closingSession.window);
 
-    for (const handle of [closingSession.pinned, closingSession.dashboard]) {
+    for (const handle of [closingSession.hud, closingSession.pinned, closingSession.dashboard]) {
       try {
         openVr?.destroyOverlay(handle);
       }
@@ -248,6 +272,7 @@ const tick = () => {
 
     updatePinnedOverlay(openVr, session);
     updatePinnedInteractivity(openVr, session);
+    updateHud(openVr, session);
 
     const isDashboardVisible = openVr.isOverlayVisible(session.dashboard);
     updatePainting(session, isDashboardVisible);
@@ -380,6 +405,29 @@ const updatePinnedInteractivity = (vr: OpenVr, currentSession: Session) => {
 
   vr.setOverlayInteractive(pinned, isInteractive);
   currentSession.isPinnedInteractive = isInteractive;
+};
+
+/** タイマー・カウンターの進行状況（レンダラーが画像にして渡してくる）を、視界の隅のオーバーレイに反映する */
+const updateHud = (vr: OpenVr, currentSession: Session) => {
+  const { image, revision } = overlayApi.getHud();
+  if (revision === currentSession.hudRevision) {
+    return;
+  }
+  currentSession.hudRevision = revision;
+
+  if (image === null) {
+    if (currentSession.isHudShown) {
+      vr.hideOverlay(currentSession.hud);
+      currentSession.isHudShown = false;
+    }
+    return;
+  }
+
+  vr.setOverlayRaw(currentSession.hud, image.pixels, image.width, image.height);
+  if (!currentSession.isHudShown) {
+    vr.showOverlay(currentSession.hud);
+    currentSession.isHudShown = true;
+  }
 };
 
 /** どのオーバーレイも見えていない間は、オーバーレイ用ウィンドウの描画を止める */

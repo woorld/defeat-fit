@@ -58,6 +58,13 @@ export type Notice = {
 
 export type SendMessage = WebContents['send'];
 
+/** SteamVRの視界の隅に表示する画像（RGBA、1画素4バイト） */
+export type OverlayHudImage = {
+  pixels: Uint8Array,
+  width: number,
+  height: number,
+};
+
 export type License = {
   name: string | null,
   version: string | null,
