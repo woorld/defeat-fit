@@ -154,7 +154,7 @@ const onSelectPreset = (presetId: number) => {
             </div>
             <VTable hover v-else-if="selectedPresetId !== null">
               <tbody>
-                <DoMenuTableRow v-for="presetMenu of selectedPresetMenuList" :presetMenu />
+                <DoMenuTableRow v-for="presetMenu of selectedPresetMenuList" :key="presetMenu.menu.id" :presetMenu />
               </tbody>
             </VTable>
           </div>
