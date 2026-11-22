@@ -53,7 +53,7 @@ const isDefeatMenuManualCountEmpty = (manualCount: number | '' | undefined) =>
 const isMenuManualCountValid = (menuId: Menu['id']) => {
   const manualCount = manualCountMap.value[menuId];
   return isManualCountValid(manualCount)
-    || (getDefeatMenuIdList().includes(menuId) && isDefeatMenuManualCountEmpty(manualCount));
+    || (defeatMenuIdSet.value.has(menuId) && isDefeatMenuManualCountEmpty(manualCount));
 };
 const canSave = computed(() =>
   isDateValid.value
@@ -71,13 +71,14 @@ const getRegisteredMenuIdList = () =>
     .map(statsMenu => statsMenu.menuId);
 
 // 負け回数分やったメニューは、その日のメニューの全体像を把握できるよう常に表示する
-const getDefeatMenuIdList = () =>
+const defeatMenuIdSet = computed(() => new Set(
   (targetStats.value?.statsMenuList ?? [])
     .filter(statsMenu => statsMenu.count > 0)
-    .map(statsMenu => statsMenu.menuId);
+    .map(statsMenu => statsMenu.menuId)
+));
 
 const resetManualCount = () => {
-  selectedMenuIdList.value = [...new Set([...getRegisteredMenuIdList(), ...getDefeatMenuIdList()])];
+  selectedMenuIdList.value = [...new Set([...getRegisteredMenuIdList(), ...defeatMenuIdSet.value])];
   manualCountMap.value = Object.fromEntries(
     getRegisteredMenuIdList().map(menuId => [menuId, getStatsMenu(menuId)?.manualCount])
   );
@@ -179,13 +180,13 @@ watch(date, resetManualCount);
                 :key="menu.id"
                 :title="menu.name"
                 :value="menu.id"
-                :disabled="getDefeatMenuIdList().includes(menu.id)"
+                :disabled="defeatMenuIdSet.has(menu.id)"
               >
                 <!-- NOTE: VListItemはクリック対象がinput要素だと選択処理をしないため、チェックボックス側からも選択させる -->
                 <template #prepend="{ isSelected, select }">
                   <VCheckboxBtn
                     :model-value="isSelected"
-                    :disabled="getDefeatMenuIdList().includes(menu.id)"
+                    :disabled="defeatMenuIdSet.has(menu.id)"
                     @update:model-value="select"
                   />
                 </template>
@@ -213,7 +214,7 @@ watch(date, resetManualCount);
                 <VTextField
                   v-model.number="manualCountMap[menu.id]"
                   type="number"
-                  :min="getDefeatMenuIdList().includes(menu.id) ? 0 : 1"
+                  :min="defeatMenuIdSet.has(menu.id) ? 0 : 1"
                   step="1"
                   variant="outlined"
                   single-line
@@ -226,7 +227,7 @@ watch(date, resetManualCount);
               <td class="text-right px-2">
                 <!-- NOTE: 負け回数分ごと削除されると誤解されないよう、負け回数を持つメニューには削除ボタンを表示しない -->
                 <VBtn
-                  v-if="!getDefeatMenuIdList().includes(menu.id)"
+                  v-if="!defeatMenuIdSet.has(menu.id)"
                   class="text-red"
                   size="small"
                   elevation="0"
