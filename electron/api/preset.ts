@@ -47,6 +47,8 @@ export const presetApi = {
       include: {
         presetMenuList: {
           include: { menu: true },
+          // NOTE: order追加前のプリセットはorderが全て0になるため、従来の並び(id順)を第2キーにする
+          orderBy: [{ order: 'asc' }, { id: 'asc' }],
         },
       },
     });
@@ -57,7 +59,7 @@ export const presetApi = {
       data: {
         name,
         presetMenuList: {
-          create: menuIdWithMultiplierList,
+          create: menuIdWithMultiplierList.map((presetMenu, order) => ({ ...presetMenu, order })),
         },
       },
     });
@@ -73,7 +75,8 @@ export const presetApi = {
   async updatePreset(preset: Preset, menuIdWithMultiplierList: MenuIdWithMultiplier[]) {
     const currentPresetMenuList = await prisma.presetMenu.findMany({ where: { presetId: preset.id } });
     const currentPresetMenuIds = currentPresetMenuList.map(presetMenu => presetMenu.menuId);
-    const newPresetMenu = menuIdWithMultiplierList
+    const orderedPresetMenuList = menuIdWithMultiplierList.map((presetMenu, order) => ({ ...presetMenu, order }));
+    const newPresetMenu = orderedPresetMenuList
       .filter(item => !currentPresetMenuIds.includes(item.menuId))
       .map(
         presetMenu => ({
@@ -97,13 +100,14 @@ export const presetApi = {
         data: {
           name: preset.name,
           presetMenuList: {
-            updateMany: menuIdWithMultiplierList.map(presetMenu => ({
+            updateMany: orderedPresetMenuList.map(presetMenu => ({
               where: {
                 presetId: preset.id,
                 menuId: presetMenu.menuId,
               },
               data: {
                 multiplier: presetMenu.multiplier,
+                order: presetMenu.order,
               },
             })),
           },
