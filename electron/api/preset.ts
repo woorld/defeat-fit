@@ -47,8 +47,9 @@ export const presetApi = {
       include: {
         presetMenuList: {
           include: { menu: true },
-          // NOTE: order追加前のプリセットはorderが全て0になるため、従来の並び(id順)を第2キーにする
-          orderBy: [{ order: 'asc' }, { id: 'asc' }],
+          // NOTE: order追加前のプリセットはorderが全て0になるため、従来の並びを第2キーにする
+          //       従来はORDER BYが無く、一意インデックス(presetId, menuId)経由でmenuId順に返っていたためidではなくmenuIdを使う
+          orderBy: [{ order: 'asc' }, { menuId: 'asc' }],
         },
       },
     });
