@@ -44,10 +44,10 @@ const maxDate = computed(() => today.value === '' ? undefined : toLocalDate(toda
 const targetStats = computed(() => props.statsList.find(stats => stats.date === date.value));
 const selectedMenuList = computed(() => menuList.value.filter(menu => selectedMenuIdList.value.includes(menu.id)));
 const isDateValid = computed(() => /^\d{4}-\d{2}-\d{2}$/.test(date.value) && date.value <= today.value);
-// NOTE: 0回の登録は意味を持たないため1以上を必須とする（取り消しはメニューの選択解除で行う）
+// NOTE: 手動追加したメニューは0回の登録が意味を持たないため1以上を必須とする（取り消しはメニューの選択解除で行う）
 const isManualCountValid = (manualCount: number | '' | undefined): manualCount is number =>
   typeof manualCount === 'number' && Number.isInteger(manualCount) && manualCount >= 1;
-// NOTE: 負け回数を持つメニューは手動登録なしでも表示し続けるため、空欄と0を「手動登録なし」として許容する
+// NOTE: 負け回数を持つメニューは選択解除できず手動登録なしでも表示し続けるため、空欄と0を「手動登録なし」として許容する（取り消しもこれで行う）
 const isDefeatMenuManualCountEmpty = (manualCount: number | '' | undefined) =>
   manualCount === undefined || manualCount === '' || manualCount === 0;
 const isMenuManualCountValid = (menuId: Menu['id']) => {
@@ -108,7 +108,7 @@ const save = async () => {
   const selectedMenuIdWithManualCountList: MenuIdWithManualCount[] = selectedMenuList.value
     .map(menu => {
       const manualCount = manualCountMap.value[menu.id];
-      // 負け回数を持つメニューの空欄は手動登録なしとして0で送る
+      // 負け回数を持つメニューの空欄・0は手動登録なしとして0で送る
       return { menuId: menu.id, manualCount: isManualCountValid(manualCount) ? manualCount : 0 };
     });
   // 選択を外したメニューは、既存の手動登録を取り消すため0で送る
