@@ -7,6 +7,9 @@ import type { MenuWithMultiplier } from '@common/types';
 export const useInstantPresetStore = defineStore('instant-preset', () => {
   const menuList = ref<MenuWithMultiplier[]>([]);
 
+  // ホーム画面は遷移のたびに再生成されるため、他画面から戻った際に選択状態を復元できるよう保持する
+  const isSelected = ref(false);
+
   const addMenu = (menu: Menu) => {
     if (menuList.value.some(item => item.menu.id === menu.id)) {
       return;
@@ -28,6 +31,7 @@ export const useInstantPresetStore = defineStore('instant-preset', () => {
 
   return {
     menuList,
+    isSelected,
     addMenu,
     removeMenu,
     syncMenus,

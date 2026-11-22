@@ -55,8 +55,10 @@ const selectedPresetMenuIdWithMultiplierList = computed<MenuIdWithMultiplier[]>(
 );
 
 const onSelectPreset = (presetId: number) => {
+  instantPreset.isSelected = presetId === INSTANT_PRESET_ID;
+
   // 即席プリセットは一時的なものなので、再起動時に復元する対象にしない
-  if (presetId === INSTANT_PRESET_ID) {
+  if (instantPreset.isSelected) {
     return;
   }
   window.preset.setLastSelectedPresetId(presetId);
@@ -69,10 +71,15 @@ const onSelectPreset = (presetId: number) => {
   ]);
   instantPreset.syncMenus(allMenuList.value);
 
+  const canUseInstantPreset = allMenuList.value.length >= 1;
+  if (canUseInstantPreset && (presetList.value.length <= 0 || instantPreset.isSelected)) {
+    // NOTE: プリセットがないための自動選択では選択状態を保持しない（プリセット作成後に戻った際はそちらを選択させるため）
+    selectedPresetId.value = INSTANT_PRESET_ID;
+    return;
+  }
+
+  instantPreset.isSelected = false;
   if (presetList.value.length <= 0) {
-    if (allMenuList.value.length >= 1) {
-      selectedPresetId.value = INSTANT_PRESET_ID;
-    }
     return;
   }
 
