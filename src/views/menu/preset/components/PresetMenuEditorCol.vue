@@ -21,7 +21,7 @@ const menuMultiplierList = defineModel<number[]>('menuMultiplierList');
 <template>
   <!-- NOTE: 縦方向のflexはメニュー領域の伸縮と左右で高さを揃えるのに必要 -->
   <VCol cols="6" class="d-flex flex-column">
-    <p class="text-h6 mb-2">{{ props.title }}</p>
+    <p class="text-subtitle-1 mb-1">{{ props.title }}</p>
     <VSheet class="fill-height rounded" border>
       <Draggable
         v-model="menuList"
@@ -34,33 +34,43 @@ const menuMultiplierList = defineModel<number[]>('menuMultiplierList');
         @remove="(event: SortableEvent) => emit('remove-menu', event)"
       >
         <template #item="{ element: menu, index }">
-          <VCard
-            border
-            :title="menu.name"
-            class="ma-2"
-            prepend-icon="mdi-drag"
-            density="compact"
-          >
-            <template #text v-if="menuMultiplierList !== undefined">
-              <div class="d-flex justify-center align-center">
-                <VNumberInput
-                  v-model="menuMultiplierList[index]"
-                  class="mr-4"
-                  hide-details
-                  variant="outlined"
-                  density="compact"
-                  control-variant="stacked"
-                  :precision="1"
-                  :step="0.5"
-                  :min="0.5"
-                />
-                <!-- NOTE: menu: Menu & { multiplier?: number } なので型アサーションしてOK -->
-                {{ menuUnitMap[menu.unit as MenuUnit] }}
-              </div>
-            </template>
-          </VCard>
+          <!-- NOTE: カードだと1件あたりの高さが大きく一覧性が下がるため、1行のリスト表示にしている -->
+          <div class="menu-row d-flex align-center ga-2 px-2">
+            <VIcon icon="mdi-drag" size="small" class="flex-shrink-0 cursor-grab" />
+            <span class="text-body-2 text-truncate flex-grow-1" :title="menu.name">{{ menu.name }}</span>
+            <div v-if="menuMultiplierList !== undefined" class="d-flex align-center flex-shrink-0 ga-1">
+              <VNumberInput
+                v-model="menuMultiplierList[index]"
+                class="multiplier-input"
+                hide-details
+                variant="outlined"
+                density="compact"
+                control-variant="stacked"
+                :precision="1"
+                :step="0.5"
+                :min="0.5"
+              />
+              <!-- NOTE: menu: Menu & { multiplier?: number } なので型アサーションしてOK -->
+              <span class="text-body-2">{{ menuUnitMap[menu.unit as MenuUnit] }}</span>
+            </div>
+          </div>
         </template>
       </Draggable>
     </VSheet>
-    </VCol>
+  </VCol>
 </template>
+
+<style scoped>
+.menu-row {
+  min-height: 44px;
+  border-bottom: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.multiplier-input {
+  width: 96px;
+}
+
+.multiplier-input :deep(.v-field__input) {
+  font-size: 0.875rem;
+}
+</style>

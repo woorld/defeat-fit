@@ -188,7 +188,7 @@ onBeforeRouteLeave((to) => {
       <ItemEmptyCard v-else-if="!canEditPreset" itemName="プリセット" />
     </div>
     <!-- HACK: 他の要素より表示・非表示が多くなるのでv-showにしたいが、display: noneがd-flexで上書きされるため使えない -->
-    <div v-if="editingPresetId !== 0" class="d-flex justify-center align-center mb-8">
+    <div v-if="editingPresetId !== 0" class="d-flex justify-center align-center mb-4">
       <VSelect
         v-if="presetList.length >= 1"
         :modelValue="editingPresetId"
