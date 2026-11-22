@@ -13,6 +13,14 @@ const defeatCountApi = {
     ipcRenderer.invoke('decrement-defeat-count'),
   resetDefeatCount: () =>
     ipcRenderer.send('reset-defeat-count'),
+  getSelfCount: (): Promise<number> =>
+    ipcRenderer.invoke('get-self-count'),
+  incrementSelfCount: (): Promise<number> =>
+    ipcRenderer.invoke('increment-self-count'),
+  decrementSelfCount: (): Promise<number> =>
+    ipcRenderer.invoke('decrement-self-count'),
+  resetSelfCount: (): Promise<number> =>
+    ipcRenderer.invoke('reset-self-count'),
 } as const;
 
 const oscApi = {

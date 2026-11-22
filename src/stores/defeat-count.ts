@@ -25,29 +25,27 @@ export const useDefeatCountStore = defineStore('defeat-count', () => {
   let shouldPlayAudio = false;
 
   const count = ref(0);
-  // NOTE: OSC受信とは無関係にレンダラーだけで扱う値のため、mainプロセスでは保持しない
   const selfCount = ref(0);
 
   const decrement = async () => {
     count.value = await window.defeatCount.decrementDefeatCount();
   };
 
-  const incrementSelfCount = () => {
-    selfCount.value++;
+  const incrementSelfCount = async () => {
+    selfCount.value = await window.defeatCount.incrementSelfCount();
   };
 
-  const decrementSelfCount = () => {
-    if (selfCount.value >= 1) {
-      selfCount.value--;
-    }
+  const decrementSelfCount = async () => {
+    selfCount.value = await window.defeatCount.decrementSelfCount();
   };
 
-  const resetSelfCount = () => {
-    selfCount.value = 0;
+  const resetSelfCount = async () => {
+    selfCount.value = await window.defeatCount.resetSelfCount();
   };
 
   const getDefeatCount = async () => {
     count.value = await window.defeatCount.getDefeatCount();
+    selfCount.value = await window.defeatCount.getSelfCount();
   };
 
   const updateSoundSetting = async () => {

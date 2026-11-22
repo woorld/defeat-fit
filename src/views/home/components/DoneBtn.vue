@@ -17,7 +17,7 @@ const isShowDialog = ref(false);
 const onDone = async () => {
   await window.stats.addStats(defeatCount.count, defeatCount.selfCount, props.menuIdWithMultiplierList);
   window.defeatCount.resetDefeatCount();
-  defeatCount.resetSelfCount();
+  await defeatCount.resetSelfCount();
 
   // NOTE: ダイアログの非表示は画面遷移後も処理しようとしてコンソールに警告が出るため行わない
   router.push('stats');
