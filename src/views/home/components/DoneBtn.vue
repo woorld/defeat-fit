@@ -24,7 +24,8 @@ const onDone = async () => {
 </script>
 
 <template>
-  <VBtn color="green" :disabled="defeatCount.count <= 0">
+  <!-- NOTE: メニューなしで登録すると、筋トレの記録がないまま負けカウントだけがリセットされるため押せなくする -->
+  <VBtn color="green" :disabled="defeatCount.count <= 0 || props.menuIdWithMultiplierList.length <= 0">
     全部やった
     <ConfirmDialog
       v-model="isShowDialog"
