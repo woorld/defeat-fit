@@ -25,7 +25,7 @@ const onDone = async () => {
 </script>
 
 <template>
-  <VBtn color="green" :disabled="defeatCount.count <= 0">
+  <VBtn color="green" :disabled="defeatCount.count <= 0 && defeatCount.selfCount <= 0">
     全部やった
     <ConfirmDialog
       v-model="isShowDialog"
