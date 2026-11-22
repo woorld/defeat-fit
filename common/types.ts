@@ -44,6 +44,11 @@ export type MenuIdWithMultiplier = {
   multiplier: PresetMenu['multiplier'],
 };
 
+export type MenuWithMultiplier = {
+  menu: Menu,
+  multiplier: PresetMenu['multiplier'],
+};
+
 export type MenuIdWithManualCount = {
   menuId: Menu['id'],
   manualCount: StatsMenu['manualCount'],
