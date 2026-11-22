@@ -54,6 +54,7 @@ model PresetMenu {
   menu         Menu        @relation(fields: [menuId], references: [id])
   menuId       Int
   multiplier   Float
+  order        Int         @default(0) // プリセット内での表示順(昇順)
 
   @@unique([presetId, menuId])
 }
