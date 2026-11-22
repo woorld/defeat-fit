@@ -23,6 +23,8 @@ const menuMultiplierList = defineModel<number[]>('menuMultiplierList');
   <VCol cols="6" class="d-flex flex-column">
     <p class="text-subtitle-1 mb-1">{{ props.title }}</p>
     <VSheet class="fill-height rounded" border>
+      <!-- NOTE: カードだと1件あたりの高さが大きく一覧性が下がるため、1行のリスト表示にしている -->
+      <!-- NOTE: vuedraggableの#itemスロットは単一要素しか許容せず、devではコメントも要素数に数えられるため、コメントはスロット外に置く -->
       <Draggable
         v-model="menuList"
         item-key="id"
@@ -34,7 +36,6 @@ const menuMultiplierList = defineModel<number[]>('menuMultiplierList');
         @remove="(event: SortableEvent) => emit('remove-menu', event)"
       >
         <template #item="{ element: menu, index }">
-          <!-- NOTE: カードだと1件あたりの高さが大きく一覧性が下がるため、1行のリスト表示にしている -->
           <div class="menu-row d-flex align-center ga-2 px-2">
             <VIcon icon="mdi-drag" size="small" class="flex-shrink-0 cursor-grab" />
             <span class="text-body-2 text-truncate flex-grow-1" :title="menu.name">{{ menu.name }}</span>
