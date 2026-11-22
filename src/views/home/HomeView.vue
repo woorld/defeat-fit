@@ -145,12 +145,28 @@ const onSelectPreset = (presetId: number) => {
               v-if="isInstantPresetSelected && selectedPresetMenuList.length <= 0"
               class="fill-height d-flex flex-column justify-center align-center ga-4"
             >
-              <p>今回だけ行うメニューを設定できます</p>
-              <VBtn
-                prepend-icon="mdi-pencil"
-                color="green"
-                @click="isInstantPresetEditDialogVisible = true"
-              >メニューを設定</VBtn>
+              <template v-if="presetList.length <= 0">
+                <p class="text-h6">プリセットがありません</p>
+                <p class="text-center">
+                  今回だけ行うメニューを即席プリセットとして設定するか、<br />
+                  繰り返し行うメニューをプリセットとして作成してください
+                </p>
+              </template>
+              <p v-else>今回だけ行うメニューを設定できます</p>
+              <div class="d-flex ga-4">
+                <VBtn
+                  prepend-icon="mdi-pencil"
+                  color="green"
+                  @click="isInstantPresetEditDialogVisible = true"
+                >メニューを設定</VBtn>
+                <VBtn
+                  v-if="presetList.length <= 0"
+                  to="/menu/preset"
+                  append-icon="mdi-chevron-right"
+                  color="green"
+                  variant="outlined"
+                >プリセットを追加</VBtn>
+              </div>
             </div>
             <VTable hover v-else-if="selectedPresetId !== null">
               <tbody>
