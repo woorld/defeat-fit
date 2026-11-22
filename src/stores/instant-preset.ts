@@ -10,17 +10,6 @@ export const useInstantPresetStore = defineStore('instant-preset', () => {
   // ホーム画面は遷移のたびに再生成されるため、他画面から戻った際に選択状態を復元できるよう保持する
   const isSelected = ref(false);
 
-  const addMenu = (menu: Menu) => {
-    if (menuList.value.some(item => item.menu.id === menu.id)) {
-      return;
-    }
-    menuList.value.push({ menu, multiplier: 1 });
-  };
-
-  const removeMenu = (menuId: Menu['id']) => {
-    menuList.value = menuList.value.filter(item => item.menu.id !== menuId);
-  };
-
   // メニュー画面での削除・編集を反映する（削除済みメニューのまま統計登録すると失敗するため）
   const syncMenus = (allMenuList: Menu[]) => {
     menuList.value = menuList.value.flatMap(item => {
@@ -32,8 +21,6 @@ export const useInstantPresetStore = defineStore('instant-preset', () => {
   return {
     menuList,
     isSelected,
-    addMenu,
-    removeMenu,
     syncMenus,
   };
 });
