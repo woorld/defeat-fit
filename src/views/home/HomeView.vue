@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue';
 import { useDefeatCountStore } from '@src/stores/defeat-count';
 import DecrementBtn from './components/DecrementBtn.vue';
+import SelfCountBtn from './components/SelfCountBtn.vue';
 import OscControlBtn from './components/OscControlBtn.vue';
 import DoneBtn from './components/DoneBtn.vue';
 import CautionDialog from './components/CautionDialog.vue';
@@ -71,6 +72,7 @@ const onSelectPreset = (presetId: number) => {
         <div class="d-flex align-center ga-4">
           <OscControlBtn />
           <DecrementBtn />
+          <SelfCountBtn />
         </div>
       </VCol>
       <VCol cols="8" class="column-right d-flex flex-column ga-8">

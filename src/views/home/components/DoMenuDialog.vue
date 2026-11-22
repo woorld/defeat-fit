@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue';
 import BaseDialog from '@src/components/common/BaseDialog.vue';
 import { useDefeatCountStore } from '@src/stores/defeat-count';
-import { menuUnitMap, calcMenuAmount, isMenuAmountCapped } from '@common/util';
+import { menuUnitMap, calcMenuAmount, calcRawMenuAmount, isMenuAmountCapped } from '@common/util';
 import type { PresetWithMenus } from '@common/types';
 
 const defeatCount = useDefeatCountStore();
@@ -16,8 +16,10 @@ const model = defineModel<boolean>({ required: true });
 const isDecimalVisible = ref(false);
 const setCount = ref(1);
 
+// NOTE: 上限は負けカウント分にのみ適用し、自主カウント分は上限を超えても加算する
 const totalReps = computed(
   () => calcMenuAmount(props.presetMenu.multiplier, defeatCount.count, props.presetMenu.menu.maxValue)
+    + calcRawMenuAmount(props.presetMenu.multiplier, defeatCount.selfCount)
 );
 const isCapped = computed(
   () => isMenuAmountCapped(props.presetMenu.multiplier, defeatCount.count, props.presetMenu.menu.maxValue)
