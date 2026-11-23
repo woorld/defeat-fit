@@ -30,3 +30,6 @@ dist-ssr
 
 # electron-updater
 dev-app-update.yml
+
+# Claude Code
+.claude/worktrees/
