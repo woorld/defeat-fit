@@ -13,6 +13,14 @@ const defeatCountApi = {
     ipcRenderer.invoke('decrement-defeat-count'),
   resetDefeatCount: () =>
     ipcRenderer.send('reset-defeat-count'),
+  getSelfCount: (): Promise<number> =>
+    ipcRenderer.invoke('get-self-count'),
+  incrementSelfCount: (): Promise<number> =>
+    ipcRenderer.invoke('increment-self-count'),
+  decrementSelfCount: (): Promise<number> =>
+    ipcRenderer.invoke('decrement-self-count'),
+  resetSelfCount: (): Promise<number> =>
+    ipcRenderer.invoke('reset-self-count'),
 } as const;
 
 const oscApi = {
@@ -63,8 +71,8 @@ const statsApi = {
     ipcRenderer.invoke('get-stats-list'),
   getTotalStats: (): Promise<TotalStats | undefined> =>
     ipcRenderer.invoke('get-total-stats'),
-  addStats: (defeatCount: number, menuIdWithMultiplierList: MenuIdWithMultiplier[]): Promise<Stats> =>
-    ipcRenderer.invoke('add-stats', defeatCount, menuIdWithMultiplierList),
+  addStats: (defeatCount: number, selfCount: number, menuIdWithMultiplierList: MenuIdWithMultiplier[]): Promise<Stats> =>
+    ipcRenderer.invoke('add-stats', defeatCount, selfCount, menuIdWithMultiplierList),
   setManualStats: (date: string, menuIdWithManualCountList: MenuIdWithManualCount[]): Promise<Stats> =>
     ipcRenderer.invoke('set-manual-stats', date, menuIdWithManualCountList),
   deleteStats: (id: number): Promise<Stats> =>

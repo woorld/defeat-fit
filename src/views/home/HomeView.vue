@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue';
 import { useDefeatCountStore } from '@src/stores/defeat-count';
 import DecrementBtn from './components/DecrementBtn.vue';
+import SelfCountBtn from './components/SelfCountBtn.vue';
 import OscControlBtn from './components/OscControlBtn.vue';
 import DoneBtn from './components/DoneBtn.vue';
 import CautionDialog from './components/CautionDialog.vue';
@@ -66,11 +67,17 @@ const onSelectPreset = (presetId: number) => {
         <div class="d-flex justify-center align-center">
           <VIcon class="text-h2">mdi-coffin</VIcon>
           <span class="text-h5">×</span>
-          <span class="ml-3 text-h3 mb-2 mr-2">{{ defeatCount.count }}</span>
+          <span class="ml-3 text-h3 mb-2 mr-2">
+            {{ defeatCount.count }}
+            <template v-if="defeatCount.selfCount > 0">
+              + <span class="text-green">{{ defeatCount.selfCount }}</span>
+            </template>
+          </span>
         </div>
         <div class="d-flex align-center ga-4">
           <OscControlBtn />
           <DecrementBtn />
+          <SelfCountBtn />
         </div>
       </VCol>
       <VCol cols="8" class="column-right d-flex flex-column ga-8">

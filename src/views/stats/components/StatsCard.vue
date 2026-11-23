@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, type ComponentPublicInstance } from 'vue';
 import type { StatsWithMenus, TotalStats } from '@common/types';
-import { menuUnitMap } from '@common/util';
 import ConfirmDialog from '@src/components/common/ConfirmDialog.vue';
+import MenuAmountText from '@src/components/common/MenuAmountText.vue';
 import { useNoticeStore } from '@src/stores/notice';
 import { copyElementImage } from '@src/composables/common/copy-element-image';
 import { isStatsCopyBusy } from '../composables/stats-copy-state';
@@ -97,14 +97,12 @@ const onEditManualStats = () => {
             <tbody>
               <tr v-for="statsMenu of props.stats.statsMenuList">
                 <td>{{ statsMenu.menu?.name }}</td>
-                <td class="text-right text-no-wrap">
-                  <template v-if="statsMenu.manualCount <= 0">{{ statsMenu.count }}</template>
-                  <span v-else-if="statsMenu.count <= 0" class="text-green">{{ statsMenu.manualCount }}</span>
-                  <template v-else>
-                    {{ statsMenu.count }} + <span class="text-green">{{ statsMenu.manualCount }}</span>
-                    = {{ statsMenu.count + statsMenu.manualCount }}
-                  </template>
-                  {{ menuUnitMap[statsMenu.menu?.unit || 'COUNT'] }}
+                <td class="text-right">
+                  <MenuAmountText
+                    :count="statsMenu.count"
+                    :manualCount="statsMenu.manualCount"
+                    :unit="statsMenu.menu?.unit || 'COUNT'"
+                  />
                 </td>
               </tr>
             </tbody>

@@ -78,8 +78,7 @@ export function createWindow() {
   });
 
   win.on('close', (e) => {
-    const defeatCount = defeatCountApi.getDefeatCount();
-    if (defeatCount <= 0) {
+    if (defeatCountApi.getDefeatCount() <= 0 && defeatCountApi.getSelfCount() <= 0) {
       return;
     }
 

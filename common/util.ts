@@ -5,7 +5,7 @@ export const menuUnitMap: Record<MenuUnit, string> = {
   SECOND: '秒',
 };
 
-const calcRawMenuAmount = (multiplier: number, defeatCount: number) => Math.ceil(multiplier * defeatCount);
+export const calcRawMenuAmount = (multiplier: number, defeatCount: number) => Math.ceil(multiplier * defeatCount);
 
 export const calcMenuAmount = (multiplier: number, defeatCount: number, maxValue: number) => {
   const amount = calcRawMenuAmount(multiplier, defeatCount);

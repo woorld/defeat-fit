@@ -25,13 +25,27 @@ export const useDefeatCountStore = defineStore('defeat-count', () => {
   let shouldPlayAudio = false;
 
   const count = ref(0);
+  const selfCount = ref(0);
 
   const decrement = async () => {
     count.value = await window.defeatCount.decrementDefeatCount();
   };
 
+  const incrementSelfCount = async () => {
+    selfCount.value = await window.defeatCount.incrementSelfCount();
+  };
+
+  const decrementSelfCount = async () => {
+    selfCount.value = await window.defeatCount.decrementSelfCount();
+  };
+
+  const resetSelfCount = async () => {
+    selfCount.value = await window.defeatCount.resetSelfCount();
+  };
+
   const getDefeatCount = async () => {
     count.value = await window.defeatCount.getDefeatCount();
+    selfCount.value = await window.defeatCount.getSelfCount();
   };
 
   const updateSoundSetting = async () => {
@@ -69,7 +83,11 @@ export const useDefeatCountStore = defineStore('defeat-count', () => {
 
   return {
     count,
+    selfCount,
     decrement,
+    incrementSelfCount,
+    decrementSelfCount,
+    resetSelfCount,
     updateSoundSetting,
   };
 });

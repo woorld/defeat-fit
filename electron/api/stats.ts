@@ -3,7 +3,7 @@ import type { MenuIdWithManualCount, MenuIdWithMultiplier, TotalStats } from '@c
 import { settingApi } from '@electron/api/setting';
 import { ipcMain } from 'electron';
 import { noticeApi } from '@electron/api/notice';
-import { calcMenuAmount, getStatsDateString } from '@common/util';
+import { calcMenuAmount, calcRawMenuAmount, getStatsDateString } from '@common/util';
 
 const prisma = new PrismaClient();
 
@@ -21,8 +21,9 @@ export const statsApi = {
       'add-stats', (
         _,
         defeatCount: number,
+        selfCount: number,
         menuIdWithMultiplierList: MenuIdWithMultiplier[]
-      ) => this.addStats(defeatCount, menuIdWithMultiplierList)
+      ) => this.addStats(defeatCount, selfCount, menuIdWithMultiplierList)
     );
     ipcMain.handle(
       'set-manual-stats', (
@@ -74,7 +75,8 @@ export const statsApi = {
     return totalStats;
   },
 
-  async addStats(defeatCount: number, menuIdWithMultiplierList: MenuIdWithMultiplier[]) {
+  // NOTE: 自主カウントは負け回数には含めず、メニューの手動登録分(manualCount)としてのみ登録する
+  async addStats(defeatCount: number, selfCount: number, menuIdWithMultiplierList: MenuIdWithMultiplier[]) {
     const hourOffset = await settingApi.getSetting('dayBoundaryOffsetHours');
     const roundedNowDateString = getStatsDateString(new Date(), hourOffset);
 
@@ -98,6 +100,7 @@ export const statsApi = {
     for (const menuIdWithMultiplier of menuIdWithMultiplierList) {
       const maxValue = menuList.find(menu => menu.id === menuIdWithMultiplier.menuId)?.maxValue ?? 0;
       const menuCount = calcMenuAmount(menuIdWithMultiplier.multiplier, defeatCount, maxValue);
+      const selfMenuCount = calcRawMenuAmount(menuIdWithMultiplier.multiplier, selfCount);
 
       // 作成した統計に紐づく統計メニューを追加・更新
       await prisma.statsMenu.upsert({
@@ -109,11 +112,13 @@ export const statsApi = {
         },
         update: {
           count: { increment: menuCount },
+          manualCount: { increment: selfMenuCount },
         },
         create: {
           statsId: todayStats.id,
           menuId: menuIdWithMultiplier.menuId,
           count: menuCount,
+          manualCount: selfMenuCount,
         },
       });
     }
