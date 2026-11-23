@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import type { PresetWithMenus } from '@common/types';
+import type { MenuWithMultiplier } from '@common/types';
 import { menuUnitMap, calcMenuAmount, isMenuAmountCapped } from '@common/util';
 import { useDefeatCountStore } from '@src/stores/defeat-count';
 import DoMenuDialog from './DoMenuDialog.vue';
@@ -8,7 +8,7 @@ import DoMenuDialog from './DoMenuDialog.vue';
 const defeatCount = useDefeatCountStore();
 
 const props = defineProps<{
-  presetMenu: PresetWithMenus['presetMenuList'][number],
+  presetMenu: MenuWithMultiplier,
 }>();
 
 const isDialogVisible = ref(false);

@@ -3,12 +3,12 @@ import { ref, computed } from 'vue';
 import BaseDialog from '@src/components/common/BaseDialog.vue';
 import { useDefeatCountStore } from '@src/stores/defeat-count';
 import { menuUnitMap, calcMenuAmount, isMenuAmountCapped } from '@common/util';
-import type { PresetWithMenus } from '@common/types';
+import type { MenuWithMultiplier } from '@common/types';
 
 const defeatCount = useDefeatCountStore();
 
 const props = defineProps<{
-  presetMenu: PresetWithMenus['presetMenuList'][number],
+  presetMenu: MenuWithMultiplier,
 }>();
 
 const model = defineModel<boolean>({ required: true });

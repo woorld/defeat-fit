@@ -1,25 +1,46 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import type { Menu } from '@prisma-generated-client';
 import { useDefeatCountStore } from '@src/stores/defeat-count';
+import { useInstantPresetStore } from '@src/stores/instant-preset';
 import DecrementBtn from './components/DecrementBtn.vue';
 import OscControlBtn from './components/OscControlBtn.vue';
 import DoneBtn from './components/DoneBtn.vue';
 import CautionDialog from './components/CautionDialog.vue';
-import type { MenuIdWithMultiplier, PresetWithMenus } from '@common/types';
+import InstantPresetEditDialog from './components/InstantPresetEditDialog.vue';
+import type { MenuIdWithMultiplier, MenuWithMultiplier, PresetWithMenus } from '@common/types';
 import ItemEmptyCardWithNav from '@src/components/common/ItemEmptyCardWithNav.vue';
 import DoMenuTableRow from './components/DoMenuTableRow.vue';
 
+// NOTE: DBのプリセットIDはオートインクリメント(1~)なので、負の値なら衝突しない
+const INSTANT_PRESET_ID = -1;
+
 const defeatCount = useDefeatCountStore();
+const instantPreset = useInstantPresetStore();
 
 const presetList = ref<PresetWithMenus[]>([]);
+const allMenuList = ref<Menu[]>([]);
 const selectedPresetId = ref<number | null>(null);
+const isInstantPresetEditDialogVisible = ref(false);
 
-const presetSelect = computed(() => presetList.value.map(preset => ({
-  title: preset.name,
-  value: preset.id,
-})));
+const isInstantPresetSelected = computed(() => selectedPresetId.value === INSTANT_PRESET_ID);
 
-const selectedPresetMenuList = computed(() => {
+const presetSelect = computed(() => [
+  ...presetList.value.map(preset => ({
+    title: preset.name,
+    value: preset.id,
+  })),
+  {
+    title: '即席プリセット',
+    value: INSTANT_PRESET_ID,
+  },
+]);
+
+const selectedPresetMenuList = computed<MenuWithMultiplier[]>(() => {
+  if (isInstantPresetSelected.value) {
+    return instantPreset.menuList;
+  }
+
   const preset = presetList.value.find(preset => preset.id === selectedPresetId.value);
   return preset === undefined
     ? []
@@ -34,11 +55,30 @@ const selectedPresetMenuIdWithMultiplierList = computed<MenuIdWithMultiplier[]>(
 );
 
 const onSelectPreset = (presetId: number) => {
+  instantPreset.isSelected = presetId === INSTANT_PRESET_ID;
+
+  // 即席プリセットは一時的なものなので、再起動時に復元する対象にしない
+  if (instantPreset.isSelected) {
+    return;
+  }
   window.preset.setLastSelectedPresetId(presetId);
 }
 
 (async () => {
-  presetList.value = await window.preset.getPresetList();
+  [presetList.value, allMenuList.value] = await Promise.all([
+    window.preset.getPresetList(),
+    window.menu.getMenuList(),
+  ]);
+  instantPreset.syncMenus(allMenuList.value);
+
+  const canUseInstantPreset = allMenuList.value.length >= 1;
+  if (canUseInstantPreset && (presetList.value.length <= 0 || instantPreset.isSelected)) {
+    // NOTE: プリセットがないための自動選択では選択状態を保持しない（プリセット作成後に戻った際はそちらを選択させるため）
+    selectedPresetId.value = INSTANT_PRESET_ID;
+    return;
+  }
+
+  instantPreset.isSelected = false;
   if (presetList.value.length <= 0) {
     return;
   }
@@ -75,7 +115,7 @@ const onSelectPreset = (presetId: number) => {
       </VCol>
       <VCol cols="8" class="column-right d-flex flex-column ga-8">
         <ItemEmptyCardWithNav
-          v-if="presetList.length <= 0"
+          v-if="presetList.length <= 0 && allMenuList.length <= 0"
           class="my-auto"
           title="プリセットがありません"
           text="負けカウントから筋トレ回数を算出するには、メニューとプリセットが必要です"
@@ -92,12 +132,45 @@ const onSelectPreset = (presetId: number) => {
               :items="presetSelect"
               @update:model-value="onSelectPreset"
             />
+            <VBtn
+              v-if="isInstantPresetSelected"
+              icon="mdi-pencil"
+              variant="tonal"
+              @click="isInstantPresetEditDialogVisible = true"
+            />
             <DoneBtn :menuIdWithMultiplierList="selectedPresetMenuIdWithMultiplierList" />
           </div>
           <div class="overflow-y-auto flex-grow-1 border rounded">
-            <VTable hover v-if="selectedPresetId !== null">
+            <div
+              v-if="isInstantPresetSelected && selectedPresetMenuList.length <= 0"
+              class="fill-height d-flex flex-column justify-center align-center ga-4"
+            >
+              <template v-if="presetList.length <= 0">
+                <p class="text-h6">プリセットがありません</p>
+                <p class="text-center">
+                  今回だけ行うメニューを即席プリセットとして設定するか、<br />
+                  繰り返し行うメニューをプリセットとして作成してください
+                </p>
+              </template>
+              <p v-else>今回だけ行うメニューを設定できます</p>
+              <div class="d-flex ga-4">
+                <VBtn
+                  prepend-icon="mdi-pencil"
+                  color="green"
+                  @click="isInstantPresetEditDialogVisible = true"
+                >メニューを設定</VBtn>
+                <VBtn
+                  v-if="presetList.length <= 0"
+                  to="/menu/preset"
+                  append-icon="mdi-chevron-right"
+                  color="green"
+                  variant="outlined"
+                >プリセットを追加</VBtn>
+              </div>
+            </div>
+            <VTable hover v-else-if="selectedPresetId !== null">
               <tbody>
-                <DoMenuTableRow v-for="presetMenu of selectedPresetMenuList" :presetMenu />
+                <DoMenuTableRow v-for="presetMenu of selectedPresetMenuList" :key="presetMenu.menu.id" :presetMenu />
               </tbody>
             </VTable>
           </div>
@@ -105,6 +178,7 @@ const onSelectPreset = (presetId: number) => {
       </VCol>
     </VRow>
     <CautionDialog />
+    <InstantPresetEditDialog v-model="isInstantPresetEditDialogVisible" :allMenuList />
   </VContainer>
 </template>
 
